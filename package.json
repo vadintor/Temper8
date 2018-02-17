@@ -23,7 +23,6 @@
         "build": "gulp build",
         "watch": "gulp watch",
         "lint": "tslint -t stylish -c tslint.json \"src/**/*.ts\"",
-        "precommit": "lint-staged",
         "prepublish": "require-npm4-to-publish",
         "prepublishOnly": "npm run build",
         "prettify": "prettier --write \"src/**/*.ts\""

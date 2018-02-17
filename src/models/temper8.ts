@@ -7,7 +7,7 @@ export class Sensor {
     private _port: number = -1;     // The sensor knows which port it is connected to.
     private _value: number = 85.0;         // Temperature value in degrees celsius
 
-    constructor(port: number = -1, value: number = 0) {
+    constructor(port: number = -1, value: number = 85.0) {
         this._port = port;
         this._value = value;
     }
@@ -71,7 +71,7 @@ export class Device {
                 return isTemper && d.interface === 1;
             });
 
-            if (deviceInfo.path !== undefined) {
+            if ((deviceInfo !== undefined) && (deviceInfo.path !== undefined)) {
                 Device._hid1 = new HID.HID(deviceInfo.path);
                 Device._hid1.on('data', Device.parseInput);
                 Device._hid1.on('error', Device.parseError);

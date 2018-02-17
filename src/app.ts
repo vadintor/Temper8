@@ -6,7 +6,7 @@ import path = require('path');
 import routes from './routes/index';
 import users from './routes/user';
 
-import Temper8 = require('./Models/temper8');
+import Temper8 = require('./models/temper8');
 
 const app: express.Express = express();
 
@@ -50,7 +50,7 @@ app.use((err: any, req: any, res: any, next: any) => {
         error: {}});
 });
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 80);
 
 const server: http.Server = app.listen(app.get('port'), function() {
     debug('Express server listening on port ' + server.address().port);
