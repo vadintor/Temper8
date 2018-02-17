@@ -1,7 +1,7 @@
 {
   "extends": "tslint:recommended",
   "rules": {
-    "indent": [ true, "tabs" ],
+    "indent": [ true, "spaces", 4 ],
     "jsdoc-format": true,
     "whitespace": [
       false,
@@ -11,12 +11,13 @@
     "only-arrow-functions": [false],
     "quotemark": [true, "single", "avoid-escape"],
     "max-classes-per-file": [false],
-    "max-line-length": [120],
+    "max-line-length": [true, 120],
     "member-access": false,
     "member-ordering": [false],
     "no-consecutive-blank-lines": false,
     "no-shadowed-variable": false,
     "no-var-requires": true,
+    "no-bitwise": false,
     "arrow-parens": false,
     "no-angle-bracket-type-assertion": false,
     "no-console": [false],

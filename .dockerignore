@@ -1,0 +1,14 @@
+#ignore the files
+/.git/
+/.vscode/
+/node_modules/
+/src/
+.editorconfig
+.gitignore
+.prettierrc
+gulpfile.js
+package-lock.json
+tsconfig.json
+tslint,json
+**/*.d.ts
+**/*.ts

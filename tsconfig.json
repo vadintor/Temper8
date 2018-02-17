@@ -9,12 +9,13 @@
         "preserveConstEnums": true,
         "strictNullChecks": true,
         "sourceMap": true,
+        "lib": [ "es6" ],
         "target": "es5",
         "noUnusedParameters": true,
         "noUnusedLocals": true,
         "moduleResolution": "node"
     },
     "include": [
-        "lib/**/*.ts"
+        "src/**/*.ts"
     ]
 }
