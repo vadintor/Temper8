@@ -14,6 +14,8 @@ FROM resin/%%RESIN_MACHINE_NAME%%-node:6-slim
 RUN apt-get update && apt-get install -yq \
     python2.7 && rm -rf /var/lib/apt/lists/* && ln -s /usr/bin/python2.7 /usr/bin/python
 
+RUN apt-get install build-essential && rm -rf /var/lib/apt/lists/*
+
 # Defines our working directory in container
 WORKDIR /usr/src/app
 
