@@ -9,6 +9,6 @@
 gulpfile.js
 package-lock.json
 tsconfig.json
-tslint,json
+tslint.json
 **/*.d.ts
 **/*.ts
