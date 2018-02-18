@@ -11,11 +11,8 @@ FROM resin/%%RESIN_MACHINE_NAME%%-node:6-slim
 #    alsa-utils libasound2-dev && \
 #    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-#RUN apt-get update && apt-get install python-pip
 RUN apt-get update && apt-get install -yq \
-    python2.7 && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get install python-pip
+    python2.7 && rm -rf /var/lib/apt/lists/* && ln -s /usr/bin/python2.7 /usr/bin/python
 
 # Defines our working directory in container
 WORKDIR /usr/src/app
@@ -29,7 +26,7 @@ COPY CHANGELOG.md CHANGELOG.md
 
 # This install npm dependencies on the resin.io build server,
 # making sure to clean up the artifacts it creates in order to reduce the image size.
-#RUN JOBS=MAX npm install --production --unsafe-perm && npm cache clean && rm -rf /tmp/*
+RUN JOBS=MAX npm install --production --unsafe-perm && npm cache clean && rm -rf /tmp/*
 
 # This will copy all files in our root to the working  directory in the container
 COPY ./build .
