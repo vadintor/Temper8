@@ -15,6 +15,11 @@ FROM resin/%%RESIN_MACHINE_NAME%%-node:6
 #    python2.7 make gcc && \
 #    rm -rf /var/lib/apt/lists/* && ln -s /usr/bin/python2.7 /usr/bin/python
 
+RUN apt-get update && apt-get install -yq \
+    libudev-dev \
+    && rm -rf /var/lib/apt/lists/*
+ 
+
 # Defines our working directory in container
 WORKDIR /usr/src/app
 
