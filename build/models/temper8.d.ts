@@ -38,4 +38,6 @@ export declare class Device {
     private static matchCheck05(data);
     private static writeCheck0DRequest();
     private static matchCheck0D(data);
+    private static writeCheckFFRequest();
+    private static matchCheckFF(data);
 }

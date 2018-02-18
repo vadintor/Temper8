@@ -152,6 +152,10 @@ export class Device {
             } else if (Device.matchCheck0D(data)) {
                 return;
                 // Device.writeUsedPortsRequest();
+            } else if (Device.matchCheckFF(data)) {
+                Device.writeCheckFFRequest();
+                console.log('--matchCheckFF: restart');
+                return;
             }
         } catch (e) {
             console.log(e);
@@ -339,6 +343,22 @@ export class Device {
             && data[1] === 0x08
             && data[2] === 0x01
             && data[3] === 0x0D) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private static writeCheckFFRequest() {
+        const data: number[] = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
+        this.writeRequest(data);
+    }
+    private static matchCheckFF(data: number[]) {
+        if (data.length === 8
+            && data[0] === 0xFF
+            && data[1] === 0xFF
+            && data[2] === 0xFF
+            && data[3] === 0xFF) {
             return true;
         } else {
             return false;

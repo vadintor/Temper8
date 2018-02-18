@@ -5,6 +5,7 @@ const sourcemaps = require('gulp-sourcemaps');
 const watch = require('gulp-watch');
 const tsProject = typescript.createProject('tsconfig.json');
 const srcGlobs = tsProject.config.include;
+const publicGlobs = ["src/public/**/*"];
 
 // Compile the TS sources
 gulp.task('typescript', () => {
@@ -25,10 +26,26 @@ gulp.task('copydecs', () => {
         .pipe(gulp.dest(tsProject.options.declarationDir));
 });
 
+// Copy any other files
+gulp.task('copyfiles', () => {
+    gulp.src('src/views/*.pug')
+        .pipe(gulp.dest(tsProject.options.outDir.concat('/views/')));
+    const publicDirs = [];
+    publicGlobs.forEach(dir => {
+        publicDirs.push(`${dir.split('/')[0]}/**/*.css`);
+        publicDirs.push(`${dir.split('/')[0]}/**/*.html`);
+        publicDirs.push(`${dir.split('/')[0]}/**/*.png`);
+        publicDirs.push(`${dir.split('/')[0]}/**/*.jpg`);
+    })
+    gulp.src(publicDirs)
+        .pipe(gulp.dest(tsProject.options.outDir));
+});
+
+
 gulp.task('watch', () => {
     watch(srcGlobs, () => {
         gulp.start('build');
     });
 });
 
-gulp.task('build', ['typescript', 'copydecs']);
+gulp.task('build', ['typescript', 'copydecs', 'copyfiles']);
