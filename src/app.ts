@@ -3,8 +3,8 @@ import express = require('express');
 import * as http from 'http';
 import path = require('path');
 
-import routes from './routes/index';
-import users from './routes/user';
+import route_api from './routes/api';
+import route_index from './routes/index';
 
 import Temper8 = require('./models/temper8');
 
@@ -18,8 +18,8 @@ app.set('view engine', 'pug');
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
-app.use('/users', users);
+app.use('/', route_index);
+app.use('/api', route_api);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

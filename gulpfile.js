@@ -17,7 +17,7 @@ gulp.task('typescript', () => {
 });
 
 // Copy any pre-defined declarations
-gulp.task('copydecs', () => {
+gulp.task('copydecl', () => {
     const decDirs = [];
     srcGlobs.forEach((dir) => {
         decDirs.push(`${dir.split('/')[0]}/**/*.d.ts`);
@@ -48,4 +48,4 @@ gulp.task('watch', () => {
     });
 });
 
-gulp.task('build', ['typescript', 'copydecs', 'copyfiles']);
+gulp.task('build', ['typescript', 'copydecl', 'copyfiles']);

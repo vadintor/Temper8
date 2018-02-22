@@ -1,7 +1,7 @@
 # Temper8 resin.io
 -----------------
 ## Summary
-This application reads and publishes the local temperature (in degress Celsius) on the Internet. The application connects to a Temper 8 device through a Vendor defined USB HID interface and reads sensor data from up to eight connected 1-wire DS18b20 temperature sensors.
+This application reads and publishes the local temperature (in degress Celsius) on the Internet. The application connects to a Temper 8 device through a vendor defined USB HID interface and reads sensor data from up to eight connected 1-wire DS18b20 temperature sensors.
 
 The application is build on node.js for Raspberry Pi Zero W and is implemented with TypeScript. The application can be deployed to one or more Raspberry devices through the resin.io docker dashboard. The release contains a Dockerfile.Template for reasin.io. 
 
