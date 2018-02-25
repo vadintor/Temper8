@@ -9,6 +9,7 @@ router.get('/', (_req: express.Request, res: express.Response) => {
     const sensorData: Temper8.Sensor[] = Temper8.Device.getSensorData();
     res.setHeader('Content-Type', 'application/json');
     res.send(JSON.stringify(sensorData));
+    console.log('/api.get:', JSON.stringify(sensorData));
 });
 
 export default router;
