@@ -1,6 +1,6 @@
 {
     "name": "temper8-resin",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "This application reads and publish the local temperature on the Internet",
     "homepage": "https://github.com/vadintor/Temper8",
     "main": "build/app.js",

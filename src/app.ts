@@ -10,7 +10,7 @@ import route_index from './routes/index';
 import Temper8 = require('./models/temper8');
 
 const app: express.Express = express();
-// TODO: CORS hardening        
+// TODO: CORS hardening
 app.use(cors());
 app.options('*', cors());
 
