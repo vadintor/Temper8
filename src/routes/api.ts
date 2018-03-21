@@ -3,14 +3,23 @@
  */
 import express = require('express');
 const router: express.Router = express.Router();
-import { Sensor } from '../models/Sensor';
-import Temper8 = require('../models/temper8');
+import { SensorState } from '../models/sensor-state';
+import {USBSensorManager} from '../models/usb-sensor-manager';
 
 router.get('/', (_req: express.Request, res: express.Response) => {
-    const sensorData: Sensor[] = Temper8.Device.getSensorData();
+    const sensorState: SensorState[] = USBSensorManager.getSensorStates();
     res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify(sensorData));
-    console.log('/api.get:', JSON.stringify(sensorData));
+
+    if (sensorState) {
+        const sensorData = sensorState[0].getSensorData();
+        res.send(JSON.stringify(sensorData));
+        console.log('/api.get:', JSON.stringify(sensorData));
+
+    } else {
+        res.send(JSON.stringify([]));
+        console.log('/api.get:', JSON.stringify([]));
+    }
+
 });
 
 export default router;

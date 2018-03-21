@@ -7,14 +7,14 @@ import path = require('path');
 import route_api from './routes/api';
 import route_index from './routes/index';
 
-import Temper8 = require('./models/temper8');
+import { USBSensorManager } from './models/usb-sensor-manager';
 
 const app: express.Express = express();
 // TODO: CORS hardening
 app.use(cors());
 app.options('*', cors());
 
-const temper8: Temper8.Device = new Temper8.Device();
+USBSensorManager.factory();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

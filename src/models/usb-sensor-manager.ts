@@ -1,5 +1,5 @@
 import HID = require('node-hid');
-
+import { SensorState } from './sensor-state';
 import { Temper8 } from './temper-8';
 import { TemperGold } from './temper-gold';
 import { USBController } from './usb-controller';
@@ -33,23 +33,33 @@ export function isTemper8(device: HID.Device): boolean {
         device.interface === INTERFACE);
 }
 export class USBSensorManager {
-    public static factory(): USBController[] {
-        const devices: USBController[] = [];
+    private static devices: USBController[] = [];
+    private static sensorStates: SensorState[] = [];
 
+
+    public static getSensorStates(): SensorState[] {
+        return USBSensorManager.sensorStates;
+    }
+
+    public static factory(): void {
         HID.devices().find(device => {
             if (isTemperGold(device) && device.path !== undefined) {
                 const hid = new HID.HID(device.path);
-                const temperGold = new USBController (hid, new TemperGold());
-                devices.push(temperGold);
-
+                const temperGold = new TemperGold();
+                USBSensorManager.sensorStates.push(temperGold);
+                const temperGoldDevice = new USBController (hid, temperGold);
+                USBSensorManager.devices.push(temperGoldDevice);
+                return true;
             } else if (isTemper8(device) && device.path !== undefined) {
                 const hid = new HID.HID(device.path);
-                const temper8 = new USBController (hid, new Temper8());
-                devices.push(temper8);
+                const temper8 = new Temper8();
+                USBSensorManager.sensorStates.push(temper8);
+                const temper8Device = new USBController (hid, temper8);
+                USBSensorManager.devices.push(temper8Device);
+                return true;
             }
             return false;
         });
-        return devices;
     }
 
 }
