@@ -1,37 +1,23 @@
 import { SensorData } from './sensor-data';
 
 export class SensorState {
-        // Device has 8 ports, each of which can hold a 1-wire temperature sensor
+    // Device has 8 ports, each of which can hold a 1-wire temperature sensor
     // or a humidity sensor, but the latter is out of scope.
     protected sensors: SensorData[]= [];
     // private  usedPorts: number[];
-    protected sensorDataListeners: Array<(sensor: SensorData[])=>void>;
-    protected errorListeners: Array<()=>void>;
-    protected unrecoverableError = false;
+    protected sensorDataListeners: Array<(sensor: SensorData[])=>void> = [];
 
-    // TODO: Common for all sensors => refactor
+
     public getSensorData(): SensorData[] {
         return this.sensors.slice();
     }
     public addSensorDataListener(onSensorDataReceived: (sensor: SensorData[]) => void): void {
         this.sensorDataListeners.push (onSensorDataReceived);
     }
-    public addUnrecoverableErrorListener(onError: ()=> void): void {
-        this.errorListeners.push(onError);
-    }
 
     protected updateSensorDataListeners(sensorData: SensorData[]) {
         for (const publish of this.sensorDataListeners) {
             publish(sensorData);
-        }
-    }
-    protected updateOnErrorListeners() {
-        // Publish once only
-        if (!this.unrecoverableError) {
-            this.unrecoverableError = true;
-            for (const publish of this.errorListeners) {
-                publish();
-            }
         }
     }
     protected updateSensor(port: number, temperature: number) {
@@ -40,16 +26,16 @@ export class SensorState {
             if (sensor) {
                 sensor.setValue(temperature);
                 this.updateSensorDataListeners([sensor]);
-                console.log('+updateSensor, port: %d, temperature %d', port, temperature);
+                console.log('+++ SensorState.updateSensor, port: %d, temperature %d', port, temperature);
             } else {
-                console.error('-updateSensor - sensor undefined, port: %d, temperature %d', port, temperature);
+                console.error('--- SensorState.updateSensor, undefined, port: %d, temperature %d', port, temperature);
             }
         } else {
-            console.error('-updateSensor - no sensors, port: %d, temperature %d', port, temperature);
+            console.error('--- SensorState.updateSensor, no sensors, port: %d, temperature %d', port, temperature);
         }
     }
     protected connectSensors(total: number, used: number) {
-        console.log('connectSensors, total:%d', total);
+        console.log('+++ connectSensors, total:%d', total);
         if (this.sensors.length === 0) {
 
             this.sensors = Array<SensorData>(total);
@@ -61,13 +47,14 @@ export class SensorState {
 
                 if ((used & bits[port]) === bits[port]) {
                     this.sensors[sensor] = new SensorData(port);
-                    console.log('connectSensors, port:%d', port);
+                    console.log('+++ connectSensors, port: %d', port);
                     sensor += 1;
                 }
             }
 
             if (sensor !== total) {
                 // TODO: Error handling
+                console.log('--- connectSensors, #sensors: %d !== total: %d', sensor, total);
                 return;
             }
         }

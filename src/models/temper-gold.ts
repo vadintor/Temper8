@@ -9,14 +9,19 @@ import { ReportParser } from './usb-controller';
 export class TemperGold extends SensorState implements ReportParser {
     // Interface methods implementation
 
+    constructor() {
+        super();
+        this.connectSensors(1, 1);
+    }
     public initReport(): number[][] {
         return [this.temperatureRequest()];
     }
     // This function parses all input reports and check what to do
     public parseInput(data: number[]): number[] {
         try {
+            console.log('+++ TemperGold.parseInput:', JSON.stringify(data));
             if (!this.matchTemperature(data)) {
-                console.warn('--no match: ', JSON.stringify(data));
+                console.warn('--- no match: ', JSON.stringify(data));
             }
         } catch (e) {
             console.log(e);
@@ -40,7 +45,7 @@ export class TemperGold extends SensorState implements ReportParser {
         if (data.length === 8
             && data[0] === 0x80
             && data[1] === 0x02) {
-            console.log('+matchTemperature, data: %d', JSON.stringify(data));
+            console.log('+++ TemperGold.matchTemperature:', JSON.stringify(data));
             const port = 0;
             const msb: number = data[2];
             const lsb: number = data[3];

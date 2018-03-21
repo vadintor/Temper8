@@ -8,8 +8,6 @@ import { SensorData } from './sensor-data';
 export interface ReportParser {
     initReport(): number[][];
     parseInput(data: number[]): number[];
-    addSensorDataListener(onSensorDataReceived: (sensor: SensorData[]) => void): void;
-    addUnrecoverableErrorListener(onError: ()=> void): void;
 }
 // Handle a sensor device on the USB hub.
 export class USBController {
@@ -32,10 +30,11 @@ export class USBController {
 
     public initializeDevice() {
         if (!this.deviceInitialized) {
-            this.hid.on('data', this.parseInput);
-            this.hid.on('error', this.parseError);
+            this.hid.on('data', this.parseInput.bind(this));
+            this.hid.on('error', this.parseError.bind(this));
             this.setPollingInterval(this.POLL_INTERVAL);
             this.deviceInitialized = true;
+            console.log('+++ USBController.initializeDevice');
         }
     }
 
@@ -52,14 +51,16 @@ export class USBController {
     public setPollingInterval(ms: number) {
         this.POLL_INTERVAL = ms;
         clearInterval(this.interval);
-        this.interval = setInterval(this.pollSensors, this.POLL_INTERVAL);
+        this.interval = setInterval(this.pollSensors.bind(this), this.POLL_INTERVAL);
     }
 
     // This is were all starts when set interval time expires
+
     private pollSensors() {
         if (! this.deviceInitialized) {
             this.initializeDevice();
         } else {
+            console.log('+++ USBController.pollSensors');
             const initCommands = this.reportParser.initReport();
             for (const command of initCommands) {
                 this.writeReport(command);
@@ -70,8 +71,9 @@ export class USBController {
     // back to the device
     private parseInput(data: number[]): void  {
         try {
+            console.log('+++ USBController.parseInput', JSON.stringify(data));
             const response = this.reportParser.parseInput(data);
-            if (response) {
+            if (response.length > 0) {
                 this.writeReport(response);
             }
         } catch (e) {
@@ -94,14 +96,12 @@ export class USBController {
         for (let i = 0; i < 1; i++) {
             try {
                 this.hid.write(data);
+                console.log('+++ USBController.writeReport', JSON.stringify(data));
             } catch (e) {
-                console.log('-hid.write catch:&d', JSON.stringify(data));
+                console.log('*** USBController.writeReport hid.write catch:&d', JSON.stringify(data));
                 this.close();
             }
 
         }
     }
-
-
-
 }

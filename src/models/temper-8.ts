@@ -22,12 +22,14 @@ export class Temper8 extends SensorState implements ReportParser {
     // the temperature of the sensors connected.
     public parseInput(data: number[]): number[] {
         try {
+            console.log('+++ Temper8.parseInput:', JSON.stringify(data));
             if (this.matchUsedPorts(data)) {
                 const response = this.temperatureRequest(this.sensors[this.nextSensor].getPort());
                 this.nextSensor += 1;
                 return response;
 
             } else if (this.matchTemperature(data)) {
+                console.log('+++ Temper8.matchTemperature:', JSON.stringify(data));
                 if (this.nextSensor < this.sensors.length) {
                     const response = this.temperatureRequest(this.sensors[this.nextSensor].getPort());
                     this.nextSensor += 1;
@@ -45,11 +47,11 @@ export class Temper8 extends SensorState implements ReportParser {
             } else if (this.matchCheck0D(data)) {
                 return [];
             } else if (this.matchCheckFF(data)) {
-                console.error('---matchCheckFF: restart?');
+                console.error('--- Temper8.matchCheckFF: restart?');
                 // This indicates fault device
                 // Don't know whether there is a way to recover
                 // Maybe restarting the device is necessary.
-                throw Error('matchCheckFF');
+                throw Error('--- Temper8.matchCheckFF');
             }
         } catch (e) {
             console.log(e);
@@ -96,7 +98,7 @@ export class Temper8 extends SensorState implements ReportParser {
             && data[0] === 0x80
             && data[1] === 0x08
             && data[2] === 0x01) {
-            console.log('+matchTemperature, data: %d', JSON.stringify(data));
+            console.log('+++ matchTemperature, data: %d', JSON.stringify(data));
             const port: number = data[4];
             const msb: number = data[5];
             const lsb: number = data[6];

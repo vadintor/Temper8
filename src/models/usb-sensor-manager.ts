@@ -15,7 +15,7 @@ export class DeviceConfig {
 const VID = 0x0C45;
 const PID = 0x7401;
 const TEMPER_GOLD = 'TEMPerV1.4';
-const TEMPER_8 = 'TEMPerV1.5';
+const TEMPER_8 = 'TEMPer8_V1.5';
 const INTERFACE = 1;
 
 
@@ -44,6 +44,7 @@ export class USBSensorManager {
     public static factory(): void {
         HID.devices().find(device => {
             if (isTemperGold(device) && device.path !== undefined) {
+                console.log('+++ USBSensorManager.factory, isTemperGold');
                 const hid = new HID.HID(device.path);
                 const temperGold = new TemperGold();
                 USBSensorManager.sensorStates.push(temperGold);
@@ -51,6 +52,7 @@ export class USBSensorManager {
                 USBSensorManager.devices.push(temperGoldDevice);
                 return true;
             } else if (isTemper8(device) && device.path !== undefined) {
+                console.log('+++ USBSensorManager.factory, isTemper8');
                 const hid = new HID.HID(device.path);
                 const temper8 = new Temper8();
                 USBSensorManager.sensorStates.push(temper8);

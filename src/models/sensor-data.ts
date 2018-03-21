@@ -57,11 +57,11 @@ export class SensorData  {
         return this.port;
     }
 
-    timestamp(): number {
+    public timestamp(): number {
         return this.date;
     }
 
-    isConnected(): boolean {
+    public isConnected(): boolean {
         return this.port >= 0;
     }
 
