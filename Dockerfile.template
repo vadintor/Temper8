@@ -20,6 +20,9 @@ RUN apt-get update && apt-get install -yq \
     libusb-1.0-0-dev \
     && rm -rf /var/lib/apt/lists/*
  
+ RUN apt-get update && apt-get install -yq \
+    avahi-daemon \
+    && rm -rf /var/lib/apt/lists/*
 
 # Defines our working directory in container
 WORKDIR /usr/src/app
