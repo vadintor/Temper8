@@ -13,6 +13,7 @@ const app: express.Express = express();
 // TODO: CORS hardening
 app.use(cors());
 app.options('*', cors());
+app.disable('etag');
 
 USBSensorManager.factory();
 
