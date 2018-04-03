@@ -1,31 +1,3 @@
-export enum Category {
-    IndoorTemperature,
-    OutdoorTemperature,
-    AbsoluteHumidity,
-    RelativeHumidity,
-    WindSpeed,
-}
-
-export interface Data {
-    port: number; // matches Sensor.id above
-    value: number;
-    date: number;
-}
-export class Descriptor {
-    public id: string;
-    public description: string;
-    public category: Category;
-    public accuracy?: number;
-    public resolution?: number;
-    public maxSampleRate?: number;
-}
-
-export interface SensorState {
-    desc: Descriptor;
-    samples: SensorData[];
-}
-
-
 export class SensorData  {
     private port: number = -1;     // The sensor knows which port it is connected to.
     private value: number = 85.0;         // Temperature value in degrees celsius
@@ -48,7 +20,9 @@ export class SensorData  {
         this.value = value;
         this.date = Date.now();
     }
-
+    public updateValue(value: number) {
+        this.value = value;
+    }
     public setPort(port: number) {
         this.port = port;
     }

@@ -5,9 +5,12 @@ import * as http from 'http';
 import path = require('path');
 
 import route_api from './routes/api';
+import route_debug from './routes/debug';
 import route_index from './routes/index';
 
 import { USBSensorManager } from './models/usb-sensor-manager';
+
+import { log } from './logger';
 
 const app: express.Express = express();
 // TODO: CORS hardening
@@ -25,6 +28,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', route_index);
 app.use('/api', route_api);
+app.use('/debug', route_debug);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -59,5 +63,5 @@ app.use((err: any, req: any, res: any, next: any) => {
 app.set('port', process.env.PORT || 80);
 
 const server: http.Server = app.listen(app.get('port'), function() {
-    debug('Express server listening on port ' + server.address().port);
+    log.info('iTemper listening on port ' + server.address().port);
 });

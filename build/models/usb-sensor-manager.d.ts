@@ -1,5 +1,5 @@
 import HID = require('node-hid');
-import { SensorState } from './sensor-state';
+import { SensorLogger } from './../services/sensor-logger';
 export declare class DeviceConfig {
     vendorId: number;
     productId: number;
@@ -10,7 +10,7 @@ export declare function isTemperGold(device: HID.Device): boolean;
 export declare function isTemper8(device: HID.Device): boolean;
 export declare class USBSensorManager {
     private static devices;
-    private static sensorStates;
-    static getSensorStates(): SensorState[];
+    private static loggers;
+    static getLoggers(): SensorLogger[];
     static factory(): void;
 }

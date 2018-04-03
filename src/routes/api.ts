@@ -3,22 +3,45 @@
  */
 import express = require('express');
 const router: express.Router = express.Router();
+import { SensorLogger } from '../services/sensor-logger';
+
 import { SensorState } from '../models/sensor-state';
+
 import { USBSensorManager } from '../models/usb-sensor-manager';
+
+import { log, setLevel } from './../logger';
 
 router.get('/', (_req: express.Request, res: express.Response) => {
 
-    const sensorState: SensorState[] = USBSensorManager.getSensorStates();
+    const sensorLogger =
+        USBSensorManager.getLoggers()
+        .find(logger=> logger.getState !== undefined);
+
     res.setHeader('Content-Type', 'application/json');
-    console.log('+++ /api.get:', JSON.stringify(SensorState));
-    if (sensorState) {
-        const sensorData = sensorState[0].getSensorData();
+    if (sensorLogger) {
+        const sensorData = sensorLogger.getState().getSensorData();
+        log.debug('--- /api.get, state: ', JSON.stringify(sensorLogger.getState()));
+
+        log.debug('--- /api.get, data:', JSON.stringify(sensorData));
         res.send(JSON.stringify(sensorData));
-        console.log('+++ /api.get:', JSON.stringify(sensorData));
 
     } else {
         res.send(JSON.stringify([]));
         console.log('--- /api.get:', JSON.stringify([]));
+    }
+
+});
+
+router.post('/debug', (_req: express.Request, res: express.Response) => {
+    res.setHeader('Content-Type', 'application/json');
+    const level = _req.query.level;
+    if (level && (level === 'debug' || level === 'info' || level === 'warn' || level === 'error')) {
+        setLevel(level);
+        log.info('/debug log level:', level);
+        res.status(200).send({level});
+    } else {
+        log.info('/debug log level not set:', level);
+        res.sendStatus(404);
     }
 
 });

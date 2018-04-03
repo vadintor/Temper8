@@ -38,6 +38,11 @@
             "type": "gulp",
             "task": "copyfiles",
             "problemMatcher": []
+        },
+        {
+            "type": "npm",
+            "script": "watch",
+            "problemMatcher": []
         }
     ]
 }

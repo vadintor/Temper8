@@ -2,6 +2,8 @@
 import { SensorState } from './sensor-state';
 import { ReportParser } from './usb-controller';
 
+import { log } from './../logger';
+
 
 // Temper Gold parser understands HID reports from Temper8 devices
 // Independent of USB lib used.
@@ -19,9 +21,9 @@ export class TemperGold extends SensorState implements ReportParser {
     // This function parses all input reports and check what to do
     public parseInput(data: number[]): number[] {
         try {
-            console.log('+++ TemperGold.parseInput:', JSON.stringify(data));
+            log.debug('--- TemperGold.parseInput:', JSON.stringify(data));
             if (!this.matchTemperature(data)) {
-                console.warn('--- no match: ', JSON.stringify(data));
+                log.warning('*** no match: ', JSON.stringify(data));
             }
         } catch (e) {
             console.log(e);
@@ -36,7 +38,7 @@ export class TemperGold extends SensorState implements ReportParser {
         return [0x01, 0x80, 0x33, 0x01, 0x00, 0x00, 0x00, 0x00];
     }
 
-    // This methods update sensor state if  data contains the temperature byte string
+    // This methods update sensor state if data contains the temperature byte string
     private  matchTemperature(data: number[]) {
 
         // Make sure the input report is a temperature report,
@@ -45,7 +47,7 @@ export class TemperGold extends SensorState implements ReportParser {
         if (data.length === 8
             && data[0] === 0x80
             && data[1] === 0x02) {
-            console.log('+++ TemperGold.matchTemperature:', JSON.stringify(data));
+            log.debug('+++ TemperGold.matchTemperature:', JSON.stringify(data));
             const port = 0;
             const msb: number = data[2];
             const lsb: number = data[3];

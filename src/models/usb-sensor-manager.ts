@@ -1,9 +1,13 @@
 import HID = require('node-hid');
+import { SensorCategory } from './sensor-attributes';
 import { SensorState } from './sensor-state';
 import { Temper8 } from './temper-8';
 import { TemperGold } from './temper-gold';
 import { USBController } from './usb-controller';
 
+import { SensorLogger } from './../services/sensor-logger';
+
+import { log } from './../logger';
 
 export class DeviceConfig {
         vendorId: number;
@@ -34,31 +38,50 @@ export function isTemper8(device: HID.Device): boolean {
 }
 export class USBSensorManager {
     private static devices: USBController[] = [];
-    private static sensorStates: SensorState[] = [];
+    private static loggers: SensorLogger[] = [];
 
-
-    public static getSensorStates(): SensorState[] {
-        return USBSensorManager.sensorStates;
+    public static getLoggers(): SensorLogger[] {
+        return USBSensorManager.loggers;
     }
 
     public static factory(): void {
         HID.devices().find(device => {
             if (isTemperGold(device) && device.path !== undefined) {
-                console.log('+++ USBSensorManager.factory, isTemperGold');
+                log.info('Sensor TEMPer Gold found');
                 const hid = new HID.HID(device.path);
                 const temperGold = new TemperGold();
-                USBSensorManager.sensorStates.push(temperGold);
+                const attr = {
+                        SN: 'TGold',
+                        model: 'Temper Gold',
+                        category: SensorCategory.Temperature,
+                        accuracy: 2.0,
+                        resolution: 1,
+                        maxSampleRate: 1,
+                    };
+                const logger = new SensorLogger(attr, temperGold);
+                logger.startLogging();
+                USBSensorManager.loggers.push(logger);
                 const temperGoldDevice = new USBController (hid, temperGold);
                 USBSensorManager.devices.push(temperGoldDevice);
-                return true;
+                // return true;
             } else if (isTemper8(device) && device.path !== undefined) {
-                console.log('+++ USBSensorManager.factory, isTemper8');
+                log.info('Sensor TEMPer 8 found');
                 const hid = new HID.HID(device.path);
                 const temper8 = new Temper8();
-                USBSensorManager.sensorStates.push(temper8);
+                const attr = {
+                    SN: 'Temper8',
+                    model: 'Temper 8',
+                    category: SensorCategory.Temperature,
+                    accuracy: 0.5,
+                    resolution: 1,
+                    maxSampleRate: 0.2,
+                };
+                const logger = new SensorLogger(attr, temper8);
+                logger.startLogging();
+                USBSensorManager.loggers.push(logger);
                 const temper8Device = new USBController (hid, temper8);
                 USBSensorManager.devices.push(temper8Device);
-                return true;
+               // return true;
             }
             return false;
         });

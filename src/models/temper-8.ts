@@ -2,11 +2,17 @@
 import { SensorState } from './sensor-state';
 import { ReportParser } from './usb-controller';
 
+import { log } from './../logger';
+
 
 // Temper8 parser understands HID reports from Temper8 devices
 // Independent of USB lib used.
 
 export class Temper8 extends SensorState implements ReportParser {
+    // Device has 8 ports, each of which can hold a 1-wire temperature sensor
+    // The sensors are polled in sequence, starting from port 0 to port 7.
+    // We do not know how many sensors are connected until we received the config
+    // in a USB HID report
 
     // Track what sensor we should request value from next time
     protected nextSensor: number = 0;
@@ -14,24 +20,27 @@ export class Temper8 extends SensorState implements ReportParser {
     // Interface methods implementation
 
     public initReport(): number[][] {
+    // This starts the polling. First we ask the device about sensors attached configuration
+    // We also request temperature from port zero (for the sake of it, unclear reason)
         this.nextSensor = 0;
         return [this.usedPortsRequest(), this.temperatureRequest(this.nextSensor)];
     }
+
     // This function parses all input reports and check what to do
     // We are interested in two types of data from the device: which ports are used and
     // the temperature of the sensors connected.
     public parseInput(data: number[]): number[] {
         try {
-            console.log('+++ Temper8.parseInput:', JSON.stringify(data));
             if (this.matchUsedPorts(data)) {
-                const response = this.temperatureRequest(this.sensors[this.nextSensor].getPort());
+                log.debug('+++ Temper8.matchUsedPorts:', JSON.stringify(data));
+                const response = this.temperatureRequest(this.sensors[this.nextSensor].s.getPort());
                 this.nextSensor += 1;
                 return response;
 
             } else if (this.matchTemperature(data)) {
-                console.log('+++ Temper8.matchTemperature:', JSON.stringify(data));
+                log.debug('+++ Temper8.matchTemperature:', JSON.stringify(data));
                 if (this.nextSensor < this.sensors.length) {
-                    const response = this.temperatureRequest(this.sensors[this.nextSensor].getPort());
+                    const response = this.temperatureRequest(this.sensors[this.nextSensor].s. getPort());
                     this.nextSensor += 1;
                     return response;
 
@@ -47,14 +56,14 @@ export class Temper8 extends SensorState implements ReportParser {
             } else if (this.matchCheck0D(data)) {
                 return [];
             } else if (this.matchCheckFF(data)) {
-                console.error('--- Temper8.matchCheckFF: restart?');
+                log.warning('*** Temper8.matchCheckFF: restart?');
                 // This indicates fault device
                 // Don't know whether there is a way to recover
                 // Maybe restarting the device is necessary.
-                throw Error('--- Temper8.matchCheckFF');
+                throw Error('*** Temper8.matchCheckFF');
             }
         } catch (e) {
-            console.log(e);
+            log.error(e);
         }
         return [];
     }
@@ -98,7 +107,7 @@ export class Temper8 extends SensorState implements ReportParser {
             && data[0] === 0x80
             && data[1] === 0x08
             && data[2] === 0x01) {
-            console.log('+++ matchTemperature, data: %d', JSON.stringify(data));
+            log.debug('+++ matchTemperature, data: %d', JSON.stringify(data));
             const port: number = data[4];
             const msb: number = data[5];
             const lsb: number = data[6];
