@@ -1,6 +1,6 @@
 import HID = require('node-hid');
 import { SensorCategory } from './sensor-attributes';
-import { SensorState } from './sensor-state';
+
 import { Temper8 } from './temper-8';
 import { TemperGold } from './temper-gold';
 import { USBController } from './usb-controller';
