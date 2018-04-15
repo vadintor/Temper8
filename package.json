@@ -1,8 +1,8 @@
 {
-    "name": "temper8-resin",
-    "version": "0.0.2",
+    "name": "itemper-device",
+    "version": "0.0.4",
     "description": "This application reads and publish the local temperature on the Internet",
-    "homepage": "https://github.com/vadintor/Temper8",
+    "homepage": "https://github.com/vadintor/",
     "main": "build/app.js",
     "types": "src/app.ts",
     "keywords": [
@@ -13,10 +13,10 @@
     "license": "Apache-2.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/vadintor/Temper8.git"
+        "url": "https://github.com/vadintor/iTemper-Device.git"
     },
     "bugs": {
-        "url": "https://github.com/vadintor/Temper8"
+        "url": "https://github.com/vadintor/iTemper-Device"
     },
     "scripts": {
         "start": "node build/app.js",

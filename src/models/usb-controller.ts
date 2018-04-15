@@ -4,7 +4,7 @@ import os = require('os');
 
 import { log } from './../logger';
 
-// ReportParser allow SensorDevice to be independent on the specific
+// ReportParser allow USBController to be independent on the specific
 // Temper device connected.
 export interface ReportParser {
     initReport(): number[][];

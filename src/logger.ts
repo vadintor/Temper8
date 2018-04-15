@@ -2,11 +2,11 @@ import * as winston from 'winston';
 const transports = {
     file: new winston.transports.File({ filename: 'itemper-error.log', level: 'error' }),
     console: new (winston.transports.Console)(),
-}
+};
 
 export const log =  new winston.Logger ({
     exitOnError: false,
-    level: 'info',
+    level: 'error',
     transports: [
         transports.file,
         transports.console,
