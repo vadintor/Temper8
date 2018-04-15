@@ -5,7 +5,7 @@ import { Temper8 } from './temper-8';
 import { TemperGold } from './temper-gold';
 import { USBController } from './usb-controller';
 
-import { SensorLogger } from './../services/sensor-logger';
+import { SensorLog } from './sensor-log';
 
 import { log } from './../logger';
 
@@ -38,9 +38,9 @@ export function isTemper8(device: HID.Device): boolean {
 }
 export class USBSensorManager {
     private static devices: USBController[] = [];
-    private static loggers: SensorLogger[] = [];
+    private static loggers: SensorLog[] = [];
 
-    public static getLoggers(): SensorLogger[] {
+    public static getLoggers(): SensorLog[] {
         return USBSensorManager.loggers;
     }
 
@@ -58,7 +58,7 @@ export class USBSensorManager {
                         resolution: 1,
                         maxSampleRate: 1,
                     };
-                const logger = new SensorLogger(attr, temperGold);
+                const logger = new SensorLog(attr, temperGold);
                 logger.startLogging();
                 USBSensorManager.loggers.push(logger);
                 const temperGoldDevice = new USBController (hid, temperGold);
@@ -76,7 +76,7 @@ export class USBSensorManager {
                     resolution: 1,
                     maxSampleRate: 0.2,
                 };
-                const logger = new SensorLogger(attr, temper8);
+                const logger = new SensorLog(attr, temper8);
                 logger.startLogging();
                 USBSensorManager.loggers.push(logger);
                 const temper8Device = new USBController (hid, temper8);

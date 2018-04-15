@@ -5,7 +5,7 @@ import { SensorState } from '../models/sensor-state';
 
 import { log } from './../logger';
 
-export class SensorLogger {
+export class SensorLog {
     private attr: SensorAttributes;
     private timestamp: number = 0;
     private state: SensorState;
