@@ -10,8 +10,8 @@ router.post('/', (_req: express.Request, res: express.Response) => {
     res.setHeader('Content-Type', 'application/json');
     const level = _req.query.level;
     if (level && (level === 'debug' || level === 'info' || level === 'warn' || level === 'error')) {
-        setLevel(level);
         log.info('/debug log level:', level);
+        setLevel(level);
         res.status(200).send({level});
     } else {
         log.info('/debug log level not set:', level);
