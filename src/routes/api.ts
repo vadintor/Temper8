@@ -3,9 +3,6 @@
  */
 import express = require('express');
 const router: express.Router = express.Router();
-import { SensorLogger } from '../services/sensor-logger';
-
-import { SensorState } from '../models/sensor-state';
 
 import { USBSensorManager } from '../models/usb-sensor-manager';
 
