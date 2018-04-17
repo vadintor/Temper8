@@ -11,7 +11,7 @@ export class SensorLog {
     private state: SensorState;
 
     private logging: boolean = false;
-    private MAX_TIME_DIFF = 60_000;
+    private MAX_TIME_DIFF = 5*60_000;
     private axios: AxiosInstance;
 
     constructor(attr: SensorAttributes, state: SensorState) {

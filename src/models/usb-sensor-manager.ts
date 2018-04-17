@@ -90,7 +90,7 @@ export class USBSensorManager {
         if (USBSensorManager.devices.length === 0) {
             log.error('Found 0 devices');
         } else {
-            log.info('Found %d devices', USBSensorManager.devices.length);
+            log.info('Found %d device(s)', USBSensorManager.devices.length);
         }
 
     }
