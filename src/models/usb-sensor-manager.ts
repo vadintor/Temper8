@@ -46,7 +46,7 @@ export class USBSensorManager {
 
     public static factory(): void {
         HID.devices().find(device => {
-            log.info('device: ', JSON.stringify(device));
+            log.info('device: ', device);
             if (isTemperGold(device) && device.path !== undefined) {
                 log.info('Sensor TEMPer Gold found');
                 const hid = new HID.HID(device.path);
@@ -95,4 +95,11 @@ export class USBSensorManager {
 
     }
 
+    public static setPollingInterval(ms: number) {
+        log.debug('USBSensorManager.setPollingInterval:', ms);
+        for (const device of USBSensorManager.devices) {
+            log.debug('USBSensorManager.setPollingInterval - device');
+            device.setPollingInterval(ms);
+        }
+    }
 }

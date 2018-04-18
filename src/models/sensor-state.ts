@@ -45,7 +45,7 @@ export class SensorState {
     private updateSensorDataListeners(sensorData: SensorData, previousData: SensorData) {
         log.debug('updateSensorDataListeners');
         for (const publish of this.sensorDataListeners) {
-            log.debug('updateSensorDataListeners, filter:', JSON.stringify(publish.filter));
+            log.debug('updateSensorDataListeners, filter:', publish.filter);
             if (!publish.filter) {
                 log.info('updateSensorDataListeners, no filter found');
                 publish.listener(sensorData);
@@ -69,7 +69,7 @@ export class SensorState {
             if (sensor) {
                 sensor.s.setValue(temperature);
                 this.updateSensorDataListeners(sensor.s, sensor.p);
-                log.info('SensorState.updateSensor, port: %d, temperature %d', port, temperature);
+                log.debug('SensorState.updateSensor, port: %d, temperature %d', port, temperature);
             } else {
                 log.error('*** SensorState.updateSensor, undefined, port: %d, temperature %d', port, temperature);
             }

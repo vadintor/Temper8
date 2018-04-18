@@ -18,8 +18,8 @@ router.get('/', (_req: express.Request, res: express.Response) => {
 
     if (sensorLogger && sensorLogger.getState()) {
         const sensorData = sensorLogger.getState().getSensorData();
-        log.debug('--- / get, state: ', JSON.stringify(sensorLogger.getState()));
-        log.debug('--- / get, data:', JSON.stringify(sensorData));
+        log.debug('--- / get, state: ', sensorLogger.getState());
+        log.debug('--- / get, data:',sensorData);
         Object.assign(data, sensorData);
     }
 

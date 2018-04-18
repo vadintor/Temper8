@@ -32,13 +32,13 @@ export class Temper8 extends SensorState implements ReportParser {
     public parseInput(data: number[]): number[] {
         try {
             if (this.matchUsedPorts(data)) {
-                log.debug('+++ Temper8.matchUsedPorts:', JSON.stringify(data));
+                log.debug('+++ Temper8.matchUsedPorts:', data);
                 const response = this.temperatureRequest(this.sensors[this.nextSensor].s.getPort());
                 this.nextSensor += 1;
                 return response;
 
             } else if (this.matchTemperature(data)) {
-                log.debug('+++ Temper8.matchTemperature:', JSON.stringify(data));
+                log.debug('+++ Temper8.matchTemperature:', data);
                 if (this.nextSensor < this.sensors.length) {
                     const response = this.temperatureRequest(this.sensors[this.nextSensor].s. getPort());
                     this.nextSensor += 1;
@@ -107,7 +107,7 @@ export class Temper8 extends SensorState implements ReportParser {
             && data[0] === 0x80
             && data[1] === 0x08
             && data[2] === 0x01) {
-            log.debug('+++ matchTemperature, data: %d', JSON.stringify(data));
+            log.debug('+++ matchTemperature, data: %d', data);
             const port: number = data[4];
             const msb: number = data[5];
             const lsb: number = data[6];

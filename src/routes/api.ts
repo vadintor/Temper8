@@ -17,9 +17,9 @@ router.get('/', (_req: express.Request, res: express.Response) => {
     res.setHeader('Content-Type', 'application/json');
     if (sensorLogger) {
         const sensorData = sensorLogger.getState().getSensorData();
-        log.debug('--- /api.get, state: ', JSON.stringify(sensorLogger.getState()));
+        log.debug('--- /api.get, state: ', sensorLogger.getState());
 
-        log.debug('--- /api.get, data:', JSON.stringify(sensorData));
+        log.debug('--- /api.get, data:', sensorData);
         res.send(JSON.stringify(sensorData));
 
     } else {

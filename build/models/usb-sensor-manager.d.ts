@@ -13,4 +13,5 @@ export declare class USBSensorManager {
     private static loggers;
     static getLoggers(): SensorLog[];
     static factory(): void;
+    static setPollingInterval(ms: number): void;
 }

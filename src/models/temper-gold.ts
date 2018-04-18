@@ -21,9 +21,9 @@ export class TemperGold extends SensorState implements ReportParser {
     // This function parses all input reports and check what to do
     public parseInput(data: number[]): number[] {
         try {
-            log.debug('--- TemperGold.parseInput:', JSON.stringify(data));
+            log.debug('--- TemperGold.parseInput:', data);
             if (!this.matchTemperature(data)) {
-                log.warning('*** no match: ', JSON.stringify(data));
+                log.warning('*** no match: ', data);
             }
         } catch (e) {
             console.log(e);
@@ -47,7 +47,7 @@ export class TemperGold extends SensorState implements ReportParser {
         if (data.length === 8
             && data[0] === 0x80
             && data[1] === 0x02) {
-            log.debug('+++ TemperGold.matchTemperature:', JSON.stringify(data));
+            log.debug('+++ TemperGold.matchTemperature:', data);
             const port = 0;
             const msb: number = data[2];
             const lsb: number = data[3];

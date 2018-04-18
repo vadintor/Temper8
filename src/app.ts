@@ -4,8 +4,8 @@ import * as http from 'http';
 import path = require('path');
 
 import route_api from './routes/api';
-import route_debug from './routes/debug';
 import route_index from './routes/index';
+import route_settings from './routes/settings';
 
 import { USBSensorManager } from './models/usb-sensor-manager';
 
@@ -27,11 +27,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', route_index);
 app.use('/api', route_api);
-app.use('/debug', route_debug);
+app.use('/settings', route_settings);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-    const err: Error = new Error('Not Found at server');
+    const err: any = new Error('Not Found at server');
     err['status'] = 404;
     next(err);
 });
@@ -51,7 +51,7 @@ if (app.get('env') === 'development') {
 }
 
 // production error handler
-// no stacktraces leaked to user
+// no stack traces leaked to user
 app.use((err: any, req: any, res: any, next: any) => {
     res.status(err.status || 500);
     res.render('error', {

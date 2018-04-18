@@ -82,7 +82,7 @@ export class USBController {
         }
     }
     private parseError(_error: any) {
-        log.error('parseError: ', JSON.stringify(_error));
+        log.error('parseError: ', _error);
     }
 
     // Helper functions to write reports to the device
@@ -96,9 +96,9 @@ export class USBController {
         for (let i = 0; i < 1; i++) {
             try {
                 this.hid.write(data);
-                log.debug('+++ USBController.writeReport', JSON.stringify(data));
+                log.debug('+++ USBController.writeReport', data);
             } catch (e) {
-                log.error('*** USBController.writeReport hid.write catch:&d', JSON.stringify(data));
+                log.error('*** USBController.writeReport hid.write catch:&d', data);
                 this.close();
             }
 

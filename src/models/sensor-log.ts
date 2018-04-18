@@ -15,7 +15,7 @@ export class SensorLog {
     private axios: AxiosInstance;
 
     constructor(attr: SensorAttributes, state: SensorState) {
-        log.debug('--- SensorStateLogger:', JSON.stringify(state));
+        log.debug('--- SensorStateLogger:', state);
         this.timestamp = Date.now();
         this.logging = false;
         this.attr = attr;
@@ -62,7 +62,8 @@ export class SensorLog {
             this.axios.post(url, sensorLog)
             .then (function(res) {
                 log.info('SensorLogger axios.post ' + url + ' ' + res.statusText +
-                    ' value: ' + JSON.stringify(sensorLog), ' ms: ', diff);
+                    ' res.data: ' + JSON.stringify(sensorLog) + ' ms: ' + diff +
+                    ' date: ' + new Date(data.timestamp()).toLocaleString());
             })
             .catch(function(e) {
                 log.error('catch error', e);
