@@ -92,7 +92,7 @@ export class SensorLog {
     }
 
     private onMonitor(data: SensorData): void {
-        console.log('onMonitor');
+        log.debug('SensorLog.onMonitor');
         const descr = { SN: this.attr.SN, port: data.getPort()};
         const samples = [{date: data.timestamp(), value: data.getValue()}];
         const sensorLog = { descr, samples };
