@@ -38,9 +38,10 @@ export class SensorLog {
             baseURL: 'https://test.itemper.io/api/v1/sensors',
             headers: {'Content-Type': 'application/json'},
           });
-        const wss = 'wss://://test.itemper.io/api/v1/primus';
+        const wsTestUrl = 'ws://itemper.vading.lan:3000/primus';
+        const wsDevUrl = 'ws://localhost:3000/primus';
 
-        this.socket = new Socket ('ws://localhost:3000/primus');
+        this.socket = new Socket (wsTestUrl);
         const self = this;
         this.socket.on('open', function() {
             self.open = true;
