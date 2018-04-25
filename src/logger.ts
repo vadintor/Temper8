@@ -6,7 +6,7 @@ const transports = {
 
 export const log =  new winston.Logger ({
     exitOnError: false,
-    level: 'debug',
+    level: 'info',
     transports: [
         transports.file,
         transports.console,

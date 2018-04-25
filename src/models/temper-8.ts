@@ -56,7 +56,7 @@ export class Temper8 extends SensorState implements ReportParser {
             } else if (this.matchCheck0D(data)) {
                 return [];
             } else if (this.matchCheckFF(data)) {
-                log.warning('*** Temper8.matchCheckFF: restart?');
+                log.error('*** Temper8.matchCheckFF: restart?');
                 // This indicates fault device
                 // Don't know whether there is a way to recover
                 // Maybe restarting the device is necessary.

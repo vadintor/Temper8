@@ -22,7 +22,7 @@ router.post('/', (_req: express.Request, res: express.Response) => {
             response.push({level});
             res.status(200);
         } else {
-            log.debug('/settings level not set:', level);
+            log.warn('/settings level not set:', level);
         }
     }
 
@@ -34,11 +34,11 @@ router.post('/', (_req: express.Request, res: express.Response) => {
                 const ms: number = 1000 * interval;
                 log.debug('/settings interval ms:', ms);
                 USBSensorManager.setPollingInterval(ms);
-                log.info('/settings interval set:', interval);
                 response.push({interval});
                 res.status(200);
+                log.info('/settings interval set:', interval);
             } else {
-                log.debug('/settings interval out of range:', _req.query.interval);
+                log.warn('/settings interval out of range:', _req.query.interval);
             }
         } catch(e) {
             log.debug('/settings interval not set:', _req.query.interval);

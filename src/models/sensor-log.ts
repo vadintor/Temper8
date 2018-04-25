@@ -5,6 +5,10 @@ import { SensorState } from '../models/sensor-state';
 
 import { log } from './../logger';
 
+import * as Primus from 'primus';
+
+const Socket: any = Primus.createSocket ( {transformer: 'uws'});
+
 export class SensorLog {
     private attr: SensorAttributes;
     private timestamp: number = 0;
@@ -13,6 +17,8 @@ export class SensorLog {
     private logging: boolean = false;
     private MAX_TIME_DIFF = 5*60_000;
     private axios: AxiosInstance;
+    private socket: any;
+    private open: boolean = false;
 
     constructor(attr: SensorAttributes, state: SensorState) {
         log.debug('--- SensorStateLogger:', state);
@@ -26,11 +32,23 @@ export class SensorLog {
             maxTimeDiff: this.MAX_TIME_DIFF};
 
         this.state.addSensorDataListener(this.onSensorDataReceived.bind(this), dataFilter);
+        this.state.addSensorDataListener(this.onMonitor.bind(this), undefined);
 
         this.axios = axios.create({
             baseURL: 'https://test.itemper.io/api/v1/sensors',
             headers: {'Content-Type': 'application/json'},
           });
+        const wss = 'wss://://test.itemper.io/api/v1/primus';
+
+        this.socket = new Socket ('ws://localhost:3000/primus');
+        const self = this;
+        this.socket.on('open', function() {
+            self.open = true;
+            console.log('Device.SensorLog connected to backend!');
+        });
+        this.socket.on('data', function(data: any) {
+            console.log('Data received from back-end');
+        });
     }
 
     public getAttr(): SensorAttributes {
@@ -68,6 +86,15 @@ export class SensorLog {
             .catch(function(e) {
                 log.error('catch error', e);
             });
+
         }
+    }
+
+    private onMonitor(data: SensorData): void {
+        console.log('onMonitor');
+        const descr = { SN: this.attr.SN, port: data.getPort()};
+        const samples = [{date: data.timestamp(), value: data.getValue()}];
+        const sensorLog = { descr, samples };
+        this.socket.write(sensorLog);
     }
 }

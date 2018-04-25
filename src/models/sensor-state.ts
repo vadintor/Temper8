@@ -1,5 +1,7 @@
 import { log } from './../logger';
-import { SensorData } from './sensor-data';export interface FilterConfig {
+import { SensorData } from './sensor-data';
+
+export interface FilterConfig {
     resolution?: number;
     maxTimeDiff?: number;
     ports?: number[];
@@ -24,7 +26,7 @@ export class SensorState {
         }
         return sensorData.slice();
     }
-    public addSensorDataListener(onSensorDataReceived: (sensor: SensorData) => void, filter: FilterConfig = {}): void {
+    public addSensorDataListener(onSensorDataReceived: (sensor: SensorData) => void, filter?: FilterConfig): void {
         this.sensorDataListeners.push ({listener: onSensorDataReceived, filter});
     }
     private round(data: SensorData, resolution: number): number {
@@ -39,7 +41,7 @@ export class SensorState {
 
     private timeDiff(sensorData: SensorData, previousData: SensorData, maxTimeDiff: number): boolean {
         const timeDiff = sensorData.timestamp() - previousData.timestamp();
-        log.info('Time diff: ', timeDiff);
+        log.debug('Time diff: ', timeDiff);
         return timeDiff > maxTimeDiff;
     }
     private updateSensorDataListeners(sensorData: SensorData, previousData: SensorData) {
@@ -47,17 +49,17 @@ export class SensorState {
         for (const publish of this.sensorDataListeners) {
             log.debug('updateSensorDataListeners, filter:', publish.filter);
             if (!publish.filter) {
-                log.info('updateSensorDataListeners, no filter found');
+                log.debug('updateSensorDataListeners, no filter found');
                 publish.listener(sensorData);
                 Object.assign(previousData, sensorData);
             } else if (publish.filter.resolution &&
                 this.valueDiff(sensorData, previousData, publish.filter.resolution) && sensorData.valid()) {
-                log.info('updateSensorDataListeners, publish.filter.resolution');
+                log.debug('updateSensorDataListeners, publish.filter.resolution');
                 publish.listener(sensorData);
                 Object.assign(previousData, sensorData);
             } else if (publish.filter.maxTimeDiff && sensorData.valid() &&
                 this.timeDiff(sensorData, previousData, publish.filter.maxTimeDiff)) {
-                log.info('updateSensorDataListeners, publish.filter.maxTimeDiff');
+                log.debug('updateSensorDataListeners, publish.filter.maxTimeDiff');
                 publish.listener(sensorData);
                 Object.assign(previousData, sensorData);
             }

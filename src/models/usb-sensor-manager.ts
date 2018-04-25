@@ -46,9 +46,9 @@ export class USBSensorManager {
 
     public static factory(): void {
         HID.devices().find(device => {
-            log.info('device: ', device);
+            log.debug('device: ', device);
             if (isTemperGold(device) && device.path !== undefined) {
-                log.info('Sensor TEMPer Gold found');
+                log.info('Sensor TEMPer Gold found: ', device);
                 const hid = new HID.HID(device.path);
                 const temperGold = new TemperGold();
                 const attr = {
@@ -66,7 +66,7 @@ export class USBSensorManager {
                 USBSensorManager.devices.push(temperGoldDevice);
                 // return true;
             } else if (isTemper8(device) && device.path !== undefined) {
-                log.info('Sensor TEMPer 8 found');
+                log.info('Sensor TEMPer 8 found: ', device);
                 const hid = new HID.HID(device.path);
                 const temper8 = new Temper8();
                 const attr = {

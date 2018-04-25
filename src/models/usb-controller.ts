@@ -35,7 +35,7 @@ export class USBController {
             this.hid.on('error', this.parseError.bind(this));
             this.setPollingInterval(this.POLL_INTERVAL);
             this.deviceInitialized = true;
-            log.debug('+++ USBController.initializeDevice');
+            log.info('USBController.initializeDevice done');
         }
     }
 
@@ -53,6 +53,7 @@ export class USBController {
         this.POLL_INTERVAL = ms;
         clearInterval(this.interval);
         this.interval = setInterval(this.pollSensors.bind(this), this.POLL_INTERVAL);
+        log.info('USB Controller.setPollingInterval: %d', ms);
     }
 
     // This is were all starts when set interval time expires

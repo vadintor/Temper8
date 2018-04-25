@@ -7,10 +7,13 @@ export declare class SensorLog {
     private logging;
     private MAX_TIME_DIFF;
     private axios;
+    private socket;
+    private open;
     constructor(attr: SensorAttributes, state: SensorState);
     getAttr(): SensorAttributes;
     getState(): SensorState;
     startLogging(): void;
     stopLogging(): void;
     private onSensorDataReceived(data);
+    private onMonitor(data);
 }
