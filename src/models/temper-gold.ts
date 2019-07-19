@@ -48,11 +48,12 @@ export class TemperGold extends SensorState implements ReportParser {
             && data[0] === 0x80
             && data[1] === 0x02) {
             log.debug('+++ TemperGold.matchTemperature:', data);
-            const port = 0;
+
             const msb: number = data[2];
             const lsb: number = data[3];
             const temperatureCelsius: number = this.GetTemperature(msb, lsb);
 
+            const port = 0;
             this.updateSensor(port, temperatureCelsius);
             return true;
         } else {
@@ -76,9 +77,9 @@ export class TemperGold extends SensorState implements ReportParser {
             result = -1;
         }
 
-        // The east significant bit is 2^-8 so we need to divide by 256 to get absolute temperature in Celsius
-        // Then we multiply in the result to get whether the temperature is below zero degrees and convert to
-        // floating point
+        // The least significant bit is 2^-8 so we need to divide by 256 to get absolute temperature in Celsius
+        // Then we multiply in the result to get whether the temperature is below zero degrees. We convert to
+        // floating point in the process.
         temperature = result * reading / 256.0;
 
         return temperature;

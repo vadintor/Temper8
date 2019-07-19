@@ -1,28 +1,22 @@
 import axios, { AxiosInstance } from 'axios';
 import { SensorAttributes } from '../models/sensor-attributes';
 import { SensorData } from '../models/sensor-data';
-import { FilterConfig, SensorState } from '../models/sensor-state';
+import { SensorState } from '../models/sensor-state';
 
 import { log } from './../logger';
 
 import * as Primus from 'primus';
 
 const Socket: any = Primus.createSocket ( {transformer: 'uws'});
-export interface LogginService {
 
-}
 export class SensorLog {
     private attr: SensorAttributes;
+    private timestamp: number = 0;
     private state: SensorState;
 
-    private timestamp: number = 0;
     private logging: boolean = false;
     private MAX_TIME_DIFF = 5*60_000;
-    private dataFilter: FilterConfig= {
-        resolution: this.attr.resolution,
-        maxTimeDiff: this.MAX_TIME_DIFF};
-
-        private axios: AxiosInstance;
+    private axios: AxiosInstance;
     private socket: any;
     private open: boolean = false;
 
@@ -33,8 +27,12 @@ export class SensorLog {
         this.attr = attr;
         this.state = state;
 
-        this.state.addSensorDataListener(this.onSensorDataReceived.bind(this), this.dataFilter);
-        this.state.addSensorDataListener(this.onMonitor.bind(this));
+        const dataFilter = {
+            resolution: this.attr.resolution,
+            maxTimeDiff: this.MAX_TIME_DIFF};
+
+        this.state.addSensorDataListener(this.onSensorDataReceived.bind(this), dataFilter);
+        this.state.addSensorDataListener(this.onMonitor.bind(this), undefined);
 
         this.axios = axios.create({
             baseURL: 'https://test.itemper.io/api/v1/sensors',
@@ -60,19 +58,8 @@ export class SensorLog {
     public getState(): SensorState {
         return this.state;
     }
-
-    public getFilter(): FilterConfig {
-        return this.dataFilter;
-    }
-    public islogging(): boolean {
-        return this.logging;
-    }
-    public startLogging(filter?: FilterConfig): void {
+    public startLogging(): void {
         log.debug('--- SensorStateLogger.startLogging');
-        if (filter) {
-            this.dataFilter = filter;
-        }
-
         this.logging = true;
     }
 
