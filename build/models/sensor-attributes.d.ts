@@ -4,11 +4,12 @@ export declare enum SensorCategory {
     RelativeHumidity = 2,
     WindSpeed = 3
 }
-export interface SensorAttributes {
+export declare class SensorAttributes {
     SN: string;
     model: string;
     category: SensorCategory;
     accuracy: number;
     resolution: number;
     maxSampleRate: number;
+    constructor(SN: string, model: string, category: SensorCategory, accuracy: number, resolution: number, maxSampleRate: number);
 }

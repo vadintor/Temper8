@@ -66,7 +66,7 @@ export class USBSensorManager {
                 log.info('Sensor TEMPer 8 found: ', device);
                 const hid = new HID.HID(device.path);
                 const temper8 = new Temper8();
-                const attr = {
+                const att = {
                     SN: 'Temper8',
                     model: 'Temper 8',
                     category: SensorCategory.Temperature,
@@ -74,6 +74,11 @@ export class USBSensorManager {
                     resolution: 1,
                     maxSampleRate: 0.2,
                 };
+                const attr = new SensorAttributes (
+                    'Temper8',
+                    'Tempe',
+                    SensorCategory.Temperature,
+                    0.5, 1, 0.2);
                 const logger = new SensorLog(attr, temper8);
                 logger.startLogging();
                 USBSensorManager.loggers.push(logger);
