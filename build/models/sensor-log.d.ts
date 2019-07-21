@@ -12,6 +12,8 @@ export declare class SensorLog {
     private axios;
     private socket;
     private open;
+    private connectionString;
+    private client;
     constructor(attr: SensorAttributes, state: SensorState);
     getAttr(): SensorAttributes;
     getState(): SensorState;
@@ -19,6 +21,7 @@ export declare class SensorLog {
     islogging(): boolean;
     startLogging(filter?: FilterConfig): void;
     stopLogging(): void;
+    private printResultFor;
     private onSensorDataReceived;
     private onMonitor;
 }

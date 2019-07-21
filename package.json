@@ -19,7 +19,7 @@
         "url": "https://github.com/vadintor/iTemper-Device"
     },
     "scripts": {
-        "start": "node build/app.js",
+        "start": "node src/app.js",
         "build": "gulp build",
         "watch": "gulp watch",
         "lint": "tslint -t stylish -c tslint.json \"src/**/*.ts\"",

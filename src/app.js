@@ -23,6 +23,12 @@ app.use('/api', api_1["default"]);
 app.use('/settings', settings_1["default"]);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
+    if (req) {
+        // To be implemented
+    }
+    if (res) {
+        // To be implemented
+    }
     var err = new Error('Not Found at server');
     err['status'] = 404;
     next(err);
@@ -37,6 +43,12 @@ if (app.get('env') === 'development') {
             message: err.message,
             error: err
         });
+        if (next) {
+            // to be implemented
+        }
+        if (req) {
+            // to be implemented
+        }
     });
 }
 // production error handler
@@ -47,6 +59,12 @@ app.use(function (err, req, res, next) {
         message: err.message,
         error: {}
     });
+    if (next) {
+        // to be implemented
+    }
+    if (req) {
+        // to be implemented
+    }
 });
 app.set('port', process.env.PORT || 80);
 var server = app.listen(app.get('port'), function () {

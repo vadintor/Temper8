@@ -39,20 +39,15 @@ var USBSensorManager = /** @class */ (function () {
         return USBSensorManager.loggers;
     };
     USBSensorManager.factory = function () {
+        logger_1.log.info('Application started: ' + new Date().toISOString());
         HID.devices().find(function (device) {
             logger_1.log.debug('device: ', device);
             if (isTemperGold(device) && device.path !== undefined) {
                 logger_1.log.info('Sensor TEMPer Gold found: ', device);
                 var hid = new HID.HID(device.path);
                 var temperGold = new temper_gold_1.TemperGold();
-                var attr = {
-                    SN: 'TGold',
-                    model: 'Temper Gold',
-                    category: sensor_attributes_1.SensorCategory.Temperature,
-                    accuracy: 2.0,
-                    resolution: 1,
-                    maxSampleRate: 1
-                };
+                var attr = new sensor_attributes_1.SensorAttributes('TGold', 'Temper Gold', sensor_attributes_1.SensorCategory.Temperature, 2.0, 1, 1);
+                logger_1.log.info('factory(): ' + JSON.stringify(attr));
                 var logger = new sensor_log_1.SensorLog(attr, temperGold);
                 logger.startLogging();
                 USBSensorManager.loggers.push(logger);
@@ -64,14 +59,7 @@ var USBSensorManager = /** @class */ (function () {
                 logger_1.log.info('Sensor TEMPer 8 found: ', device);
                 var hid = new HID.HID(device.path);
                 var temper8 = new temper_8_1.Temper8();
-                var attr = {
-                    SN: 'Temper8',
-                    model: 'Temper 8',
-                    category: sensor_attributes_1.SensorCategory.Temperature,
-                    accuracy: 0.5,
-                    resolution: 1,
-                    maxSampleRate: 0.2
-                };
+                var attr = new sensor_attributes_1.SensorAttributes('Temper8', 'Tempe', sensor_attributes_1.SensorCategory.Temperature, 0.5, 1, 0.2);
                 var logger = new sensor_log_1.SensorLog(attr, temper8);
                 logger.startLogging();
                 USBSensorManager.loggers.push(logger);

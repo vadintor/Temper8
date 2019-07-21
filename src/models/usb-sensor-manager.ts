@@ -45,6 +45,7 @@ export class USBSensorManager {
     }
 
     public static factory(): void {
+        log.info ('Application started: ' + new Date().toISOString());
         HID.devices().find(device => {
             log.debug('device: ', device);
             if (isTemperGold(device) && device.path !== undefined) {
@@ -56,7 +57,9 @@ export class USBSensorManager {
                         'Temper Gold',
                         SensorCategory.Temperature,
                         2.0, 1, 1);
+                log.info('factory(): ' + JSON.stringify(attr));
                 const logger = new SensorLog(attr, temperGold);
+
                 logger.startLogging();
                 USBSensorManager.loggers.push(logger);
                 const temperGoldDevice = new USBController (hid, temperGold);
@@ -66,14 +69,6 @@ export class USBSensorManager {
                 log.info('Sensor TEMPer 8 found: ', device);
                 const hid = new HID.HID(device.path);
                 const temper8 = new Temper8();
-                const att = {
-                    SN: 'Temper8',
-                    model: 'Temper 8',
-                    category: SensorCategory.Temperature,
-                    accuracy: 0.5,
-                    resolution: 1,
-                    maxSampleRate: 0.2,
-                };
                 const attr = new SensorAttributes (
                     'Temper8',
                     'Tempe',
