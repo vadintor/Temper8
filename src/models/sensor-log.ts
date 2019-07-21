@@ -8,7 +8,7 @@ import { log } from './../logger';
 import * as Primus from 'primus';
 
 const Socket: any = Primus.createSocket ( {transformer: 'uws'});
-export interface LogginService {
+export interface LoggingService {
 
 }
 export class SensorLog {
@@ -32,7 +32,9 @@ export class SensorLog {
         this.logging = false;
         this.attr = attr;
         this.state = state;
-
+        if (this.open) {
+            this.open = true;
+        }
         this.state.addSensorDataListener(this.onSensorDataReceived.bind(this), this.dataFilter);
         this.state.addSensorDataListener(this.onMonitor.bind(this));
 
@@ -41,16 +43,16 @@ export class SensorLog {
             headers: {'Content-Type': 'application/json'},
           });
         const wsTestUrl = 'ws://itemper.vading.lan:3000/primus';
-        const wsDevUrl = 'ws://localhost:3000/primus';
+        // const wsDevUrl = 'ws://localhost:3000/primus';
 
         this.socket = new Socket (wsTestUrl);
         const self = this;
         this.socket.on('open', function() {
             self.open = true;
-            console.log('Device.SensorLog connected to backend!');
+            log.info('--- socket.on: Device.SensorLog connected to backend!');
         });
         this.socket.on('data', function(data: any) {
-            console.log('Data received from back-end');
+            log.info('--- socket.on: Data received from back-end' + data);
         });
     }
 

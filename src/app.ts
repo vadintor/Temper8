@@ -31,6 +31,12 @@ app.use('/settings', route_settings);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
+    if (req) {
+        // To be implemented
+    }
+    if (res) {
+        // To be implemented
+    }
     const err: any = new Error('Not Found at server');
     err['status'] = 404;
     next(err);
@@ -47,6 +53,12 @@ if (app.get('env') === 'development') {
         res.render('error', {
             message: err.message,
             error: err});
+        if (next) {
+            // to be implemented
+        }
+        if (req) {
+            // to be implemented
+        }
     });
 }
 
@@ -57,6 +69,12 @@ app.use((err: any, req: any, res: any, next: any) => {
     res.render('error', {
         message: err.message,
         error: {}});
+    if (next) {
+        // to be implemented
+    }
+    if (req) {
+        // to be implemented
+    }
 });
 
 app.set('port', process.env.PORT || 80);

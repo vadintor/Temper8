@@ -1,5 +1,5 @@
 import HID = require('node-hid');
-import { SensorCategory } from './sensor-attributes';
+import { SensorAttributes, SensorCategory } from './sensor-attributes';
 
 import { Temper8 } from './temper-8';
 import { TemperGold } from './temper-gold';
@@ -51,14 +51,11 @@ export class USBSensorManager {
                 log.info('Sensor TEMPer Gold found: ', device);
                 const hid = new HID.HID(device.path);
                 const temperGold = new TemperGold();
-                const attr = {
-                        SN: 'TGold',
-                        model: 'Temper Gold',
-                        category: SensorCategory.Temperature,
-                        accuracy: 2.0,
-                        resolution: 1,
-                        maxSampleRate: 1,
-                    };
+                const attr = new SensorAttributes (
+                        'TGold',
+                        'Temper Gold',
+                        SensorCategory.Temperature,
+                        2.0, 1, 1);
                 const logger = new SensorLog(attr, temperGold);
                 logger.startLogging();
                 USBSensorManager.loggers.push(logger);

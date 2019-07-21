@@ -39,7 +39,9 @@ export class SensorLog {
         this.logging = false;
         this.attr = attr;
         this.state = state;
-
+        if (this.open) {
+            this.open = true;
+        }
         const dataFilter = {
             resolution: this.attr.resolution,
             maxTimeDiff: this.MAX_TIME_DIFF};
@@ -54,7 +56,7 @@ export class SensorLog {
 
           // Web sockets
         const wsTestUrl = 'ws://itemper.vading.lan:3000/primus';
-        const wsDevUrl = 'ws://localhost:3000/primus';
+        // const wsDevUrl = 'ws://localhost:3000/primus';
 
         this.socket = new Socket (wsTestUrl);
         const self = this;
