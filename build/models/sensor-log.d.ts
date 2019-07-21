@@ -1,6 +1,6 @@
 import { SensorAttributes } from '../models/sensor-attributes';
 import { FilterConfig, SensorState } from '../models/sensor-state';
-export interface LogginService {
+export interface LoggingService {
 }
 export declare class SensorLog {
     private attr;
