@@ -13,8 +13,8 @@ export declare class USBController {
     initializeDevice(): void;
     close(): void;
     setPollingInterval(ms: number): void;
-    private pollSensors();
-    private parseInput(data);
-    private parseError(_error);
-    private writeReport(data);
+    private pollSensors;
+    private parseInput;
+    private parseError;
+    private writeReport;
 }

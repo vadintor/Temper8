@@ -5,7 +5,7 @@ export interface FilterConfig {
     ports?: number[];
 }
 export interface SensorDataListener {
-    listener: (sensor: SensorData) => void;
+    publish: (sensor: SensorData) => void;
     filter?: FilterConfig;
 }
 export declare class Sensor {
@@ -17,10 +17,11 @@ export declare class SensorState {
     protected sensorDataListeners: SensorDataListener[];
     getSensorData(): SensorData[];
     addSensorDataListener(onSensorDataReceived: (sensor: SensorData) => void, filter?: FilterConfig): void;
-    private round(data, resolution);
-    private valueDiff(sensorData, previousData, resolution);
-    private timeDiff(sensorData, previousData, maxTimeDiff);
-    private updateSensorDataListeners(sensorData, previousData);
+    private round;
+    private valueDiff;
+    private timeDiff;
+    private filterPort;
+    private updateSensorDataListeners;
     protected updateSensor(port: number, temperature: number): void;
     protected connectSensors(total: number, used: number): void;
 }

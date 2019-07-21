@@ -1,24 +1,22 @@
 import { SensorAttributes } from '../models/sensor-attributes';
-import { FilterConfig, SensorState } from '../models/sensor-state';
-export interface LogginService {
-}
+import { SensorState } from '../models/sensor-state';
 export declare class SensorLog {
     private attr;
-    private state;
     private timestamp;
+    private state;
     private logging;
     private MAX_TIME_DIFF;
-    private dataFilter;
     private axios;
     private socket;
     private open;
+    private connectionString;
+    private client;
     constructor(attr: SensorAttributes, state: SensorState);
     getAttr(): SensorAttributes;
     getState(): SensorState;
-    getFilter(): FilterConfig;
-    islogging(): boolean;
-    startLogging(filter?: FilterConfig): void;
+    startLogging(): void;
     stopLogging(): void;
+    private printResultFor;
     private onSensorDataReceived;
     private onMonitor;
 }
