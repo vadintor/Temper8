@@ -20,7 +20,7 @@ export class SensorLog {
     private state: SensorState;
 
     private logging: boolean = false;
-    private MAX_TIME_DIFF = 5*60_000;
+    private MAX_TIME_DIFF = 20*60_000;
     private axios: AxiosInstance;
     private socket: any;
     private open: boolean = false;
@@ -60,7 +60,7 @@ export class SensorLog {
 
         this.socket = new Websocket (wsTestUrl);
         const self = this;
-        this.socket.on('open', function() {
+        this.socket.on('open', (): void => {
             self.open = true;
             log.info('Device.SensorLog connected to backend!');
         });
@@ -123,7 +123,7 @@ export class SensorLog {
                     ' date: ' + new Date(data.timestamp()).toISOString());
             })
             .catch(function(e) {
-                log.error('catch error', e);
+                log.error('catch error: ', JSON.stringify(e));
             });
 
             // AZURE IOT
@@ -139,7 +139,7 @@ export class SensorLog {
         const samples = [{date: data.timestamp(), value: data.getValue()}];
         const sensorLog = { descr, samples };
         if (this.socket) {
-            this.socket.write(sensorLog);
+            this.socket.send(sensorLog);
         }
 
     }

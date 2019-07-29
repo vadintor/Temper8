@@ -62,12 +62,13 @@ export class SensorLog {
         this.socket = new Websocket (wsTestUrl, { origin: wsOrigin});
         const self = this;
 
-        this.socket.on('open', function() {
+        this.socket.on('open', (ws: Websocket) => {
             self.open = true;
+            this.socket = ws;
             log.info('--- socket.on: Device.SensorLog connected to backend!');
         });
-        this.socket.on('nessage', function(data: any) {
-            log.info('--- socket.on: message received from back-end' + data);
+        this.socket.on('message', (data: Websocket.Data): void => {
+            log.info('--- socket.on: message received from back-end' + JSON.stringify(data));
         });
 
         this.socket.on('error', (ws: WebSocket, err: Error): void => {
@@ -151,6 +152,6 @@ export class SensorLog {
         const descr = { SN: this.attr.SN, port: data.getPort()};
         const samples = [{date: data.timestamp(), value: data.getValue()}];
         const sensorLog = { descr, samples };
-        this.socket.write(sensorLog);
+        this.socket.send(sensorLog);
     }
 }
