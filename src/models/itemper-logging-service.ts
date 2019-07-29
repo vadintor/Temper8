@@ -55,8 +55,8 @@ export class SensorLog {
           });
 
           // Web sockets
-        const wsTestUrl = 'ws://itemper.vading.lan:3000/primus';
-        // const wsDevUrl = 'ws://localhost:3000/primus';
+        const wsTestUrl = 'wss://test.itemper.io/ws';
+        // const wsDevUrl = 'ws://localhost:3000/ws';
 
         this.socket = new Socket (wsTestUrl);
         const self = this;
@@ -116,7 +116,7 @@ export class SensorLog {
             .then (function(res) {
                 log.info('SensorLogger axios.post ' + url + ' ' + res.statusText +
                     ' res.data: ' + JSON.stringify(sensorLog) + ' ms: ' + diff +
-                    ' date: ' + new Date(data.timestamp()).toLocaleString());
+                    ' date: ' + new Date(data.timestamp()).toISOString());
             })
             .catch(function(e) {
                 log.error('catch error', e);
@@ -134,6 +134,9 @@ export class SensorLog {
         const descr = { SN: this.attr.SN, port: data.getPort()};
         const samples = [{date: data.timestamp(), value: data.getValue()}];
         const sensorLog = { descr, samples };
-        this.socket.write(sensorLog);
+        if (this.socket) {
+            this.socket.write(sensorLog);
+        }
+
     }
 }
