@@ -38,8 +38,9 @@ export class SensorLog {
     private client: Client;
 
     private openSocket(): Websocket {
-        const wsTestUrl = 'wss://test.itemper.io/ws';
-        const wsOrigin = 'https://itemper.io';
+        // const wsTestUrl = 'wss://test.itemper.io/ws';
+        const wsTestUrl = 'ws://precision.vading.lan:3000/ws';
+        const wsOrigin = 'http://vading.lan';
         const socket = new Websocket (wsTestUrl, { origin: wsOrigin});
 
         socket.on('open', () => {
