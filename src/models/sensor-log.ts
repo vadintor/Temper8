@@ -5,14 +5,15 @@ import { FilterConfig, SensorState } from '../models/sensor-state';
 
 import { log } from './../logger';
 
-import * as Primus from 'primus';
+import * as Websocket from 'isomorphic-ws';
 
 // Import Azure
 
 import { Client, Message } from 'azure-iot-device';
 import { Mqtt } from 'azure-iot-device-mqtt';
 
-const Socket: any = Primus.createSocket ();
+
+
 export interface LoggingService {
 
 }
@@ -28,6 +29,7 @@ export class SensorLog {
         maxTimeDiff: this.MAX_TIME_DIFF};
 
         private axios: AxiosInstance;
+
     private socket: any;
     private open: boolean = false;
 
@@ -54,17 +56,23 @@ export class SensorLog {
             baseURL: 'https://test.itemper.io/api/v1/sensors',
             headers: {'Content-Type': 'application/json'},
           });
-        const wsTestUrl = 'ws://itemper.vading.lan:3000/primus';
-        // const wsDevUrl = 'ws://localhost:3000/primus';
 
-        this.socket = new Socket (wsTestUrl);
+        const wsTestUrl = 'wss://test.itemper.io/ws';
+        const wsOrigin = 'https://itemper.io';
+        this.socket = new Websocket (wsTestUrl, { origin: wsOrigin});
         const self = this;
+
         this.socket.on('open', function() {
             self.open = true;
             log.info('--- socket.on: Device.SensorLog connected to backend!');
         });
-        this.socket.on('data', function(data: any) {
-            log.info('--- socket.on: Data received from back-end' + data);
+        this.socket.on('nessage', function(data: any) {
+            log.info('--- socket.on: message received from back-end' + data);
+        });
+
+        this.socket.on('error', (ws: WebSocket, err: Error): void => {
+            log.error('--- socket.on: error' + JSON.stringify(err));
+            ws.close();
         });
 
         // AZURE IOT

@@ -5,14 +5,14 @@ import { SensorState } from '../models/sensor-state';
 
 import { log } from './../logger';
 
-import * as Primus from 'primus';
-
 // Import Azure
 
 import { Client, Message } from 'azure-iot-device';
 import { Mqtt } from 'azure-iot-device-mqtt';
 
-const Socket: any = Primus.createSocket ( {transformer: 'uws'});
+
+// Websocket
+import * as Websocket from 'isomorphic-ws';
 
 export class SensorLog {
     private attr: SensorAttributes;
@@ -58,7 +58,7 @@ export class SensorLog {
         const wsTestUrl = 'wss://test.itemper.io/ws';
         // const wsDevUrl = 'ws://localhost:3000/ws';
 
-        this.socket = new Socket (wsTestUrl);
+        this.socket = new Websocket (wsTestUrl);
         const self = this;
         this.socket.on('open', function() {
             self.open = true;
@@ -68,6 +68,10 @@ export class SensorLog {
             log.info('Data received from back-end: ' + data);
         });
 
+        this.socket.on('error', (ws: WebSocket, err: Error): void => {
+            log.error('--- socket.on: error' + JSON.stringify(err));
+            ws.close();
+        });
         // AZURE IOT
 
         this.connectionString = 'HostName=iothubiotlabs.azure-devices.net;DeviceId=twilight-sound-798cd80;' +
