@@ -72,7 +72,7 @@ export class SensorLog {
         });
 
         this.socket.on('error', (ws: WebSocket, err: Error): void => {
-            log.error('--- socket.on: error: ' + JSON.stringify(err));
+            log.error('--- socket.on: error: ' + JSON.stringify(err) + 'socket status: ' + ws.readyState);
         });
 
         // AZURE IOT
