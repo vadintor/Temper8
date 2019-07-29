@@ -20,10 +20,10 @@ router.get('/', (_req: express.Request, res: express.Response) => {
         log.debug('--- /api.get, state: ', sensorLogger.getState());
 
         log.debug('--- /api.get, data:', sensorData);
-        res.send(JSON.stringify(sensorData));
+        res.status(200).send(JSON.stringify(sensorData));
 
     } else {
-        res.send(JSON.stringify([]));
+        res.status(200).send(JSON.stringify([]));
         console.log('--- /api.get:', JSON.stringify([]));
     }
 
@@ -38,7 +38,7 @@ router.post('/debug', (_req: express.Request, res: express.Response) => {
         res.status(200).send({level});
     } else {
         log.info('/debug log level not set:', level);
-        res.sendStatus(404);
+        res.status(404).end();
     }
 
 });

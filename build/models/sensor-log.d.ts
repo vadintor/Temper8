@@ -11,9 +11,9 @@ export declare class SensorLog {
     private dataFilter;
     private axios;
     private socket;
-    private open;
     private connectionString;
     private client;
+    private openSocket;
     constructor(attr: SensorAttributes, state: SensorState);
     getAttr(): SensorAttributes;
     getState(): SensorState;
