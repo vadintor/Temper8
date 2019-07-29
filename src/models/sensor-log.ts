@@ -30,7 +30,7 @@ export class SensorLog {
 
         private axios: AxiosInstance;
 
-    private socket: any;
+    private socket: Websocket;
     private open: boolean = false;
 
     // Azure IOT
@@ -152,6 +152,11 @@ export class SensorLog {
         const descr = { SN: this.attr.SN, port: data.getPort()};
         const samples = [{date: data.timestamp(), value: data.getValue()}];
         const sensorLog = { descr, samples };
-        this.socket.send(sensorLog);
+        if (this.socket.OPEN) {
+            this.socket.send(sensorLog);
+            log.debug('onMonitor: sent sensor log');
+        } else {
+            log.debug('onMonitor: socket not open');
+        }
     }
 }
