@@ -12,7 +12,7 @@ import * as Primus from 'primus';
 import { Client, Message } from 'azure-iot-device';
 import { Mqtt } from 'azure-iot-device-mqtt';
 
-const Socket: any = Primus.createSocket ( {transformer: 'uws'});
+const Socket: any = Primus.createSocket ();
 export interface LoggingService {
 
 }
