@@ -28,16 +28,33 @@ export class SensorLog {
         resolution: 1,
         maxTimeDiff: this.MAX_TIME_DIFF};
 
-        private axios: AxiosInstance;
+    private axios: AxiosInstance;
 
     private socket: Websocket;
-    private open: boolean = false;
 
     // Azure IOT
     // tslint:disable-next-line:max-line-length
     private connectionString: string = '';
     private client: Client;
 
+    private openSocket(): Websocket {
+        const wsTestUrl = 'wss://test.itemper.io/ws';
+        const wsOrigin = 'https://itemper.io';
+        const socket = new Websocket (wsTestUrl, { origin: wsOrigin});
+
+        socket.on('open', () => {
+            log.info('--- socket.on: Device.SensorLog connected to backend!');
+        });
+        socket.on('message', (data: Websocket.Data): void => {
+            log.info('--- socket.on: message received from back-end' + JSON.stringify(data));
+        });
+
+        socket.on('error', (ws: WebSocket, err: Error): void => {
+            log.error('--- socket.on: error: ' + JSON.stringify(err) + 'socket status: ' + ws.readyState);
+        });
+
+        return socket;
+    }
 
     constructor(attr: SensorAttributes, state: SensorState) {
         log.debug('--- SensorStateLogger, state:', state);
@@ -46,9 +63,7 @@ export class SensorLog {
         this.logging = false;
         this.attr = attr;
         this.state = state;
-        if (this.open) {
-            this.open = true;
-        }
+
         this.state.addSensorDataListener(this.onSensorDataReceived.bind(this), this.dataFilter);
         this.state.addSensorDataListener(this.onMonitor.bind(this));
 
@@ -57,23 +72,7 @@ export class SensorLog {
             headers: {'Content-Type': 'application/json'},
           });
 
-        const wsTestUrl = 'wss://test.itemper.io/ws';
-        const wsOrigin = 'https://itemper.io';
-        this.socket = new Websocket (wsTestUrl, { origin: wsOrigin});
-        const self = this;
-
-        this.socket.on('open', (ws: Websocket) => {
-            self.open = true;
-            this.socket = ws;
-            log.info('--- socket.on: Device.SensorLog connected to backend!');
-        });
-        this.socket.on('message', (data: Websocket.Data): void => {
-            log.info('--- socket.on: message received from back-end' + JSON.stringify(data));
-        });
-
-        this.socket.on('error', (ws: WebSocket, err: Error): void => {
-            log.error('--- socket.on: error: ' + JSON.stringify(err) + 'socket status: ' + ws.readyState);
-        });
+        this.socket = this.openSocket();
 
         // AZURE IOT
         this.connectionString = 'HostName=iothubiotlabs.azure-devices.net;DeviceId=twilight-sound-798cd80;' +
@@ -151,11 +150,14 @@ export class SensorLog {
         const descr = { SN: this.attr.SN, port: data.getPort()};
         const samples = [{date: data.timestamp(), value: data.getValue()}];
         const sensorLog = { descr, samples };
-        if (this.socket.OPEN) {
+        if (this.socket && this.socket.readyState === Websocket.OPEN) {
             this.socket.send(sensorLog);
             log.debug('onMonitor: sent sensor log');
+        } else if (!this.socket || this.socket.readyState === Websocket.CLOSED) {
+            log.debug('onMonitor: socket closed, re-open');
+            this.socket = this.openSocket();
         } else {
-            log.debug('onMonitor: socket not open');
+            log.debug('onMonitor: socket not open yet');
         }
     }
 }
