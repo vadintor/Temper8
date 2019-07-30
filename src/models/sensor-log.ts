@@ -152,9 +152,9 @@ export class SensorLog {
         const samples = [{date: data.timestamp(), value: data.getValue()}];
         const sensorLog = { descr, samples };
         if (this.socket && this.socket.readyState === Websocket.OPEN) {
-            log.debug('onMonitor: sending sensor log');
-            this.socket.send(sensorLog);
-            log.debug('onMonitor: sent sensor log');
+            log.debug('onMonitor: sensor log: ' + JSON.stringify(sensorLog));
+            this.socket.send(JSON.stringify(sensorLog));
+            log.debug('onMonitor: sensor log sent');
         } else if (!this.socket || this.socket.readyState === Websocket.CLOSED) {
             log.debug('onMonitor: socket closed, re-open');
             this.socket = this.openSocket();
