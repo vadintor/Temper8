@@ -1,29 +1,32 @@
-import * as winston from 'winston';
-const transports = {
-    file: new winston.transports.File({ filename: 'itemper-error.log', level: 'error' }),
-    console: new (winston.transports.Console)(),
+import { HOSTNAME } from './config';
+
+import { createLogger, format, Logger, transports} from 'winston';
+const { combine, timestamp, printf, label } = format;
+
+const myFormat = printf(({ level, message, label, timestamp }) => {
+  return `${level}: ${timestamp} [${label}]: ${message}`;
+});
+
+import { CONSOLE_LEVEL, ERROR_LEVEL, ERROR_LOG_FILE } from './config';
+const trans = {
+    file: new transports.File({ filename: ERROR_LOG_FILE, level: ERROR_LEVEL }),
+    console: new (transports.Console)(),
 };
 
-export const log =  new winston.Logger ({
+export const log: Logger =  createLogger ({
+    format: combine (timestamp(), label ({ label: 'iTemper-device:' + HOSTNAME}), myFormat),
     exitOnError: false,
-    level: 'debug',
+    level: CONSOLE_LEVEL,
     transports: [
-        transports.file,
-        transports.console,
+        trans.file,
+        trans.console,
     ],
   });
 
 export function setLevel(level: string): void {
-    log.transports.console.level = level;
+    log.transports[1].level = level;
 }
-  // let v: winston.LoggerOptions;
-// if we're not in production then log to the `console` with the format:
-// `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
-//
-// if (process.env.NODE_ENV !== 'production') {
-// logger.add(new winston.transports.Console({
-//     format: winston.configure({
 
-//     })
-// }));
-// }
+export function getLevel(): string {
+  return log.transports[1].level + '';
+}

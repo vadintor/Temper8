@@ -1,25 +1,30 @@
 
+import { SensorAttributes, SensorCategory } from './sensor-attributes';
 import { SensorState } from './sensor-state';
-import { ReportParser } from './usb-controller';
+import { USBReporter } from './usb-device';
 
-import { log } from './../logger';
+import { log } from '../logger';
 
 
 // Temper Gold parser understands HID reports from Temper8 devices
 // Independent of USB lib used.
 
-export class TemperGold extends SensorState implements ReportParser {
+export class TemperGold extends SensorState implements USBReporter {
     // Interface methods implementation
 
     constructor() {
-        super();
-        this.connectSensors(1, 1);
+        super(new SensorAttributes (
+            'TGold',
+            'Temper Gold',
+            SensorCategory.Temperature,
+            2.0, 1, 1));
+        this.connectSensors([0]);
     }
-    public initReport(): number[][] {
+    public initWriteReport(): number[][] {
         return [this.temperatureRequest()];
     }
     // This function parses all input reports and check what to do
-    public parseInput(data: number[]): number[] {
+    public readReport(data: number[]): number[] {
         try {
             log.debug('--- TemperGold.parseInput:', data);
             if (!this.matchTemperature(data)) {

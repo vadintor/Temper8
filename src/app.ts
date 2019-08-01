@@ -7,7 +7,7 @@ import route_api from './routes/api';
 import route_index from './routes/index';
 import route_settings from './routes/settings';
 
-import { USBSensorManager } from './models/usb-sensor-manager';
+import { USBController } from './models/usb-controller';
 
 import { log } from './logger';
 
@@ -17,7 +17,7 @@ app.use(cors());
 app.options('*', cors());
 app.disable('etag');
 
-USBSensorManager.factory();
+USBController.initializeDevices();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -82,3 +82,5 @@ app.set('port', process.env.PORT || 80);
 const server: http.Server = app.listen(app.get('port'), function() {
     log.info('iTemper listening on port ' + server.address().port);
 });
+
+export default server;

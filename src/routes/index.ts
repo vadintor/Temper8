@@ -3,33 +3,35 @@
  */
 import express = require('express');
 const router: express.Router = express.Router();
-import { SensorData } from '../models/sensor-data';
 
-import { USBSensorManager } from '../models/usb-sensor-manager';
+// import { USBController } from '../models/usb-controller';
 
 import { log } from './../logger';
 
 router.get('/', (_req: express.Request, res: express.Response) => {
-
-    const sensorLogger = USBSensorManager.getLoggers()
-        .find(logger=> logger.getState !== undefined);
-
-    const data: SensorData = new SensorData();
-
-    if (sensorLogger && sensorLogger.getState()) {
-        const sensorData = sensorLogger.getState().getSensorData();
-        log.debug('--- / get, state: ', sensorLogger.getState());
-        log.debug('--- / get, data:',sensorData);
-        Object.assign(data, sensorData);
-    }
+    log.debug ('GET /');
+    res.sendFile('index.html');
+    // const sensorLogger = USBController.getLoggers()
+    //     .find(logger=> logger.getState !== undefined);
 
 
-    res.render('index', {
-        title: 'Temperatur',
-        port0: data.getPort(),
-        value0: data.getValue(),
-        date0: new Date(data.timestamp()).toTimeString(),
-    });
+    // if (sensorLogger && sensorLogger.getState()) {
+    //     const sensorData = sensorLogger.getState().getSensorData();
+    //     const sensorDataString = JSON.stringify(sensorData);
+    //     log.debug ('GET / Sensor data found');
+    //     res.render('index', {
+    //         title: 'Sensor Data',
+    //         data: sensorDataString,
+    //     });
+
+    // } else {
+    //     log.debug ('GET / Sensor data NOT found');
+    //     res.render('index', {
+    //         title: 'Sensor data',
+    //         data: 'not found',
+    //     });
+    // }
+
 });
 
 export default router;

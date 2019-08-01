@@ -1,10 +1,12 @@
 import { SensorState } from './sensor-state';
-import { ReportParser } from './usb-controller';
-export declare class Temper8 extends SensorState implements ReportParser {
+import { USBReporter } from './usb-device';
+export declare class Temper8 extends SensorState implements USBReporter {
+    constructor();
     protected nextSensor: number;
-    initReport(): number[][];
-    parseInput(data: number[]): number[];
+    initWriteReport(): number[][];
+    readReport(data: number[]): number[];
     private usedPortsRequest;
+    private getUsedPorts;
     private matchUsedPorts;
     private temperatureRequest;
     private matchTemperature;

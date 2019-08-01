@@ -1,3 +1,4 @@
+import { SensorAttributes } from './sensor-attributes';
 import { SensorData } from './sensor-data';
 export interface FilterConfig {
     resolution?: number;
@@ -13,8 +14,13 @@ export declare class Sensor {
     s: SensorData;
 }
 export declare class SensorState {
+    protected attr: SensorAttributes;
     protected sensors: Sensor[];
     protected sensorDataListeners: SensorDataListener[];
+    constructor(attr: SensorAttributes);
+    getAttr(): SensorAttributes;
+    setAttr(attr: SensorAttributes): void;
+    maxSampleRate(): number;
     getSensorData(): SensorData[];
     addSensorDataListener(onSensorDataReceived: (sensor: SensorData) => void, filter?: FilterConfig): void;
     private round;
@@ -23,5 +29,5 @@ export declare class SensorState {
     private filterPort;
     private updateSensorDataListeners;
     protected updateSensor(port: number, temperature: number): void;
-    protected connectSensors(total: number, used: number): void;
+    protected connectSensors(ports: number[]): void;
 }

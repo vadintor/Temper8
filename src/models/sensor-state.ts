@@ -1,4 +1,5 @@
 import { log } from './../logger';
+import { SensorAttributes } from './sensor-attributes';
 import { SensorData } from './sensor-data';
 
 export interface FilterConfig {
@@ -13,11 +14,26 @@ export interface SensorDataListener {
 }
 export class Sensor { public p: SensorData; public s: SensorData;}
 export class SensorState {
-
-    // or a humidity sensor, but the latter is out of scope.
+    protected attr: SensorAttributes;
     protected sensors: Sensor[] = [];
-    // private  usedPorts: number[];
+
     protected sensorDataListeners: SensorDataListener[] = [];
+
+    constructor(attr: SensorAttributes) {
+        this.attr = attr;
+    }
+
+    public getAttr(): SensorAttributes {
+        return this.attr;
+    }
+
+    public setAttr(attr: SensorAttributes): void {
+        this.attr = attr;
+    }
+
+    public maxSampleRate(): number {
+        return this.attr.maxSampleRate;
+    }
 
     public getSensorData(): SensorData[] {
         const sensorData: SensorData[] = [];
@@ -35,13 +51,13 @@ export class SensorState {
     }
     private valueDiff(sensorData: SensorData, previousData: SensorData, resolution: number): boolean {
         const valueDiff =  Math.abs(this.round(sensorData, resolution) - this.round(previousData, resolution));
-        log.debug('value diff', valueDiff);
+        log.debug('value diff: ' + valueDiff);
         return valueDiff > 0;
     }
 
     private timeDiff(sensorData: SensorData, previousData: SensorData, maxTimeDiff: number): boolean {
         const timeDiff = sensorData.timestamp() - previousData.timestamp();
-        log.debug('Time diff: ', timeDiff);
+        log.debug('Time diff: ' + timeDiff);
         return timeDiff > maxTimeDiff;
     }
     private filterPort(sensorData: SensorData, filter: FilterConfig): boolean {
@@ -50,7 +66,7 @@ export class SensorState {
     private updateSensorDataListeners(sensorData: SensorData, previousData: SensorData) {
         log.debug('updateSensorDataListeners');
         for (const listener of this.sensorDataListeners) {
-            log.debug('updateSensorDataListeners, filter:', listener.filter);
+            log.debug('updateSensorDataListeners, filter:' + JSON.stringify(listener.filter));
             if (!listener.filter) {
                 log.debug('updateSensorDataListeners, no filter found');
                 listener.publish(sensorData);
@@ -85,39 +101,23 @@ export class SensorState {
             if (sensor) {
                 sensor.s.setValue(temperature);
                 this.updateSensorDataListeners(sensor.s, sensor.p);
-                log.debug('SensorState.updateSensor, port: %d, temperature %d', port, temperature);
+                log.debug('SensorState.updateSensor, port: ' + port + ', temperature ' + temperature);
             } else {
-                log.error('*** SensorState.updateSensor, undefined, port: %d, temperature %d', port, temperature);
+                log.error('*** SensorState.updateSensor, undefined, port: ' + port + ', temperature ' + temperature);
             }
         } else {
-            log.error('*** SensorState.updateSensor, no sensors, port: %d, temperature %d', port, temperature);
+            log.error('*** SensorState.updateSensor, no sensors, port: ' + port + ', temperature ' + temperature);
         }
     }
-    protected connectSensors(total: number, used: number) {
-        log.debug('--- connectSensors, total:%d', total);
+
+    protected connectSensors(ports: number[]) {
+        log.debug('--- connectSensors, ports: ' + JSON.stringify(ports));
         if (this.sensors.length === 0) {
 
-            this.sensors = new Array<Sensor>(total);
-            log.debug('connectSensors, this.sensors.length: ', this.sensors.length);
-            const bits: number[] = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80];
-            let sensorIndex: number = 0;
+            this.sensors = new Array<Sensor>(ports.length);
 
-            // Check the bit array for used ports, one bit at a time
-            for (let bit = 0; bit < bits.length; bit++) {
-
-                if ((used & bits[bit]) === bits[bit]) {
-                    const port = bit;
-                    log.debug('--- connectSensors, port: ', port);
-                    this.sensors[sensorIndex] = { p: new SensorData(port), s: new SensorData(port) };
-                    log.debug('+++ connectSensors, port: %d', port);
-                    sensorIndex += 1;
-                }
-            }
-
-            if (sensorIndex !== total) {
-                // TODO: Error handling
-                log.error('*** connectSensors, #sensors: %d !== total: %d', sensorIndex, total);
-                return;
+            for (let port = 0; port < ports.length; port++) {
+                this.sensors[port] = { p: new SensorData(port), s: new SensorData(port) };
             }
         }
 

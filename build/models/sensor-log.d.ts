@@ -1,9 +1,7 @@
-import { SensorAttributes } from '../models/sensor-attributes';
 import { FilterConfig, SensorState } from '../models/sensor-state';
 export interface LoggingService {
 }
 export declare class SensorLog {
-    private attr;
     private state;
     private timestamp;
     private logging;
@@ -14,8 +12,7 @@ export declare class SensorLog {
     private connectionString;
     private client;
     private openSocket;
-    constructor(attr: SensorAttributes, state: SensorState);
-    getAttr(): SensorAttributes;
+    constructor(state: SensorState);
     getState(): SensorState;
     getFilter(): FilterConfig;
     islogging(): boolean;

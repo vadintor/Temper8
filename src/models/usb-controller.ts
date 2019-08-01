@@ -1,108 +1,96 @@
-
 import HID = require('node-hid');
-import os = require('os');
+import { SensorState } from './sensor-state';
+import { Temper8 } from './temper-8';
+import { TemperGold } from './temper-gold';
+import { USBDevice, USBReporter } from './usb-device';
 
-import { log } from './../logger';
+import { SensorLog } from './sensor-log';
 
-// ReportParser allow USBController to be independent on the specific
-// Temper device connected.
-export interface ReportParser {
-    initReport(): number[][];
-    parseInput(data: number[]): number[];
+import { log } from '../logger';
+
+export class USBDeviceConfig {
+        vendorId: number;
+        productId: number;
+        product: string;
+        interface: number;
+    }
+
+const VID = 0x0C45;
+const PID = 0x7401;
+const TEMPER_GOLD = 'TEMPerV1.4';
+const TEMPER_8 = 'TEMPer8_V1.5';
+const INTERFACE = 1;
+
+
+export function isTemperGold(device: HID.Device): boolean {
+    return (device.vendorId === VID &&
+        device.productId === PID &&
+        device.product === TEMPER_GOLD &&
+        device.interface === INTERFACE);
 }
-// Handle a sensor device on the USB hub.
+
+export function isTemper8(device: HID.Device): boolean {
+    return (device.vendorId === VID &&
+        device.productId === PID &&
+        device.product === TEMPER_8 &&
+        device.interface === INTERFACE);
+}
 export class USBController {
-    private  hid: HID.HID;
+    private static devices: USBDevice[] = [];
+    private static loggers: SensorLog[] = [];
 
-    private reportParser: ReportParser;
-
-    private POLL_INTERVAL = 5_000;
-
-    private deviceInitialized = false;
-
-    private interval: number;
-
-    constructor(hid: HID.HID, parser: ReportParser) {
-        this.hid = hid;
-        this.reportParser = parser;
-        this.initializeDevice();
-        this.pollSensors();
+    public static getLoggers(): SensorLog[] {
+        return USBController.loggers;
+    }
+    private static initializeLogger(sensorState: SensorState) {
+        const sensorlogger = new SensorLog(sensorState);
+        USBController.loggers.push(sensorlogger);
+        sensorlogger.startLogging();
+    }
+    private static initializeDevice(path: string, reporter: USBReporter) {
+        const hid = new HID.HID(path);
+        const device = new USBDevice (hid, reporter);
+        USBController.devices.push(device);
     }
 
-    public initializeDevice() {
-        if (!this.deviceInitialized) {
-            this.hid.on('data', this.parseInput.bind(this));
-            this.hid.on('error', this.parseError.bind(this));
-            this.setPollingInterval(this.POLL_INTERVAL);
-            this.deviceInitialized = true;
-            log.info('USBController.initializeDevice done');
-        }
-    }
+    public static initializeDevices(): void {
+        log.info ('Application started: ' + new Date().toISOString());
+        HID.devices().find(device => {
+            log.debug('USBController find device: ' + device);
+            if (isTemperGold(device) && device.path !== undefined) {
+                log.debug('USBController sensor TEMPer Gold found: ' +  JSON.stringify(device));
 
-    public close() {
-        this.deviceInitialized = false;
-        try {
-            this.hid.pause();
-            this.hid.close();
-        } catch (e) {
-            return;
-        }
-    }
+                const sensor = new TemperGold();
+                USBController.initializeLogger(sensor);
+                USBController.initializeDevice(device.path, sensor);
+                // return true;
+            } else if (isTemper8(device) && device.path !== undefined) {
+                log.debug('USBController sensor TEMPer 8 found: ' +  JSON.stringify(device));
 
-    public setPollingInterval(ms: number) {
-        this.POLL_INTERVAL = ms;
-        clearInterval(this.interval);
-        this.interval = setInterval(this.pollSensors.bind(this), this.POLL_INTERVAL);
-        log.info('USB Controller.setPollingInterval: %d', ms);
-    }
+                const sensor = new Temper8();
 
-    // This is were all starts when set interval time expires
-
-    private pollSensors() {
-        if (! this.deviceInitialized) {
-            this.initializeDevice();
-        } else {
-            log.debug('+++ USBController.pollSensors');
-            const initCommands = this.reportParser.initReport();
-            for (const command of initCommands) {
-                this.writeReport(command);
-            }
-        }
-    }
-    // Called from HID, Parses input from HID and writes any response messages
-    // back to the device
-    private parseInput(data: number[]): void  {
-        try {
-            const response = this.reportParser.parseInput(data);
-            if (response.length > 0) {
-                this.writeReport(response);
-            }
-        } catch (e) {
-            // TODO error handling if parse input error
-            return;
-        }
-    }
-    private parseError(_error: any) {
-        log.error('parseError: ', _error);
-    }
-
-    // Helper functions to write reports to the device
-    private writeReport(data: number[]): void {
-
-        if (os.platform() === 'win32') {
-            data.unshift(0);  // prepend a throwaway byte
-        }
-
-        // Output report
-        for (let i = 0; i < 1; i++) {
-            try {
-                this.hid.write(data);
-                log.debug('+++ USBController.writeReport', data);
-            } catch (e) {
-                log.error('*** USBController.writeReport hid.write catch:&d', data);
-                this.close();
+                USBController.initializeLogger(sensor);
+                USBController.initializeDevice(device.path, sensor);
+               // return true;
             }
 
+            return false;
+        });
+        log.info('Found ' + USBController.devices.length + ' HID device(s)');
+
+    }
+
+    public static setPollingInterval(ms: number) {
+        log.debug('USBController.setPollingInterval: ' + ms);
+        for (const device of USBController.devices) {
+            device.setPollingInterval(ms);
         }
+    }
+
+    public static getPollingInterval(): number {
+        for (const device of USBController.devices) {
+           return device.getPollingInterval();
+        }
+        return 0;
     }
 }

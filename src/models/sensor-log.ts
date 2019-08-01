@@ -1,8 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
-import { SensorAttributes } from '../models/sensor-attributes';
 import { SensorData } from '../models/sensor-data';
 import { FilterConfig, SensorState } from '../models/sensor-state';
-
+import { AZURE_CONNECTION_STRING, ITEMPER_URL, WS_ORIGIN, WS_URL } from './../config';
 import { log } from './../logger';
 
 import * as Websocket from 'isomorphic-ws';
@@ -14,11 +13,12 @@ import { Mqtt } from 'azure-iot-device-mqtt';
 
 
 
-export interface LoggingService {
-
+export interface SensorLogData {
+    descr: { SN: string, port: number};
+    samples: SensorData[];
 }
+
 export class SensorLog {
-    private attr: SensorAttributes;
     private state: SensorState;
 
     private timestamp: number = 0;
@@ -39,51 +39,45 @@ export class SensorLog {
 
     private openSocket(): Websocket {
         // const wsTestUrl = 'wss://test.itemper.io/ws';
-        const wsTestUrl = 'ws://precision.vading.lan:3000/ws';
-        const wsOrigin = 'http://vading.lan';
+        const wsTestUrl = WS_URL + '';
+        const wsOrigin = WS_ORIGIN;
         const socket = new Websocket (wsTestUrl, { origin: wsOrigin});
 
         socket.on('open', () => {
-            log.info('--- socket.on: Device.SensorLog connected to backend!');
+            log.info('--- socket.on(open): Device.SensorLog connected to backend!');
         });
         socket.on('message', (data: Websocket.Data): void => {
-            log.info('--- socket.on: message received from back-end' + JSON.stringify(data));
+            log.info('--- socket.on(message): received from back-end' + JSON.stringify(data));
         });
 
         socket.on('error', (ws: WebSocket, err: Error): void => {
-            log.error('--- socket.on: error: ' + JSON.stringify(err) + 'socket status: ' + ws.readyState);
+            log.info('--- socket.on(error): ' + JSON.stringify(err) + 'socket status: ' + ws.readyState);
         });
 
         return socket;
     }
 
-    constructor(attr: SensorAttributes, state: SensorState) {
-        log.debug('--- SensorStateLogger, state:', state);
-        log.debug('--- SensorStateLogger, attr:', attr);
+    constructor(state: SensorState) {
+        log.debug('--- SensorStateLogger, state:', JSON.stringify(state));
         this.timestamp = Date.now();
         this.logging = false;
-        this.attr = attr;
         this.state = state;
 
         this.state.addSensorDataListener(this.onSensorDataReceived.bind(this), this.dataFilter);
         this.state.addSensorDataListener(this.onMonitor.bind(this));
 
         this.axios = axios.create({
-            baseURL: 'https://test.itemper.io/api/v1/sensors',
+            baseURL: ITEMPER_URL,
             headers: {'Content-Type': 'application/json'},
           });
 
         this.socket = this.openSocket();
 
         // AZURE IOT
-        this.connectionString = 'HostName=iothubiotlabs.azure-devices.net;DeviceId=twilight-sound-798cd80;' +
-                                'SharedAccessKey=7jobimPqYZEFvfsjSYZMmRjkk7xIs6cs721AIRYHpMU=';
+        this.connectionString = AZURE_CONNECTION_STRING + '';
         this.client = Client.fromConnectionString(this.connectionString, Mqtt);
     }
 
-    public getAttr(): SensorAttributes {
-        return this.attr;
-    }
     public getState(): SensorState {
         return this.state;
     }
@@ -122,14 +116,14 @@ export class SensorLog {
 
     private onSensorDataReceived(data: SensorData): void {
         if (this.logging) {
-            const descr = { SN: this.attr.SN, port: data.getPort()};
+            const descr = { SN: this.state.getAttr().SN, port: data.getPort()};
             const samples = [{date: data.timestamp(), value: data.getValue()}];
             const sensorLog = { descr, samples };
             const diff = data.timestamp() - this.timestamp;
             this.timestamp = data.timestamp();
 
             const url = '/' + descr.SN + '/'+ descr.port;
-            log.debug('URL: ', url);
+            log.debug('URL: ' + url);
             this.axios.post(url, sensorLog)
             .then (function(res) {
                 log.info('SensorLogger axios.post ' + url + ' ' + res.statusText +
@@ -137,7 +131,7 @@ export class SensorLog {
                     ' date: ' + new Date(data.timestamp()).toLocaleString());
             })
             .catch(function() {
-                log.error('onSensorDataReceived axios.post catch error');
+                log.info('onSensorDataReceived axios.post catch error');
             });
             // AZURE IOT
             const message = new Message(JSON.stringify(sensorLog));
@@ -148,7 +142,7 @@ export class SensorLog {
 
     private onMonitor(data: SensorData): void {
         log.debug('SensorLog.onMonitor');
-        const descr = { SN: this.attr.SN, port: data.getPort()};
+        const descr = { SN: this.state.getAttr().SN, port: data.getPort()};
         const samples = [{date: data.timestamp(), value: data.getValue()}];
         const sensorLog = { descr, samples };
         if (this.socket && this.socket.readyState === Websocket.OPEN) {

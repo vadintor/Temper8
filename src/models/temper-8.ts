@@ -1,25 +1,34 @@
 ﻿
+import { SensorAttributes, SensorCategory } from './sensor-attributes';
 import { SensorState } from './sensor-state';
-import { ReportParser } from './usb-controller';
+import { USBReporter } from './usb-device';
 
-import { log } from './../logger';
+import { log } from '../logger';
 
 
 // Temper8 parser understands HID reports from Temper8 devices
 // Independent of USB lib used.
 
-export class Temper8 extends SensorState implements ReportParser {
+export class Temper8 extends SensorState implements USBReporter {
     // Device has 8 ports, each of which can hold a 1-wire temperature sensor
     // The sensors are polled in sequence, starting from port 0 to port 7.
     // We do not know how many sensors are connected until we received the config
     // in a USB HID report
 
+    constructor() {
+        super(new SensorAttributes (
+            'Temper8',
+            'Tempe',
+            SensorCategory.Temperature,
+            0.5, 1, 0.2));
+
+    }
     // Track what sensor we should request value from next time
     protected nextSensor: number = 0;
 
     // Interface methods implementation
 
-    public initReport(): number[][] {
+    public initWriteReport(): number[][] {
     // This starts the polling. First we ask the device about sensors attached configuration
     // We also request temperature from port zero (for the sake of it, unclear reason)
         this.nextSensor = 0;
@@ -29,7 +38,7 @@ export class Temper8 extends SensorState implements ReportParser {
     // This function parses all input reports and check what to do
     // We are interested in two types of data from the device: which ports are used and
     // the temperature of the sensors connected.
-    public parseInput(data: number[]): number[] {
+    public readReport(data: number[]): number[] {
         try {
             if (this.matchUsedPorts(data)) {
                 log.debug('+++ Temper8.matchUsedPorts:', data);
@@ -73,7 +82,24 @@ export class Temper8 extends SensorState implements ReportParser {
     private usedPortsRequest(): number[] {
         return [0x01, 0x8A, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00];
     }
-    private  matchUsedPorts(data: number[]): boolean {
+
+    private getUsedPorts(total: number, used: number): number[] {
+        const usedPorts = new Array<number>(total);
+        const bits: number[] = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80];
+
+        let portIndex = 0;
+        // Check the bit array for used ports, one bit at a time
+        for (let bit = 0; bit < bits.length; bit++) {
+            if ((used & bits[bit]) === bits[bit]) {
+                const port = bit;
+                usedPorts[portIndex] = port;
+                log.debug('+++ Temper8: Sensor connected to port: ' + port);
+                portIndex += 1;
+                }
+        }
+        return usedPorts;
+    }
+    private matchUsedPorts(data: number[]): boolean {
         // Make sure the input report states sensors
         // connected to the this. These hex values were found by using using USBlyzer
         // I.e. they might be different on your Device device
@@ -84,9 +110,9 @@ export class Temper8 extends SensorState implements ReportParser {
             && data[2] === 0x01
             && data[3] === 0x01) {
 
-            // Byte 4 contains no of sensors and
-            // Byte 5 contains a bit array of connected sensors
-            this.connectSensors(data[4], data[5]);
+            // Byte 4 contains no of sensors connected to Temper8 and
+            // Byte 5 contains a bit array of ports used by the sensors
+            this.connectSensors(this.getUsedPorts(data[4], data[5]));
             return true;
         } else {
             return false;

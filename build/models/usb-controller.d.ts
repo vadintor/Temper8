@@ -1,20 +1,20 @@
 import HID = require('node-hid');
-export interface ReportParser {
-    initReport(): number[][];
-    parseInput(data: number[]): number[];
+import { SensorLog } from './sensor-log';
+export declare class USBDeviceConfig {
+    vendorId: number;
+    productId: number;
+    product: string;
+    interface: number;
 }
+export declare function isTemperGold(device: HID.Device): boolean;
+export declare function isTemper8(device: HID.Device): boolean;
 export declare class USBController {
-    private hid;
-    private reportParser;
-    private POLL_INTERVAL;
-    private deviceInitialized;
-    private interval;
-    constructor(hid: HID.HID, parser: ReportParser);
-    initializeDevice(): void;
-    close(): void;
-    setPollingInterval(ms: number): void;
-    private pollSensors;
-    private parseInput;
-    private parseError;
-    private writeReport;
+    private static devices;
+    private static loggers;
+    static getLoggers(): SensorLog[];
+    private static initializeLogger;
+    private static initializeDevice;
+    static initializeDevices(): void;
+    static setPollingInterval(ms: number): void;
+    static getPollingInterval(): number;
 }
