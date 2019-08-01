@@ -10,7 +10,7 @@ import { log } from './../logger';
 
 router.get('/', (_req: express.Request, res: express.Response) => {
     log.debug ('GET /');
-    res.sendFile('index.html');
+    res.sendFile('./index.html');
     // const sensorLogger = USBController.getLoggers()
     //     .find(logger=> logger.getState !== undefined);
 

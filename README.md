@@ -1,4 +1,4 @@
-# Temper8 resin.io
+# iTemper Device
 -----------------
 ## Summary
 This application reads and publishes the local temperature (in degress Celsius) on the Internet. The application connects to a Temper 8 device through a vendor defined USB HID interface and reads sensor data from up to eight connected 1-wire DS18b20 temperature sensors.
@@ -10,9 +10,44 @@ The application reads sensor data from all temperature senors connected to the T
 
 At start up the application intiates an express application server at port 80. A successful http request results in a respons containing a JSON array with all sensors and their sensor values.
 
+## Folder structure
+### src
+* browser - contains code to be run in a web browser 
+* public - static assets.
+* routes and views - to be depricated
+* models - good tuff
+
+### sd
+sd  - contains image for raspberry
+
+### build
+build - contains compiled code and the public folder
+
+### top folder
+.env - environment variables
+tsconfig.browser.json - compiler options for compiling web browser code
+tsconfig.json - compiler option for compiling server code to be run by node.js
+
 ## Known issues
 Here are some known issues with the implementation.
 
 * You must restart the application  when/if the Temper8 device is detached. 
 * The application assumes that you have four sensors connected to the device.
 * The user interface is very poorly done.
+
+## Version control and configuration management
+git add .
+git status
+git commit -m "<comment>"
+
+## Build & run
+Gulp build
+npm start
+NB! Before running npm start plug in a temper sensor device either on a PC or on a raspberry and start itemper-backend.
+
+## Release
+Github repository: vadintor/iTemper-Device
+git push origin master
+
+## Deploy
+git push resin master

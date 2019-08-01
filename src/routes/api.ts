@@ -11,8 +11,7 @@ import { log } from './../logger';
 router.get('/', (_req: express.Request, res: express.Response) => {
 
     const sensorLogger =
-    USBController.getLoggers()
-        .find(logger=> logger.getState !== undefined);
+    USBController.getLoggers().find(logger=> logger.getState !== undefined);
 
     res.setHeader('Content-Type', 'application/json');
     if (sensorLogger) {

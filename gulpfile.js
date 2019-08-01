@@ -4,6 +4,7 @@ const typescript = require('gulp-typescript');
 const sourcemaps = require('gulp-sourcemaps');
 const watch = require('gulp-watch');
 const tsProject = typescript.createProject('tsconfig.json');
+const tsBrowser = typescript.createProject('tsconfig.browser.json');
 const srcGlobs = tsProject.config.include;
 const publicGlobs = ["src/public/**/*"];
 
@@ -15,6 +16,7 @@ gulp.task('typescript', () => {
         .pipe(sourcemaps.write())
         .pipe(gulp.dest(tsProject.options.outDir));
 });
+// Compile for browser
 
 // Copy any pre-defined declarations
 gulp.task('copydecl', () => {
@@ -41,6 +43,13 @@ gulp.task('copyfiles', () => {
         .pipe(gulp.dest(tsProject.options.outDir));
 });
 
+gulp.task('browser', () => {
+    tsBrowser.src()
+        .pipe(sourcemaps.init())
+        .pipe(tsBrowser()).on('error', log)
+        .pipe(sourcemaps.write())
+        .pipe(gulp.dest(tsBrowser.options.outDir));
+});
 
 gulp.task('watch', () => {
     watch(srcGlobs, () => {
@@ -48,4 +57,4 @@ gulp.task('watch', () => {
     });
 });
 
-gulp.task('build', ['typescript', 'copydecl', 'copyfiles']);
+gulp.task('build', ['typescript', 'copydecl', 'copyfiles', 'browser']);

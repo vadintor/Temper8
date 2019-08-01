@@ -1,5 +1,11 @@
+import { SensorData } from '../models/sensor-data';
 import { FilterConfig, SensorState } from '../models/sensor-state';
-export interface LoggingService {
+export interface SensorLogData {
+    descr: {
+        SN: string;
+        port: number;
+    };
+    samples: SensorData[];
 }
 export declare class SensorLog {
     private state;
