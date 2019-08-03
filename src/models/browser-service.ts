@@ -57,16 +57,16 @@ function sensorSample(data: SensorData): SensorSample {
     return {value: data.getValue(), date: data.timestamp()};
 }
 
-function sensorLog(state: SensorState): SensorLog {
+function AddSensorLogs(sensorLogs: SensorLog[], state: SensorState): void {
 
-    const attr: SensorAttributes = state.getAttr();
-    const sensorData = state.getSensorData();
-    const samples: SensorSample[] = [];
-    for (const data of sensorData) {
-        samples.push(sensorSample(data));
+    const attr: SensorAttributes = state.getAttr(); // Common attributes for all sensors connected
+    const sensorData: SensorData[] = state.getSensorData(); // one sensorData for each sensor
+
+    for (const sensor of sensorData) {
+        const samples: SensorSample[] = [];
+        samples.push(sensorSample(sensor));
+        sensorLogs.push({ descr: description(attr, sensor), samples});
     }
-    return { descr: description(attr, sensorData[0]), samples};
-
 }
 export function getSensors(ws: WebSocket) {
     const loggers = USBController.getLoggers();
@@ -74,7 +74,7 @@ export function getSensors(ws: WebSocket) {
     const data: SensorLog[] = [];
     for (const logger of loggers) {
         const state = logger.getState();
-        data.push(sensorLog(state));
+        AddSensorLogs(data, state);
     }
     const message = JSON.stringify({descr, data});
     ws.send(message);
@@ -118,7 +118,7 @@ function logSensorData() {
     const data: SensorLog[] = [];
     for (const logger of loggers) {
         const state = logger.getState();
-        data.push(sensorLog(state));
+        AddSensorLogs(data, state);
     }
     const message = JSON.stringify({descr, data});
 
