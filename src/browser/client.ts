@@ -1,6 +1,4 @@
-let sensors = [{ descr: { SN: 'Temper 8', port: 0 }, samples: [{ value: 25.5, date: Date.now() }] },
-{ descr: { SN: 'Temper 8', port: 1 }, samples: [{ value: 18.2, date: Date.now() + 5056 }] },
-{ descr: { SN: 'Temper Gold', port: 0 }, samples: [{ value: 25.5, date: Date.now() + 4088 }] }];
+let sensors = [];
 
 function setPage(name) {
     const page = document.getElementById('page');
@@ -10,7 +8,7 @@ function setPage(name) {
 setPage('Sensors');
 
 function sensorName(descr): string {
-    return descr.SN + ', port: ' + descr.port;
+    return descr.SN + ', port ' + descr.port;
 }
 
 function sensorId(descr): string {
@@ -23,15 +21,14 @@ function sensorId(descr): string {
 function listSensors(sensors) {
     for (const sensor of sensors) {
         const article = document.createElement('article');
+        const heading = document.createElement('h3');
 
-        const title = document.createElement('h3');
-        title.innerHTML = sensorName(sensor.descr);
-        article.appendChild(title);
+        heading.id = sensorId(sensor.descr) + '-value';
+        article.appendChild(heading);
 
-        const sensorValue = document.createElement('div');
-        sensorValue.innerHTML = 'No sensor data';
-        sensorValue.id = sensorId(sensor.descr);
-        article.appendChild(sensorValue);
+        const descr = document.createElement('p');
+        descr.id = sensorId(sensor.descr);
+        article.appendChild(descr);
 
         const section = document.getElementById('app');
         section.appendChild(article);
@@ -42,13 +39,15 @@ let isMonitoring = false;
 function setMonitoringButton() {
     const button = document.getElementById('monitor');
     if (isMonitoring) {
-        button.innerHTML = 'Stop';
+        button.innerHTML = 'Stop monitor';
     } else {
-        button.innerHTML = 'Monitor';
+        button.innerHTML = 'Start Monitor';
     }
 }
 
 function startMonitor(sensors) {
+    isMonitoring = true;
+    setMonitoringButton();
     const descr = 'startMonitor';
     const data: any = [];
     for (const sensor of sensors) {
@@ -69,20 +68,23 @@ function stopMonitor(sensors) {
 }
 let logTimer;
 function log(sensorData) {
-    isMonitoring = true;
-    setMonitoringButton();
     for (const sensor of sensorData) {
-        const log = document.getElementById(sensorId(sensor.descr));
+        const log = document.getElementById(sensorId(sensor.descr) + '-value');
         if (log) {
             const date = new Date(sensor.samples[0].date);
             const value = sensor.samples[0].value;
-            log.innerHTML = value + ' °C, from: ' +
+            log.innerHTML = value + ' °C';
+        }
+        const descr = document.getElementById(sensorId(sensor.descr));
+        if (descr) {
+            const date = new Date(sensor.samples[0].date);
+            const value = sensor.samples[0].value;
+            descr.innerHTML = 'by ' + sensorName(sensor.descr)  + ': ' +
                 date.toLocaleDateString() + ', ' + date.toLocaleTimeString();
         }
-
+        clearTimeout(logTimer);
+        logTimer = setInterval(clearSensorValue, 5000);
     }
-    clearTimeout(logTimer);
-    logTimer = setInterval(clearSensorValue, 5000);
 }
 
 function settings(allSettings) {
@@ -90,11 +92,14 @@ function settings(allSettings) {
 }
 
 function setConnectionStatus(connected: boolean) {
-    if (connected) {
-        const status = document.getElementById('connection');
+    const status = document.getElementById('connection');
+    isMonitoring = connected && isMonitoring;
+    setMonitoringButton();
+    if (connected && isMonitoring) {
         status.innerHTML = ' (live)';
+    } else if (connected) {
+        status.innerHTML = ' (Connected)';
     } else {
-        const status = document.getElementById('connection');
         status.innerHTML = ' (Disconnected)';
     }
 }
@@ -128,33 +133,15 @@ socket.onmessage = function(event) {
 
 socket.onclose = function(event) {
     setConnectionStatus(false);
-    if (event.wasClean) {
-        alert(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
-    } else {
-        // e.g. server process killed or network down
-        // event.code is usually 1006 in this case
-        alert('[close] Connection died');
-    }
+    clearTimeout(logTimer);
+    logTimer = setInterval(clearSensorValue, 5000);
 };
 
 socket.onerror = function(error) {
     setConnectionStatus(false);
-    // alert(`[error] ${error.message}`);
+    clearTimeout(logTimer);
+    logTimer = setInterval(clearSensorValue, 5000);
 };
-
-
-function simulateMonitoring(sensors) {
-    for (const sensor of sensors) {
-        // simulate timestamp
-        const date = new Date(Date.now() - Math.floor(Math.random() * 15000));
-        sensor.samples[0].date = date.getMilliseconds();
-
-        // simulate new sensor reading
-        const value = sensor.samples[0].value + 5 * Math.random();
-        sensor.samples[0].value = value;
-    }
-}
-
 
 function monitor() {
     if (isMonitoring) {
@@ -168,9 +155,9 @@ function monitor() {
 function clearSensorValue() {
     for (const sensor of sensors) {
         const sampleDate = sensor.samples[0].date;
-        if (Date.now() - sampleDate > 7*24*3600_000) {
+        if (Date.now() - sampleDate > 60_000) {
             const sensorValue = document.getElementById(sensorId(sensor));
-            sensorValue.innerHTML = 'No sensor data received last 15 seconds';
+            sensorValue.innerHTML = 'No sensor data received last 60 seconds';
         }
     }
 
