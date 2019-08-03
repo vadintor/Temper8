@@ -49,8 +49,8 @@ export interface SensorLog {
     descr: SensorDescription;
     samples: SensorSample[];
 }
-function description(attr: SensorAttributes, sensorData: SensorData): SensorDescription {
-    return {SN: attr.SN, port: sensorData.getPort()};
+function description(attr: SensorAttributes, data: SensorData): SensorDescription {
+    return {SN: attr.SN, port: data.getPort()};
 }
 
 function sensorSample(data: SensorData): SensorSample {

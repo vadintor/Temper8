@@ -117,7 +117,7 @@ export class SensorState {
             this.sensors = new Array<Sensor>(ports.length);
 
             for (let port = 0; port < ports.length; port++) {
-                this.sensors[port] = { p: new SensorData(port), s: new SensorData(port) };
+                this.sensors[port] = { p: new SensorData(ports[port]), s: new SensorData(ports[port]) };
             }
         }
 
