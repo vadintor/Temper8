@@ -13,7 +13,6 @@ function sensorName(descr): string {
 
 function sensorId(descr): string {
     const sn = descr.SN.replace(' ', descr.SN);
-    console.log(sn);
     const id = descr.SN.replace(' ', descr.SN) + '-' + descr.port;
     return id;
 }
@@ -104,7 +103,7 @@ function setConnectionStatus(connected: boolean) {
     }
 }
 
-const url = 'ws://precision.vading.lan';
+const url = 'ws://' + document.domain;
 let socket = new WebSocket(url);
 socket.onopen = function(e) {
     setConnectionStatus(true);

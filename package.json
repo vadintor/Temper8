@@ -20,7 +20,7 @@
     },
     "scripts": {
         "start": "node build/app.js",
-        "start_dev": "node dotenv/config build/app.js",
+        "start_dev": "node -r dotenv/config build/app.js",
         "build": "gulp build",
         "watch": "gulp watch",
         "lint": "tslint -t stylish -c tslint.json \"src/**/*.ts\"",

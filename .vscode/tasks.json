@@ -48,6 +48,11 @@
             "type": "gulp",
             "task": "watch",
             "problemMatcher": []
+        },
+        {
+            "type": "npm",
+            "script": "start_dev",
+            "problemMatcher": []
         }
     ]
 }
