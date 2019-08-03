@@ -1,13 +1,14 @@
 ﻿/*
  * GET sensor data.
  */
+import cors from 'cors';
 import express = require('express');
 const router: express.Router = express.Router();
 import { getLevel, log, setLevel } from './../logger';
 
 import { USBController } from '../models/usb-controller';
 
-router.post('/', (_req: express.Request, res: express.Response) => {
+router.post('/', cors(), (_req: express.Request, res: express.Response) => {
     res.setHeader('Content-Type', 'application/json');
     res.status(404);
     const response: any[] = [];

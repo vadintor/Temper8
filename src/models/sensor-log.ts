@@ -1,15 +1,16 @@
 import axios, { AxiosInstance } from 'axios';
 import { SensorData } from '../models/sensor-data';
 import { FilterConfig, SensorState } from '../models/sensor-state';
-import { AZURE_CONNECTION_STRING, ITEMPER_URL, WS_ORIGIN, WS_URL } from './../config';
+import { ITEMPER_URL, WS_ORIGIN, WS_URL } from './../config';
+// import { AZURE_CONNECTION_STRING, ITEMPER_URL, WS_ORIGIN, WS_URL } from './../config';
 import { log } from './../logger';
 
-import * as Websocket from 'isomorphic-ws';
+import WebSocket from 'isomorphic-ws';
 
 // Import Azure
 
-import { Client, Message } from 'azure-iot-device';
-import { Mqtt } from 'azure-iot-device-mqtt';
+// import { Client, Message } from 'azure-iot-device';
+// import { Mqtt } from 'azure-iot-device-mqtt';
 
 
 
@@ -30,35 +31,37 @@ export class SensorLog {
 
     private axios: AxiosInstance;
 
-    private socket: Websocket;
+    private socket: WebSocket;
 
     // Azure IOT
     // tslint:disable-next-line:max-line-length
-    private connectionString: string = '';
-    private client: Client;
+    // private connectionString: string = '';
+    // private client: Client;
 
-    private openSocket(): Websocket {
+    private openSocket(): WebSocket {
         // const wsTestUrl = 'wss://test.itemper.io/ws';
         const wsTestUrl = WS_URL + '';
-        const wsOrigin = WS_ORIGIN;
-        const socket = new Websocket (wsTestUrl, { origin: wsOrigin});
+        const socket = new WebSocket (wsTestUrl, { origin: WS_ORIGIN});
 
         socket.on('open', () => {
-            log.info('--- socket.on(open): Device.SensorLog connected to backend!');
+            log.info('SensorLog: socket.on(open): Device.SensorLog connected to backend!');
         });
-        socket.on('message', (data: Websocket.Data): void => {
-            log.info('--- socket.on(message): received from back-end' + JSON.stringify(data));
+        socket.on('message', (data: WebSocket.Data): void => {
+            log.info('SensorLog: socket.on(message): received from back-end' + JSON.stringify(data));
+        });
+        socket.on('message', (data: WebSocket.Data): void => {
+            log.info('SensorLog: socket.on(message): received from back-end' + JSON.stringify(data));
         });
 
-        socket.on('error', (ws: WebSocket, err: Error): void => {
-            log.info('--- socket.on(error): ' + JSON.stringify(err) + 'socket status: ' + ws.readyState);
+        socket.on('error', (): void => {
+            log.error('SensorLog: socket.on(error): ');
         });
 
         return socket;
     }
 
     constructor(state: SensorState) {
-        log.debug('--- SensorStateLogger, state:', JSON.stringify(state));
+        log.debug('SensorLog: SensorStateLogger, state:', JSON.stringify(state));
         this.timestamp = Date.now();
         this.logging = false;
         this.state = state;
@@ -74,8 +77,8 @@ export class SensorLog {
         this.socket = this.openSocket();
 
         // AZURE IOT
-        this.connectionString = AZURE_CONNECTION_STRING + '';
-        this.client = Client.fromConnectionString(this.connectionString, Mqtt);
+        // this.connectionString = AZURE_CONNECTION_STRING + '';
+        // this.client = Client.fromConnectionString(this.connectionString, Mqtt);
     }
 
     public getState(): SensorState {
@@ -103,16 +106,16 @@ export class SensorLog {
     }
 
     // Print AZURE IOT results.
-    private printResultFor(op: string): any {
-        return function printResult(err: any, res: any) {
-        if (err) {
-            log.error(op + ' AZURE IOT error: ' + err.toString());
-        }
-        if (res) {
-            log.info(op + ' AZURE IOT status: ' + res.constructor.name);
-        }
-    };
-  }
+//     private printResultFor(op: string): any {
+//         return function printResult(err: any, res: any) {
+//         if (err) {
+//             log.error(op + ' AZURE IOT error: ' + err.toString());
+//         }
+//         if (res) {
+//             log.info(op + ' AZURE IOT status: ' + res.constructor.name);
+//         }
+//     };
+//   }
 
     private onSensorDataReceived(data: SensorData): void {
         if (this.logging) {
@@ -134,9 +137,9 @@ export class SensorLog {
                 log.info('onSensorDataReceived axios.post catch error');
             });
             // AZURE IOT
-            const message = new Message(JSON.stringify(sensorLog));
-            message.properties.add('Delta time', diff.toString());
-            this.client.sendEvent(message, this.printResultFor('send'));
+            // const message = new Message(JSON.stringify(sensorLog));
+            // message.properties.add('Delta time', diff.toString());
+            // this.client.sendEvent(message, this.printResultFor('send'));
         }
     }
 
@@ -145,11 +148,11 @@ export class SensorLog {
         const descr = { SN: this.state.getAttr().SN, port: data.getPort()};
         const samples = [{date: data.timestamp(), value: data.getValue()}];
         const sensorLog = { descr, samples };
-        if (this.socket && this.socket.readyState === Websocket.OPEN) {
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
             log.debug('onMonitor: sensor log: ' + JSON.stringify(sensorLog));
             this.socket.send(JSON.stringify(sensorLog));
             log.debug('onMonitor: sensor log sent');
-        } else if (!this.socket || this.socket.readyState === Websocket.CLOSED) {
+        } else if (!this.socket || this.socket.readyState === WebSocket.CLOSED) {
             log.debug('onMonitor: socket closed, re-open');
             this.socket = this.openSocket();
         } else {

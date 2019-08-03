@@ -38,6 +38,7 @@ gulp.task('copyfiles', () => {
         publicDirs.push(`${dir.split('/')[0]}/**/*.html`);
         publicDirs.push(`${dir.split('/')[0]}/**/*.png`);
         publicDirs.push(`${dir.split('/')[0]}/**/*.jpg`);
+        publicDirs.push(`${dir.split('/')[0]}/**/*.ico`);
     })
     gulp.src(publicDirs)
         .pipe(gulp.dest(tsProject.options.outDir));

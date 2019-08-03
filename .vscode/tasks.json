@@ -43,6 +43,11 @@
             "type": "npm",
             "script": "watch",
             "problemMatcher": []
+        },
+        {
+            "type": "gulp",
+            "task": "watch",
+            "problemMatcher": []
         }
     ]
 }

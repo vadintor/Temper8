@@ -13,7 +13,8 @@
         "target": "es5",
         "noUnusedParameters": true,
         "noUnusedLocals": true,
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "esModuleInterop": true
     },
     "include": [
         "src/**/*.ts"

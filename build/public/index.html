@@ -54,19 +54,18 @@
 <body>
 
     <header>
-        <h1>iTemper device</h1>
+        <h1>iTemper device<span id="connection"></span></h1>
     </header>
 
     <nav>
         <ul>
-            <li>Home</li>
-            <li><button type="button" onclick='message()'>Sensors</button></li>
-            <li>Locations</li>
+            <li><button id="monitor" type="button" onclick='monitor()'>Monitor</button></li>
+            <li>Settings</li>
         </ul>
     </nav>
 
-    <section id="sensors">
-        <h2>Sensors</h2>
+    <section id="app">
+        <h2 id="page"></h2>
     </section>
 
     <footer>
