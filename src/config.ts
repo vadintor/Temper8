@@ -1,7 +1,5 @@
 
-import * as dotenv from 'dotenv';
 import * as os from 'os';
-dotenv.config();
 
 export const ITEMPER_URL = process.env.ITEMPER_URL;
 export const WS_URL = process.env.WS_URL;
