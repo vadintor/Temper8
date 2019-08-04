@@ -1,11 +1,65 @@
 let sensors = [];
+let settings = [];
+let currentSection: HTMLElement;
 
-function setPage(name) {
-    const page = document.getElementById('page');
-    page.innerHTML = name;
+
+openSensorSection();
+
+const url = 'ws://' + document.domain;
+let socket = new WebSocket(url);
+socket.onopen = function(e) {
+    setConnectionStatus(true);
+    socket.send(JSON.stringify({descr: 'getSensors'}));
+    socket.send(JSON.stringify({descr: 'getSettings'}));
+};
+
+socket.onmessage = function(event) {
+    setConnectionStatus(true);
+    const msg = JSON.parse(event.data);
+    switch(msg.descr) {
+        case 'sensors':
+            listSensors(msg.data);
+            if (!isMonitoring) {
+                startMonitor(sensors);
+            }
+            break;
+        case 'settings':
+            listSettings(msg.data);
+            break;
+        case 'log':
+            log(msg.data);
+            break;
+      }
+};
+
+socket.onclose = function(event) {
+    setConnectionStatus(false);
+    clearTimeout(logTimer);
+    logTimer = setInterval(clearSensorValue, 5000);
+};
+
+socket.onerror = function(error) {
+    setConnectionStatus(false);
+    clearTimeout(logTimer);
+    logTimer = setInterval(clearSensorValue, 5000);
+};
+
+function openSection(name: string) {
+    const section = document.getElementById(name);
+    if (currentSection) {
+        currentSection.style.display = 'none';
+    }
+    section.style.display = 'block';
+    currentSection = section;
 }
 
-setPage('Sensors');
+function openSensorSection() {
+    openSection('sensorSection');
+}
+
+function openSettingsSection() {
+    openSection('settingsSection');
+}
 
 function sensorName(descr): string {
     return descr.SN + ', port ' + descr.port;
@@ -18,6 +72,7 @@ function sensorId(descr): string {
 }
 
 function listSensors(sensors) {
+    const section = document.getElementById('sensorSection');
     for (const sensor of sensors) {
         const article = document.createElement('article');
         const heading = document.createElement('h3');
@@ -28,8 +83,6 @@ function listSensors(sensors) {
         const descr = document.createElement('p');
         descr.id = sensorId(sensor.descr);
         article.appendChild(descr);
-
-        const section = document.getElementById('app');
         section.appendChild(article);
     }
     log(sensors);
@@ -86,10 +139,26 @@ function log(sensorData) {
     }
 }
 
-function settings(allSettings) {
-    // TODO
-}
 
+
+function listSettings(allSettings) {
+    const section = document.getElementById('settingsSection');
+    for (const setting of allSettings) {
+        const article = document.createElement('article');
+        const heading = document.createElement('h3');
+
+        heading.id = setting.name;
+        heading.innerHTML = setting.name;
+        article.appendChild(heading);
+
+        const value = document.createElement('p');
+        value.id = setting.name + '-value';
+        value.innerHTML = setting.value;
+        article.appendChild(value);
+        section.appendChild(article);
+    }
+
+}
 function setConnectionStatus(connected: boolean) {
     const status = document.getElementById('connection');
     isMonitoring = connected && isMonitoring;
@@ -103,44 +172,7 @@ function setConnectionStatus(connected: boolean) {
     }
 }
 
-const url = 'ws://' + document.domain;
-let socket = new WebSocket(url);
-socket.onopen = function(e) {
-    setConnectionStatus(true);
-    socket.send(JSON.stringify({descr: 'getSensors'}));
-    socket.send(JSON.stringify({descr: 'getSettings'}));
-};
 
-socket.onmessage = function(event) {
-    setConnectionStatus(true);
-    const msg = JSON.parse(event.data);
-    switch(msg.descr) {
-        case 'sensors':
-            listSensors(msg.data);
-            if (!isMonitoring) {
-                startMonitor(sensors);
-            }
-            break;
-        case 'settings':
-            settings(msg.data);
-            break;
-        case 'log':
-            log(msg.data);
-            break;
-      }
-};
-
-socket.onclose = function(event) {
-    setConnectionStatus(false);
-    clearTimeout(logTimer);
-    logTimer = setInterval(clearSensorValue, 5000);
-};
-
-socket.onerror = function(error) {
-    setConnectionStatus(false);
-    clearTimeout(logTimer);
-    logTimer = setInterval(clearSensorValue, 5000);
-};
 
 function monitor() {
     if (isMonitoring) {

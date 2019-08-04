@@ -54,7 +54,7 @@ export class SensorLog {
         });
 
         socket.on('error', (): void => {
-            log.error('SensorLog: socket.on(error): ');
+            log.info('SensorLog: socket.on(error): ');
         });
 
         return socket;

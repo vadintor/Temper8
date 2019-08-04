@@ -82,7 +82,7 @@ export function getSensors(ws: WebSocket) {
 }
 
 export function getSettings(ws: WebSocket) {
-    const message = JSON.stringify({descr:'settings', data: [{setting: 'hostname', value: HOSTNAME}]});
+    const message = JSON.stringify({descr:'settings', data: [{name: 'hostname', value: HOSTNAME}]});
     ws.send(message);
     log.info('browser-service.getSettings: has not implemented all settings yet: ' + message);
 }
