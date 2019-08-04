@@ -7,10 +7,11 @@ export interface USBReporter {
 export declare class USBDevice {
     private hid;
     private reporter;
+    private interval;
     private POLL_INTERVAL;
     private MAX_SAMPLE_RATE;
     private deviceInitialized;
-    private interval;
+    private timer;
     constructor(hid: HID.HID, reporter: USBReporter);
     initializeDevice(): void;
     close(): void;

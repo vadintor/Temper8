@@ -16,6 +16,8 @@ import * as BrowserService from './models/browser-service';
 
 import { USBController } from './models/usb-controller';
 
+import { Settings } from './models/settings';
+
 import { log } from './logger';
 const app = express();
 // const app = expressWs(express()).app;
@@ -29,6 +31,7 @@ const app = express();
 // app.disable('etag');
 
 USBController.initializeDevices();
+Settings.initializeSettings();
 
 // view engine setup
 // app.set('views', path.join(__dirname, 'views'));

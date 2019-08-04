@@ -2,6 +2,7 @@
 import HID = require('node-hid');
 import os = require('os');
 import { log } from '../logger';
+import { Setting, Settings } from './settings';
 
 // ReportParser allow USBController to be independent on the specific
 // Temper device connected.
@@ -16,12 +17,14 @@ export class USBDevice {
 
     private reporter: USBReporter;
 
-    private POLL_INTERVAL =  5_000;
+    private interval: Setting | undefined = Settings.get('POLL_INTERVAL');
+    private POLL_INTERVAL: number = this.interval?Number(this.interval):5_000;
+
+    // private POLL_INTERVAL: number = Settings.get('POLL_INTERVAL').value | 5000;
     private MAX_SAMPLE_RATE = 1/this.POLL_INTERVAL;
     private deviceInitialized = false;
 
-    private interval: number;
-
+    private timer: number;
     constructor(hid: HID.HID, reporter: USBReporter) {
         this.hid = hid;
         this.reporter = reporter;
@@ -62,8 +65,8 @@ export class USBDevice {
         if (this.sampleRate() > this.MAX_SAMPLE_RATE) {
             this.POLL_INTERVAL = 1_000 * 1/this.MAX_SAMPLE_RATE;
         }
-        clearInterval(this.interval);
-        this.interval = setInterval(this.pollSensors.bind(this), this.POLL_INTERVAL);
+        clearInterval(this.timer);
+        this.timer = setInterval(this.pollSensors.bind(this), this.POLL_INTERVAL);
         log.info('USBDevice.setPollingInterval:' + ms);
     }
 

@@ -135,7 +135,7 @@ function log(sensorData) {
                 date.toLocaleDateString() + ', ' + date.toLocaleTimeString();
         }
         clearTimeout(logTimer);
-        logTimer = setInterval(clearSensorValue, 5000);
+        logTimer = setInterval(clearSensorValue, 3000);
     }
 }
 
@@ -155,6 +155,14 @@ function listSettings(allSettings) {
         value.id = setting.name + '-value';
         value.innerHTML = setting.value;
         article.appendChild(value);
+
+        const text = document.createElement('p');
+        text.id = setting.name + '-text';
+        text.innerHTML = setting.text;
+        if (setting.defaultValue !== '') {
+            text.innerHTML = text.innerHTML + ', default: ' + setting.defaultValue;
+        }
+        article.appendChild(text);
         section.appendChild(article);
     }
 

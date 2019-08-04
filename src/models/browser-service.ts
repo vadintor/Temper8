@@ -1,10 +1,9 @@
-import { log } from '../logger';
-
 import WebSocket from 'ws';
-import { HOSTNAME } from '../config';
+import { log } from '../logger';
 import { SensorAttributes } from './sensor-attributes';
 import { SensorData } from './sensor-data';
 import { SensorState } from './sensor-state';
+import { Setting, Settings } from './settings';
 import { USBController } from './usb-controller';
 
 export interface Inboundmessage {
@@ -49,6 +48,12 @@ export interface SensorLog {
     descr: SensorDescription;
     samples: SensorSample[];
 }
+
+// export interface Setting {
+//     name: string;
+//     value: string;
+// }
+
 function description(attr: SensorAttributes, data: SensorData): SensorDescription {
     return {SN: attr.SN, port: data.getPort()};
 }
@@ -82,9 +87,10 @@ export function getSensors(ws: WebSocket) {
 }
 
 export function getSettings(ws: WebSocket) {
-    const message = JSON.stringify({descr:'settings', data: [{name: 'hostname', value: HOSTNAME}]});
+    const data: Setting[] = Settings.all();
+    const message = JSON.stringify({descr:'settings', data});
     ws.send(message);
-    log.info('browser-service.getSettings: has not implemented all settings yet: ' + message);
+    log.info('browser-service.getSettings: ' + message);
 }
 const MonitoringClients = new Set();
 let logTimer: NodeJS.Timer;
