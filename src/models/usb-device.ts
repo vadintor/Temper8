@@ -2,7 +2,12 @@
 import HID = require('node-hid');
 import os = require('os');
 import { log } from '../logger';
-import { Setting, Settings } from './settings';
+import { Setting, Settings  } from './settings';
+
+
+export interface USBConfig extends HID.Device {
+
+}
 
 // ReportParser allow USBController to be independent on the specific
 // Temper device connected.
@@ -17,14 +22,15 @@ export class USBDevice {
 
     private reporter: USBReporter;
 
-    private interval: Setting | undefined = Settings.get('POLL_INTERVAL');
-    private POLL_INTERVAL: number = this.interval?Number(this.interval):5_000;
+
+    private POLL_INTERVAL: number = 5_000;
 
     // private POLL_INTERVAL: number = Settings.get('POLL_INTERVAL').value | 5000;
     private MAX_SAMPLE_RATE = 1/this.POLL_INTERVAL;
     private deviceInitialized = false;
 
     private timer: number;
+
     constructor(hid: HID.HID, reporter: USBReporter) {
         this.hid = hid;
         this.reporter = reporter;
@@ -32,15 +38,26 @@ export class USBDevice {
         if (this.sampleRate() > this.MAX_SAMPLE_RATE) {
             this.POLL_INTERVAL = 1_000 * 1/this.MAX_SAMPLE_RATE;
         }
+        Settings.onChange(Settings.POLL_INTERVAL, this.pollIntervalChanged.bind(this));
         this.initializeDevice();
         this.pollSensors();
     }
 
+    private pollIntervalChanged(setting: Setting) {
+        const pollInterval =<number>setting.value;
+        const sampleRate = 1/(pollInterval/1_000);
+
+        if (sampleRate < this.MAX_SAMPLE_RATE) {
+            this.POLL_INTERVAL = pollInterval;
+            log.info('USBDevice.pollIntervalChanged to' + pollInterval);
+        }
+    }
     public initializeDevice() {
         if (!this.deviceInitialized) {
             this.hid.on('data', this.parseInput.bind(this));
             this.hid.on('error', this.parseError.bind(this));
             this.setPollingInterval(this.POLL_INTERVAL);
+            log.debug('USBDevice.initializeDevice POLLING INTERVAL=' + this.POLL_INTERVAL);
             this.deviceInitialized = true;
             log.info('USBDevice.initializeDevice done');
         }

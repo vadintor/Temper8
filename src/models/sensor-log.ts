@@ -1,9 +1,10 @@
 import axios, { AxiosInstance } from 'axios';
 import { SensorData } from '../models/sensor-data';
 import { FilterConfig, SensorState } from '../models/sensor-state';
-import { ITEMPER_URL, WS_ORIGIN, WS_URL } from './../config';
-// import { AZURE_CONNECTION_STRING, ITEMPER_URL, WS_ORIGIN, WS_URL } from './../config';
+
 import { log } from './../logger';
+
+import {Setting, Settings} from './settings';
 
 import WebSocket from 'isomorphic-ws';
 
@@ -15,7 +16,7 @@ import WebSocket from 'isomorphic-ws';
 
 
 export interface SensorLogData {
-    descr: { SN: string, port: number};
+    desc: { SN: string, port: number};
     samples: SensorData[];
 }
 
@@ -30,6 +31,12 @@ export class SensorLog {
         maxTimeDiff: this.MAX_TIME_DIFF};
 
     private axios: AxiosInstance;
+    private SHARED_ACCESS_KEY: string = '';
+    private WS_URL: string = '';
+    private WS_ORIGIN: string = '';
+    private ITEMPER_URL: string = '';
+ // private AZURE_CONNECTION_STRING: string;
+
 
     private socket: WebSocket;
 
@@ -38,10 +45,17 @@ export class SensorLog {
     // private connectionString: string = '';
     // private client: Client;
 
+    private createAxiosInstance(): AxiosInstance {
+        return this.axios = axios.create({
+            baseURL: this.ITEMPER_URL,
+            headers: {'Content-Type': 'application/json'}});
+    }
+
     private openSocket(): WebSocket {
         // const wsTestUrl = 'wss://test.itemper.io/ws';
-        const wsTestUrl = WS_URL + '';
-        const socket = new WebSocket (wsTestUrl, { origin: WS_ORIGIN});
+        const wsTestUrl = this.WS_URL;
+        const origin = this.WS_ORIGIN;
+        const socket = new WebSocket (wsTestUrl, { origin });
 
         socket.on('open', () => {
             log.info('SensorLog: socket.on(open): Device.SensorLog connected to backend!');
@@ -65,20 +79,51 @@ export class SensorLog {
         this.timestamp = Date.now();
         this.logging = false;
         this.state = state;
+        this.initSettings();
 
         this.state.addSensorDataListener(this.onSensorDataReceived.bind(this), this.dataFilter);
         this.state.addSensorDataListener(this.onMonitor.bind(this));
 
-        this.axios = axios.create({
-            baseURL: ITEMPER_URL,
-            headers: {'Content-Type': 'application/json'},
-          });
-
+        this.axios = this.createAxiosInstance();
         this.socket = this.openSocket();
 
         // AZURE IOT
         // this.connectionString = AZURE_CONNECTION_STRING + '';
         // this.client = Client.fromConnectionString(this.connectionString, Mqtt);
+    }
+
+    private initSettings() {
+        this.SHARED_ACCESS_KEY = Settings.get(Settings.SHARED_ACCESS_KEY).value.toString();
+        this.WS_URL = Settings.get(Settings.WS_URL).value.toString();
+        this.WS_ORIGIN = Settings.get(Settings.WS_ORIGIN).value.toString();
+        this.ITEMPER_URL = Settings.get(Settings.ITEMPER_URL).value.toString();
+        // this.AZURE_CONNECTION_STRING = Settings.get(Settings.AZURE_CONNECTION_STRING).value.toString();
+
+        Settings.onChange('SHARED_ACCESS_KEY', (setting: Setting) => {
+            this.SHARED_ACCESS_KEY = setting.value.toString();
+            log.debug('SensorLog.settingChanged: SHARED_ACCESS_KEY=' + this.SHARED_ACCESS_KEY);
+        });
+        Settings.onChange('WS_URL', (setting: Setting)=> {
+            this.WS_URL = setting.value.toString();
+            log.debug('SensorLog.settingChanged: WS_URL=' + this.WS_URL);
+            this.socket = this.openSocket();
+        });
+        Settings.onChange('WS_ORIGIN', (setting: Setting)=> {
+            this.WS_ORIGIN = setting.value.toString();
+            log.debug('SensorLog.settingChanged: WS_ORIGIN=' + this.WS_ORIGIN);
+            // if (this.socket.OPEN) {
+            //     this.socket.close();
+            // }
+            this.socket = this.openSocket();
+        });
+        Settings.onChange('ITEMPER_URL', (setting: Setting)=> {
+            this.ITEMPER_URL = setting.value.toString();
+            log.debug('SensorLog.settingChanged: ITEMPER_URL=' +  this.ITEMPER_URL);
+            this.axios = this.createAxiosInstance();
+        });
+        Settings.onChange('AZURE_CONNECTION_STRING', (setting: Setting)=> {
+            log.info('settingChanged: AZURE_CONNECTION_STRING not implemented value=' + setting.value.toString());
+        });
     }
 
     public getState(): SensorState {
@@ -92,7 +137,7 @@ export class SensorLog {
         return this.logging;
     }
     public startLogging(filter?: FilterConfig): void {
-        log.debug('--- SensorStateLogger.startLogging');
+        log.debug('SensorLog.startLogging');
         if (filter) {
             this.dataFilter = filter;
         }
@@ -101,7 +146,7 @@ export class SensorLog {
     }
 
     public stopLogging(): void {
-        log.debug('--- SensorStateLogger.stopLogging');
+        log.debug('SensorLog.stopLogging');
         this.logging = false;
     }
 
@@ -119,22 +164,25 @@ export class SensorLog {
 
     private onSensorDataReceived(data: SensorData): void {
         if (this.logging) {
-            const descr = { SN: this.state.getAttr().SN, port: data.getPort()};
+            const desc = { SN: this.state.getAttr().SN, port: data.getPort()};
             const samples = [{date: data.timestamp(), value: data.getValue()}];
-            const sensorLog = { descr, samples };
+            const sensorLog = { desc, samples };
             const diff = data.timestamp() - this.timestamp;
             this.timestamp = data.timestamp();
 
-            const url = '/' + descr.SN + '/'+ descr.port;
+            const url = '/' + desc.SN + '/'+ desc.port;
             log.debug('URL: ' + url);
-            this.axios.post(url, sensorLog)
+
+            const Authorization = 'Bearer ' + this.SHARED_ACCESS_KEY;
+
+            this.axios.post(url, sensorLog, {headers: { Authorization }})
             .then (function(res) {
-                log.info('SensorLogger axios.post ' + url + ' ' + res.statusText +
+                log.info('SensorLog.onSensorDataReceived: axios.post ' + url + ' ' + res.statusText +
                     ' res.data: ' + JSON.stringify(sensorLog) + ' ms: ' + diff +
                     ' date: ' + new Date(data.timestamp()).toLocaleString());
             })
-            .catch(function() {
-                log.info('onSensorDataReceived axios.post catch error');
+            .catch(function(e) {
+                log.info('SensorLog.onSensorDataReceived: axios.post catch error='+ e);
             });
             // AZURE IOT
             // const message = new Message(JSON.stringify(sensorLog));
@@ -145,18 +193,18 @@ export class SensorLog {
 
     private onMonitor(data: SensorData): void {
         log.debug('SensorLog.onMonitor');
-        const descr = { SN: this.state.getAttr().SN, port: data.getPort()};
+        const desc = { SN: this.state.getAttr().SN, port: data.getPort()};
         const samples = [{date: data.timestamp(), value: data.getValue()}];
-        const sensorLog = { descr, samples };
+        const sensorLog = { desc, samples };
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-            log.debug('onMonitor: sensor log: ' + JSON.stringify(sensorLog));
+            log.debug('SensorLog.onMonitor: sensor log: ' + JSON.stringify(sensorLog));
             this.socket.send(JSON.stringify(sensorLog));
-            log.debug('onMonitor: sensor log sent');
+            log.debug('SensorLog.onMonitor: sensor log sent');
         } else if (!this.socket || this.socket.readyState === WebSocket.CLOSED) {
-            log.debug('onMonitor: socket closed, re-open');
+            log.debug('SensorLog.onMonitor: socket closed, re-open');
             this.socket = this.openSocket();
         } else {
-            log.debug('onMonitor: socket not open yet');
+            log.debug('SensorLog.onMonitor: socket not open yet');
         }
     }
 }

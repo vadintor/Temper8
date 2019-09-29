@@ -1,0 +1,74 @@
+body {
+    color: gray
+}
+
+header,
+footer {
+    padding: 10px;
+    color: mintcream;
+    background-color: midnightblue;
+}
+
+section {
+    margin: 5px;
+    padding: 10px;
+    background-color: rgb(255, 255, 255);
+    color: black
+}
+
+article {
+    margin: 5px;
+    padding: 10px;
+    background-color: white;
+    color: darkslategray;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: royalblue;
+}
+
+nav ul li {
+    float: left;
+}
+
+nav ul li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.settingReadonly {
+    color: rgb(194, 194, 194);
+    float: left;
+    font-size: 20px;
+    font-weight: bold;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+}
+
+.settingEdit {
+    color: #1f1f1f;
+    float: left;
+    font-size: 20px;
+    font-weight: bold;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+}
+
+.settingSpara {
+    float: left;
+    font-size: 20px;
+    font-weight: bold;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+}
+
+.isMonitoring {
+    background-color: tomato;
+}

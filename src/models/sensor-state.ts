@@ -51,49 +51,58 @@ export class SensorState {
     }
     private valueDiff(sensorData: SensorData, previousData: SensorData, resolution: number): boolean {
         const valueDiff =  Math.abs(this.round(sensorData, resolution) - this.round(previousData, resolution));
-        log.debug('value diff: ' + valueDiff);
+        log.debug('SensorState.valueDiff: diff=' + valueDiff);
         return valueDiff > 0;
     }
 
     private timeDiff(sensorData: SensorData, previousData: SensorData, maxTimeDiff: number): boolean {
         const timeDiff = sensorData.timestamp() - previousData.timestamp();
-        log.debug('Time diff: ' + timeDiff);
+        log.debug('SensorState.timeDiff diff=' + timeDiff);
         return timeDiff > maxTimeDiff;
     }
     private filterPort(sensorData: SensorData, filter: FilterConfig): boolean {
        return filter.ports? filter.ports.find(port => port === sensorData.getPort()) !== undefined: true;
     }
     private updateSensorDataListeners(sensorData: SensorData, previousData: SensorData) {
-        log.debug('updateSensorDataListeners');
+        let published: boolean = false;
+        log.debug('SensorState.updateSensorDataListeners: filtering before publishing');
         for (const listener of this.sensorDataListeners) {
-            log.debug('updateSensorDataListeners, filter:' + JSON.stringify(listener.filter));
+            log.debug('SensorState.updateSensorDataListeners: filter:' + JSON.stringify(listener.filter));
             if (!listener.filter) {
-                log.debug('updateSensorDataListeners, no filter found');
+                log.debug('SensorState.updateSensorDataListeners: no filter found');
                 listener.publish(sensorData);
+                published = true;
                 Object.assign(previousData, sensorData);
-                return;
 
             } else if (this.filterPort(sensorData, listener.filter) &&
                         listener.filter.resolution &&
                 this.valueDiff(sensorData, previousData, listener.filter.resolution) && sensorData.valid()) {
 
-                log.debug('updateSensorDataListeners, publish.filter.resolution');
                 listener.publish(sensorData);
+                published = true;
                 Object.assign(previousData, sensorData);
 
             } else if (this.filterPort(sensorData, listener.filter) &&
                     listener.filter.maxTimeDiff && sensorData.valid() &&
                     this.timeDiff(sensorData, previousData, listener.filter.maxTimeDiff)) {
-                log.debug('updateSensorDataListeners, publish.filter.maxTimeDiff');
+                log.debug('SensorState.updateSensorDataListeners: publish.filter.maxTimeDiff');
                 listener.publish(sensorData);
+                published = true;
                 Object.assign(previousData, sensorData);
 
             } else if (this.filterPort(sensorData, listener.filter)) {
-                log.debug('updateSensorDataListeners, publish.filter.port');
+                log.debug('SensorState.updateSensorDataListeners: publish.filter.port');
                 listener.publish(sensorData);
+                published = true;
                 Object.assign(previousData, sensorData);
             }
         }
+        if (published) {
+            log.info('SensorState.updateSensorDataListeners: Sensor data published to listener(s)');
+        } else {
+            log.debug('SensorState.updateSensorDataListeners: No sensor data published');
+        }
+
     }
     protected updateSensor(port: number, temperature: number) {
         if (this.sensors !== null) {
@@ -101,17 +110,17 @@ export class SensorState {
             if (sensor) {
                 sensor.s.setValue(temperature);
                 this.updateSensorDataListeners(sensor.s, sensor.p);
-                log.debug('SensorState.updateSensor, port: ' + port + ', temperature ' + temperature);
+                log.info('SensorState.updateSensor: sensor updated, port=' + port + ', temperature=' + temperature);
             } else {
-                log.error('*** SensorState.updateSensor, undefined, port: ' + port + ', temperature ' + temperature);
+                log.error('SensorState.updateSensor: undefined port=' + port + ', temperature=' + temperature);
             }
         } else {
-            log.error('*** SensorState.updateSensor, no sensors, port: ' + port + ', temperature ' + temperature);
+            log.error('SensorState.updateSensor: no sensors, port=' + port + ', temperature=' + temperature);
         }
     }
 
     protected connectSensors(ports: number[]) {
-        log.debug('--- connectSensors, ports: ' + JSON.stringify(ports));
+        log.debug('SensorState.connectSensors: ports=' + JSON.stringify(ports));
         if (this.sensors.length === 0) {
 
             this.sensors = new Array<Sensor>(ports.length);

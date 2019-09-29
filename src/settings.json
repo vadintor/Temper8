@@ -1,0 +1,94 @@
+{
+    "settings":[
+        {
+            "name": "AZURE_CONNECTION_STRING", 
+            "label": "Azure connection string",
+            "value": "",
+            "defaultValue": "",
+            "text": "Connection string to AZURE IOT HUB",
+            "readonly": "false"
+        },
+        {   
+            "name": "CONSOLE_LEVEL",
+            "label": "Console log level",
+            "type": "string",
+            "value": "",
+            "defaultValue": "",
+            "text": "Event level logged on console: error | info | debug",
+            "readonly": "false"
+        },
+        {   
+            "name": "ERROR_LEVEL",
+            "label": "Error file log level", 
+            "type": "string",
+            "value": "",
+            "defaultValue": "",
+            "text": "Event level logged on application log file: error | info | debug",
+            "readonly": "false"
+        },
+        {
+            "name": "ERROR_LOG_FILE",
+            "label": "Application error log file", 
+            "type": "string",
+            "value": "",
+            "defaultValue": "",
+            "text": "Name of the log file. You find it in the application root directory",
+            "readonly": "true"
+        },
+        {
+            "name": "HOSTNAME", 
+            "label": "Hostname",
+            "type": "string",
+            "value": "",
+            "defaultValue": "",
+            "text": "This device's hostname",
+            "readonly": "true"
+        },
+        {
+            "name": "ITEMPER_URL",
+            "label": "iTemper URL",
+            "type": "string",
+            "value": "",
+            "defaultValue": "",
+            "text": "URL to iTemper sensor service",
+            "readonly": ""
+        },
+        {
+            "name": "POLL_INTERVAL",
+            "label": "Sensor poll interval",
+            "type": "number",
+            "value": "",
+            "defaultValue": "",
+            "text": "Interval (ms) when polling the sensors",
+            "readonly": "false"
+        },
+        {
+            "name": "WS_ORIGIN", 
+            "label":"WebSocket origin",
+            "type": "string",
+            "value": "",
+            "defaultValue": "",
+            "text": "Origin used when connecting to iTemper with WebSockets",
+            "readonly": "false"
+        },
+        {
+            "name": "WS_URL", 
+            "label": "WebSocket URL",
+            "type": "string",
+            "value": "",
+            "defaultValue": "",
+            "text": "WebSocket URL to iTemper",
+            "readonly": "false"
+        },
+        {
+            "name": "SHARED_ACCESS_KEY", 
+            "label": "Shared access key",
+            "type": "string",
+            "value": "",
+            "defaultValue": "",
+            "text": "A valid shared access key allows the this device to log sensor data on itemper.io",
+            "readonly": "false"
+        }      
+    ]
+}
+

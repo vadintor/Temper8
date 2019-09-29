@@ -1,7 +1,9 @@
 import { SensorState } from './sensor-state';
-import { USBReporter } from './usb-device';
+import { USBConfig, USBReporter } from './usb-device';
 export declare class Temper8 extends SensorState implements USBReporter {
-    constructor();
+    constructor(config: USBConfig);
+    private static model;
+    private static SN;
     protected nextSensor: number;
     initWriteReport(): number[][];
     readReport(data: number[]): number[];

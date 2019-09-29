@@ -1,12 +1,13 @@
-﻿// import { WS_ORIGIN } from './config';
-
+﻿import { Settings } from './models/settings';
+Settings.initializeSettings();
+import { log } from './logger';
 
 // import cors from 'cors';
 import express from 'express';
 // import expressWs from 'express-ws';
 import http from 'http';
 import path = require('path');
-import WebSocket from 'ws';
+import * as WebSocket from 'ws';
 
 import route_api from './routes/api';
 import route_index from './routes/index';
@@ -16,9 +17,9 @@ import * as BrowserService from './models/browser-service';
 
 import { USBController } from './models/usb-controller';
 
-import { Settings } from './models/settings';
 
-import { log } from './logger';
+
+
 const app = express();
 // const app = expressWs(express()).app;
 // const app: express.Express = express();
@@ -31,7 +32,6 @@ const app = express();
 // app.disable('etag');
 
 USBController.initializeDevices();
-Settings.initializeSettings();
 
 // view engine setup
 // app.set('views', path.join(__dirname, 'views'));
@@ -121,6 +121,7 @@ app.use('/settings', route_settings);
 
 const httpServer = http.createServer(app);
 const wss = new WebSocket.Server({ server: httpServer });
+BrowserService.initOutboundMessageService(wss);
 wss.on('connection', (ws: WebSocket, request: http.IncomingMessage): void  => {
     log.info('app.ws: new connection url/headers: ' + ws.url + '/' + JSON.stringify(request.headers));
 

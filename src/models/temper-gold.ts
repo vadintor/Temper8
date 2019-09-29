@@ -1,7 +1,9 @@
 
 import { SensorAttributes, SensorCategory } from './sensor-attributes';
 import { SensorState } from './sensor-state';
-import { USBReporter } from './usb-device';
+import { USBConfig, USBReporter } from './usb-device';
+
+import {Setting, Settings} from './settings';
 
 import { log } from '../logger';
 
@@ -12,13 +14,26 @@ import { log } from '../logger';
 export class TemperGold extends SensorState implements USBReporter {
     // Interface methods implementation
 
-    constructor() {
+
+    constructor(config: USBConfig) {
         super(new SensorAttributes (
-            'TGold',
-            'Temper Gold',
+            TemperGold.SN(config),
+            TemperGold.model(config),
             SensorCategory.Temperature,
             2.0, 1, 1));
         this.connectSensors([0]);
+        Settings.onChange(Settings.SERIAL_NUMBER, (setting: Setting) => {
+            this.attr.SN = setting.value.toString();
+            log.debug('TemperGold.settingChanged: SERIAL_NUMBER=' + this.attr.SN);
+        });
+    }
+
+    private static model(config: USBConfig): string {
+        return config.manufacturer || '' + config.product || 'Temper Gold';
+    }
+
+    private static SN(config: USBConfig): string {
+        return config.serialNumber || Settings.get(Settings.SERIAL_NUMBER).value.toString();
     }
     public initWriteReport(): number[][] {
         return [this.temperatureRequest()];
@@ -26,9 +41,9 @@ export class TemperGold extends SensorState implements USBReporter {
     // This function parses all input reports and check what to do
     public readReport(data: number[]): number[] {
         try {
-            log.debug('--- TemperGold.parseInput:', data);
+            log.debug('TemperGold.readReport: data=', data);
             if (!this.matchTemperature(data)) {
-                log.warning('*** no match: ', data);
+                log.warning('TemperGold.readReport: no match data=', data);
             }
         } catch (e) {
             console.log(e);
@@ -52,7 +67,7 @@ export class TemperGold extends SensorState implements USBReporter {
         if (data.length === 8
             && data[0] === 0x80
             && data[1] === 0x02) {
-            log.debug('+++ TemperGold.matchTemperature:', data);
+            log.debug('TemperGold.matchTemperature: data=', data);
 
             const msb: number = data[2];
             const lsb: number = data[3];

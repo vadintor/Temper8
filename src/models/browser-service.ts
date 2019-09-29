@@ -1,4 +1,4 @@
-import WebSocket from 'ws';
+import * as WebSocket from 'ws';
 import { log } from '../logger';
 import { SensorAttributes } from './sensor-attributes';
 import { SensorData } from './sensor-data';
@@ -6,19 +6,34 @@ import { SensorState } from './sensor-state';
 import { Setting, Settings } from './settings';
 import { USBController } from './usb-controller';
 
-export interface Inboundmessage {
-    descr: 'getSensors'|'getSettings'| 'updateSettings' |'startMonitor' | 'stopMonitor';
+export interface InboundMessage {
+    command: 'getSensors'|'getSettings'| 'startMonitor' | 'stopMonitor' | 'saveSetting';
     data: any;
 }
 
 export interface OutboundMessage {
-    descr: 'sensors'|'settings'| 'log';
+    command: 'sensors' | 'settings'| 'setting' |  'log';
     data: any;
 }
-export function parseInboundMessage(ws: WebSocket, data: Buffer): void  {
-    const message = <Inboundmessage> <any> JSON.parse(data.toString());
+let wss: WebSocket.Server;
 
-    switch (message.descr) {
+function broadcast(ws: WebSocket, message: OutboundMessage, includeSelf: boolean ) {
+    log.debug('browser-Service.broadcast: sending message=' + JSON.stringify(message));
+    wss.clients.forEach(function each(client) {
+        if ((client !== ws || includeSelf) && client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify(message));
+          log.debug('browser-Service.broadcast: message sent');
+        }
+      });
+
+}
+export function initOutboundMessageService(server: WebSocket.Server) {
+    wss=server;
+}
+export function parseInboundMessage(ws: WebSocket, data: Buffer): void  {
+    const message = <InboundMessage> JSON.parse(data.toString());
+    log.debug('browser-service.parseInboundMessage: received message=' + message);
+    switch (message.command) {
         case 'getSensors':
             getSensors(ws);
             break;
@@ -33,6 +48,10 @@ export function parseInboundMessage(ws: WebSocket, data: Buffer): void  {
             message.data = <SensorDescription[]> <any> message.data;
             stopMonitor(ws, message.data);
             break;
+        case 'saveSetting':
+            message.data = <Setting> <any> message.data;
+            saveSetting(ws, message.data);
+            break;
       }
 
 }
@@ -45,14 +64,10 @@ export interface SensorSample {
     date: number;
 }
 export interface SensorLog {
-    descr: SensorDescription;
+    desc: SensorDescription;
     samples: SensorSample[];
 }
 
-// export interface Setting {
-//     name: string;
-//     value: string;
-// }
 
 function description(attr: SensorAttributes, data: SensorData): SensorDescription {
     return {SN: attr.SN, port: data.getPort()};
@@ -70,33 +85,49 @@ function AddSensorLogs(sensorLogs: SensorLog[], state: SensorState): void {
     for (const sensor of sensorData) {
         const samples: SensorSample[] = [];
         samples.push(sensorSample(sensor));
-        sensorLogs.push({ descr: description(attr, sensor), samples});
+        sensorLogs.push({ desc: description(attr, sensor), samples});
     }
 }
 export function getSensors(ws: WebSocket) {
     const loggers = USBController.getLoggers();
-    const descr = 'sensors';
+    const command = 'sensors';
     const data: SensorLog[] = [];
     for (const logger of loggers) {
         const state = logger.getState();
         AddSensorLogs(data, state);
     }
-    const message = JSON.stringify({descr, data});
+    const message = JSON.stringify({command, data});
     ws.send(message);
     log.info('browser-services.getSensors, sent: ' + message);
 }
 
 export function getSettings(ws: WebSocket) {
     const data: Setting[] = Settings.all();
-    const message = JSON.stringify({descr:'settings', data});
+    const message = JSON.stringify({command:'settings', data});
     ws.send(message);
     log.info('browser-service.getSettings: ' + message);
+}
+
+export function saveSetting(ws: WebSocket, setting: Setting) {
+    log.debug('browser-service.saveSetting: ' + JSON.stringify(setting));
+    if (setting.name && setting.value) {
+        Settings.update(setting.name, setting.value, (updated) => {
+            if (updated) {
+                const command = 'settings';
+                const data = [];
+                data.push(setting);
+                const message: OutboundMessage = {command, data};
+                broadcast(ws, message, true);
+            }
+        });
+    }
+
 }
 const MonitoringClients = new Set();
 let logTimer: NodeJS.Timer;
 
-export function startMonitor(ws: WebSocket, descr: SensorDescription[]) {
-    log.info('browser-service.startMonitor: has not implemented filter on Descr yet: ' + JSON.stringify(descr));
+export function startMonitor(ws: WebSocket, desc: SensorDescription[]) {
+    log.info('browser-service.startMonitor: has not implemented filter on Desc yet: ' + JSON.stringify(desc));
     if (!MonitoringClients.has(ws)) {
         MonitoringClients.add(ws);
     }
@@ -107,8 +138,8 @@ export function startMonitor(ws: WebSocket, descr: SensorDescription[]) {
     log.info ('Browser-service.startMonitor: ' + MonitoringClients.size + ' clients');
 }
 
-export function stopMonitor(ws: WebSocket, descr: SensorDescription[]) {
-    log.info('browser-service.stopMonitor: has not implemented filter on Descr yet: ' + JSON.stringify(descr));
+export function stopMonitor(ws: WebSocket, desc: SensorDescription[]) {
+    log.info('browser-service.stopMonitor: has not implemented filter on Descr yet: ' + JSON.stringify(desc));
 
     if (MonitoringClients.has(ws)) {
         MonitoringClients.delete(ws);
@@ -118,15 +149,16 @@ export function stopMonitor(ws: WebSocket, descr: SensorDescription[]) {
     }
     log.info ('Browser-service.stopMonitor: ' + MonitoringClients.size + ' clients');
 }
+
 function logSensorData() {
     const loggers = USBController.getLoggers();
-    const descr = 'log';
+    const command = 'log';
     const data: SensorLog[] = [];
     for (const logger of loggers) {
         const state = logger.getState();
         AddSensorLogs(data, state);
     }
-    const message = JSON.stringify({descr, data});
+    const message = JSON.stringify({command, data});
 
     MonitoringClients.forEach((ws: WebSocket) => {
         if (ws.readyState === ws.OPEN) {

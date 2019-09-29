@@ -3,6 +3,9 @@ const log = require('fancy-log');
 const typescript = require('gulp-typescript');
 const sourcemaps = require('gulp-sourcemaps');
 const watch = require('gulp-watch');
+var browserify = require('browserify');
+var source = require('vinyl-source-stream');
+var tsify = require('tsify');
 const tsProject = typescript.createProject('tsconfig.json');
 const tsBrowser = typescript.createProject('tsconfig.browser.json');
 const srcGlobs = tsProject.config.include;
@@ -12,7 +15,7 @@ const publicGlobs = ["src/public/**/*"];
 gulp.task('typescript', () => {
     tsProject.src()
         .pipe(sourcemaps.init())
-        .pipe(tsProject()).on('error', log)
+        .pipe(tsProject()).on('error', (error) => { log.error(error.toString()); })
         .pipe(sourcemaps.write())
         .pipe(gulp.dest(tsProject.options.outDir));
 });
@@ -45,11 +48,24 @@ gulp.task('copyfiles', () => {
 });
 
 gulp.task('browser', () => {
-    tsBrowser.src()
-        .pipe(sourcemaps.init())
-        .pipe(tsBrowser()).on('error', log)
-        .pipe(sourcemaps.write())
+    return browserify({
+            basedir: '.',
+            debug: true,
+            entries: ['src/browser/client.ts'],
+            cache: {},
+            packageCache: {}
+        })
+        .plugin(tsify, { p: "./tsconfig.browser.json" })
+        .bundle()
+        .on('error', function(error) { console.error(error.toString()); })
+        .pipe(source('bundle.js'))
         .pipe(gulp.dest(tsBrowser.options.outDir));
+    //  tsBrowser.src()
+
+    //     .pipe(sourcemaps.init())
+    //     .pipe(tsBrowser()).on('error', log)
+    //     .pipe(sourcemaps.write())
+    //     .pipe(gulp.dest(tsBrowser.options.outDir));
 });
 
 gulp.task('watch', () => {

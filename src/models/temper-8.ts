@@ -1,7 +1,9 @@
 ﻿
 import { SensorAttributes, SensorCategory } from './sensor-attributes';
 import { SensorState } from './sensor-state';
-import { USBReporter } from './usb-device';
+import { USBConfig, USBReporter } from './usb-device';
+
+import {Setting, Settings} from './settings';
 
 import { log } from '../logger';
 
@@ -15,14 +17,28 @@ export class Temper8 extends SensorState implements USBReporter {
     // We do not know how many sensors are connected until we received the config
     // in a USB HID report
 
-    constructor() {
+    constructor(config: USBConfig) {
         super(new SensorAttributes (
-            'Temper8',
-            'Tempe',
+            Temper8.SN(config),
+            Temper8.model(config),
             SensorCategory.Temperature,
             0.5, 1, 0.2));
 
+        Settings.onChange(Settings.SERIAL_NUMBER, (setting: Setting) => {
+            this.attr.SN = setting.value.toString();
+            log.debug('SensorLog.settingChanged: SERIAL_NUMBER=' + this.attr.SN);
+        });
     }
+
+    private static model(config: USBConfig): string {
+        return config.manufacturer || '' + config.product || 'Temper 8';
+    }
+
+    private static SN(config: USBConfig): string {
+        return config.serialNumber || Settings.get(Settings.SERIAL_NUMBER).value.toString();
+    }
+
+
     // Track what sensor we should request value from next time
     protected nextSensor: number = 0;
 

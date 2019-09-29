@@ -1,7 +1,7 @@
 import { SensorData } from '../models/sensor-data';
 import { FilterConfig, SensorState } from '../models/sensor-state';
 export interface SensorLogData {
-    descr: {
+    desc: {
         SN: string;
         port: number;
     };
@@ -14,9 +14,15 @@ export declare class SensorLog {
     private MAX_TIME_DIFF;
     private dataFilter;
     private axios;
+    private SHARED_ACCESS_KEY;
+    private WS_URL;
+    private WS_ORIGIN;
+    private ITEMPER_URL;
     private socket;
+    private createAxiosInstance;
     private openSocket;
     constructor(state: SensorState);
+    private initSettings;
     getState(): SensorState;
     getFilter(): FilterConfig;
     islogging(): boolean;

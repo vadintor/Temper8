@@ -1,12 +1,14 @@
-import WebSocket from 'ws';
-export interface Inboundmessage {
-    descr: 'getSensors' | 'getSettings' | 'updateSettings' | 'startMonitor' | 'stopMonitor';
+import * as WebSocket from 'ws';
+import { Setting } from './settings';
+export interface InboundMessage {
+    command: 'getSensors' | 'getSettings' | 'startMonitor' | 'stopMonitor' | 'saveSetting';
     data: any;
 }
 export interface OutboundMessage {
-    descr: 'sensors' | 'settings' | 'log';
+    command: 'sensors' | 'settings' | 'setting' | 'log';
     data: any;
 }
+export declare function initOutboundMessageService(server: WebSocket.Server): void;
 export declare function parseInboundMessage(ws: WebSocket, data: Buffer): void;
 export interface SensorDescription {
     SN: string;
@@ -17,10 +19,11 @@ export interface SensorSample {
     date: number;
 }
 export interface SensorLog {
-    descr: SensorDescription;
+    desc: SensorDescription;
     samples: SensorSample[];
 }
 export declare function getSensors(ws: WebSocket): void;
 export declare function getSettings(ws: WebSocket): void;
-export declare function startMonitor(ws: WebSocket, descr: SensorDescription[]): void;
-export declare function stopMonitor(ws: WebSocket, descr: SensorDescription[]): void;
+export declare function saveSetting(ws: WebSocket, setting: Setting): void;
+export declare function startMonitor(ws: WebSocket, desc: SensorDescription[]): void;
+export declare function stopMonitor(ws: WebSocket, desc: SensorDescription[]): void;

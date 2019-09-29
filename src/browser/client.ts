@@ -1,30 +1,110 @@
-let sensors = [];
-let settings = [];
-let currentSection: HTMLElement;
+import { settings } from 'cluster';
+
+init();
+
+function init() {
+    initMenu();
+    openSection('sensorSection');
+    const monitorBtn = document.getElementById('monitor');
+    on('click', monitorBtn,  ()=> { monitor();});
+}
+
+function initMenu() {
+    const menu = document.getElementById('menu');
+    console.log('initMenu()');
+    menu.appendChild(menuItem('Sensors','sensorSection'));
+    menu.appendChild(menuItem('Settings','settingsSection'));
+}
+
+function menuItem(name: string, sectionId: string): HTMLElement {
+    console.log('menuItem: name=%s, sectionId=%s', name, sectionId);
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.innerHTML = name;
+    on('click', a, ()=> { openSection(sectionId);});
+
+    li.appendChild(a);
+    return li;
+}
 
 
-openSensorSection();
+function on(event: string, element: HTMLElement | null, fn: () => void) {
+    if (element) {
+        console.log('on %s: add event listener', event);
+        element.addEventListener(event, fn);
+    }
+}
+
+function openSection(id: string) {
+    console.log('openSection: ', id);
+    closeActiveSections();
+    const section = document.getElementById(id);
+    if (section) {
+        console.log('openSection: %s', id);
+        section.style.display = 'block';
+        section.classList.add('active');
+    } else {
+        console.log('openSection: section %s not found', id);
+    }
+
+}
+
+function closeActiveSections() {
+    const activeItems = document.getElementsByClassName('active');
+
+    for (let index = 0; index < activeItems.length; index++) {
+        const section = activeItems[index];
+        section.classList.remove('active');
+        section.setAttribute('style', 'display:none');
+    }
+}
+
+export interface SensorDescription {
+    SN: string;
+    port: number;
+}
+export interface SensorSample {
+    value: number;
+    date: number;
+}
+export interface SensorLog {
+    desc: SensorDescription;
+    samples: SensorSample[];
+}
+export type SettingValue = string | number;
+
+export interface Setting {
+    name: string;
+    label: string;
+    value: SettingValue;
+    defaultValue: SettingValue;
+    text: string;
+    readonly: boolean;
+}
+
+const sensors: SensorLog[] = [];
+// let settings = [];
 
 const url = 'ws://' + document.domain;
 let socket = new WebSocket(url);
-socket.onopen = function(e) {
+socket.onopen = function() {
     setConnectionStatus(true);
-    socket.send(JSON.stringify({descr: 'getSensors'}));
-    socket.send(JSON.stringify({descr: 'getSettings'}));
+    socket.send(JSON.stringify({command: 'getSensors'}));
+    socket.send(JSON.stringify({command: 'getSettings'}));
 };
 
 socket.onmessage = function(event) {
     setConnectionStatus(true);
     const msg = JSON.parse(event.data);
-    switch(msg.descr) {
+    switch(msg.command) {
         case 'sensors':
-            listSensors(msg.data);
+            receiveSensors(msg.data);
             if (!isMonitoring) {
                 startMonitor(sensors);
             }
             break;
         case 'settings':
-            listSettings(msg.data);
+            receiveSettings(msg.data);
             break;
         case 'log':
             log(msg.data);
@@ -32,155 +112,319 @@ socket.onmessage = function(event) {
       }
 };
 
-socket.onclose = function(event) {
+socket.onclose = function() {
     setConnectionStatus(false);
     clearTimeout(logTimer);
     logTimer = setInterval(clearSensorValue, 5000);
 };
 
-socket.onerror = function(error) {
+socket.onerror = function() {
     setConnectionStatus(false);
     clearTimeout(logTimer);
     logTimer = setInterval(clearSensorValue, 5000);
 };
 
-function openSection(name: string) {
-    const section = document.getElementById(name);
-    if (currentSection) {
-        currentSection.style.display = 'none';
-    }
-    section.style.display = 'block';
-    currentSection = section;
+
+
+function sensorName(desc: SensorDescription): string {
+    return desc.SN + ', port ' + desc.port;
 }
 
-function openSensorSection() {
-    openSection('sensorSection');
-}
-
-function openSettingsSection() {
-    openSection('settingsSection');
-}
-
-function sensorName(descr): string {
-    return descr.SN + ', port ' + descr.port;
-}
-
-function sensorId(descr): string {
-    const sn = descr.SN.replace(' ', descr.SN);
-    const id = descr.SN.replace(' ', descr.SN) + '-' + descr.port;
+function sensorId(desc: SensorDescription): string {
+    const sn = desc.SN.replace(' ', desc.SN);
+    const id = desc.SN.replace(' ', desc.SN) + '-' + desc.port;
     return id;
 }
 
-function listSensors(sensors) {
+function receiveSensors(sensors: SensorLog[]) {
     const section = document.getElementById('sensorSection');
     for (const sensor of sensors) {
         const article = document.createElement('article');
         const heading = document.createElement('h3');
 
-        heading.id = sensorId(sensor.descr) + '-value';
+        heading.id = sensorId(sensor.desc) + '-value';
         article.appendChild(heading);
 
-        const descr = document.createElement('p');
-        descr.id = sensorId(sensor.descr);
-        article.appendChild(descr);
-        section.appendChild(article);
+        const desc = document.createElement('p');
+        desc.id = sensorId(sensor.desc);
+        article.appendChild(desc);
+        if (section) {
+            section.appendChild(article);
+        }
     }
     log(sensors);
 }
 let isMonitoring = false;
 function setMonitoringButton() {
     const button = document.getElementById('monitor');
+    if (!button) { return; }
     if (isMonitoring) {
         button.innerHTML = 'Stop monitor';
+        button.classList.add('isMonitoring');
     } else {
         button.innerHTML = 'Start Monitor';
+        button.classList.remove('isMonitoring');
     }
 }
 
-function startMonitor(sensors) {
+function startMonitor(sensors: SensorLog[]) {
     isMonitoring = true;
     setMonitoringButton();
-    const descr = 'startMonitor';
+    const command = 'startMonitor';
     const data: any = [];
     for (const sensor of sensors) {
-        data.push(sensor.descr);
+        data.push(sensor.desc);
     }
-    socket.send(JSON.stringify({descr, data}));
+    socket.send(JSON.stringify({command, data}));
 }
 
-function stopMonitor(sensors) {
+function stopMonitor(sensors: SensorLog[]) {
     isMonitoring = false;
     setMonitoringButton();
-    const descr = 'stopMonitor';
+    const command = 'stopMonitor';
     const data: any = [];
     for (const sensor of sensors) {
-        data.push(sensor.descr);
+        data.push(sensor.desc);
     }
-    socket.send(JSON.stringify({descr, data}));
+    socket.send(JSON.stringify({command, data}));
 }
-let logTimer;
-function log(sensorData) {
+let logTimer: any;
+function log(sensorData: SensorLog[]) {
     for (const sensor of sensorData) {
-        const log = document.getElementById(sensorId(sensor.descr) + '-value');
+        const log = document.getElementById(sensorId(sensor.desc) + '-value');
         if (log) {
             const date = new Date(sensor.samples[0].date);
             const value = sensor.samples[0].value;
             log.innerHTML = value + ' °C';
         }
-        const descr = document.getElementById(sensorId(sensor.descr));
-        if (descr) {
+        const desc = document.getElementById(sensorId(sensor.desc));
+        if (desc) {
             const date = new Date(sensor.samples[0].date);
             const value = sensor.samples[0].value;
-            descr.innerHTML = 'by ' + sensorName(sensor.descr)  + ': ' +
+            desc.innerHTML = 'by ' + sensorName(sensor.desc)  + ': ' +
                 date.toLocaleDateString() + ', ' + date.toLocaleTimeString();
         }
         clearTimeout(logTimer);
         logTimer = setInterval(clearSensorValue, 3000);
     }
 }
-
-
-
-function listSettings(allSettings) {
-    const section = document.getElementById('settingsSection');
-    for (const setting of allSettings) {
-        const article = document.createElement('article');
-        const heading = document.createElement('h3');
-
-        heading.id = setting.name;
-        heading.innerHTML = setting.name;
-        article.appendChild(heading);
-
-        const value = document.createElement('p');
-        value.id = setting.name + '-value';
-        value.innerHTML = setting.value;
-        article.appendChild(value);
-
-        const text = document.createElement('p');
-        text.id = setting.name + '-text';
-        text.innerHTML = setting.text;
-        if (setting.defaultValue !== '') {
-            text.innerHTML = text.innerHTML + ', default: ' + setting.defaultValue;
-        }
-        article.appendChild(text);
-        section.appendChild(article);
+class HTMLSetting implements Setting {
+    private static settings: HTMLSetting[] = [];
+    public value: SettingValue;
+    public label: string;
+    public defaultValue: SettingValue;
+    public text: string;
+    public readonly: boolean;
+    public name: string;
+    public backstore: string;
+    public input: HTMLInputElement;
+    public editBtn: HTMLButtonElement;
+    public SaveBtn: HTMLButtonElement;
+    constructor(setting: Setting) {
+        this.name = setting.name;
+        this.label = setting.label;
+        this.value = setting.value;
+        this.defaultValue = setting.defaultValue;
+        this.text = setting.text;
+        this.readonly = setting.readonly;
+        this.input = <HTMLInputElement>document.getElementById(name +'value');
+        this.backstore = this.value.toString();
+        this.editBtn = <HTMLButtonElement>document.getElementById(name +'edit');
+        this.SaveBtn = <HTMLButtonElement>document.getElementById(name +'save');
     }
 
+    public static create(setting: Setting): HTMLSetting {
+        if (!HTMLSetting.has (setting.name)) {
+            const newSetting = new HTMLSetting(setting);
+            HTMLSetting.settings.push(newSetting);
+            return newSetting;
+        } else {
+            console.error('HTMLSetting.create: setting exists ', setting.name);
+            throw Error();
+        }
+    }
+    public static find(name: string): HTMLSetting {
+        for (const setting of HTMLSetting.settings) {
+            if (setting.name === name) {
+                return setting;
+            }
+        }
+        console.error('Setting.find: setting "%s" not found', name);
+        console.log('HTMLSetting.get: length=', HTMLSetting.settings.length);
+        throw Error();
+    }
+
+    public static has(name: string ): boolean {
+        for (const setting of HTMLSetting.settings) {
+            if (setting.name === name) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public editSetting() {
+        this.backstore =  this.input.value;
+        this.input.readOnly=true;
+        this.input.classList.remove('settingReadonly');
+        this.input.classList.add('settingEdit');
+
+        this.editBtn.innerHTML='Avbryt';
+        this.editBtn.classList.remove('settingReadonly');
+        this.editBtn.classList.add('settingEdit');
+
+        this.SaveBtn.setAttribute('style', 'display:block');
+    }
+
+    public readonlySetting() {
+        this.input.value=this.backstore;
+        this.input.readOnly=false;
+        this.input.classList.remove('settingEdit');
+        this.input.classList.add('settingReadonly');
+
+        this.editBtn.innerHTML='Ändra';
+        this.editBtn.classList.remove('settingEdit');
+        this.editBtn.classList.add('settingReadonly');
+
+        this.SaveBtn.setAttribute('style', 'display:none');
+    }
+
+    public saveSetting() {
+        if (this.backstore !== this.input.value) {
+            this.backstore=this.input.value;
+         }
+        this.readonlySetting();
+    }
+}
+
+
+function addSetting(setting: Setting, section: HTMLElement) {
+    console.log('addSetting: ' + setting.name);
+    // Get the contents of the template
+    const template = document.getElementById('template-setting');
+    if (!template) {
+        console.error('addSetting: template missing');
+        return;
+    }
+    const templateHtml = template.innerHTML;
+
+    // replace placeholder tags
+    // with actual data, and generate final HTML
+
+    const html = templateHtml.replace(/{{name}}/g, setting.name)
+                            .replace(/{{label}}/g, setting.label)
+                            .replace(/{{text}}/g, setting.text)
+                            .replace(/{{value}}/g, setting.value.toString());
+
+    const article = document.createElement('article');
+    article.innerHTML = html;
+    section.appendChild(article);
+    const editBtn = document.getElementById(setting.name + 'edit');
+    const saveBtn = document.getElementById(setting.name + 'save');
+    if (setting.readonly) {
+        editBtn.style.display = 'none';
+        saveBtn.style.display = 'none';
+    } else {
+        on ('click', editBtn, ()=> {
+            clickedEdit(setting.name);
+        });
+        on ('click', saveBtn, ()=> {
+            clickedSaved(setting.name);
+        });
+    }
+
+    const settingDOM: HTMLSetting =  HTMLSetting.create(setting);
+}
+
+function updateSetting(setting: Setting) {
+    console.log('updateSetting: ' + setting.name);
+    const input = <HTMLInputElement>document.getElementById(setting.name +'value');
+    const readonly = input.readOnly;
+    input.readOnly=false;
+    input.value = setting.value.toString();
+    input.readOnly = readonly;
+}
+
+function editSetting(name: string) {
+    const input = <HTMLInputElement>document.getElementById(name +'value');
+    const editBtn = <HTMLButtonElement>document.getElementById(name +'edit');
+    const SaveBtn = <HTMLButtonElement>document.getElementById(name +'save');
+    input.readOnly = false;
+    input.classList.remove('settingReadonly');
+    input.classList.add('settingEdit');
+
+    editBtn.innerHTML='Cancel';
+
+    SaveBtn.setAttribute('style', 'display:block');
+}
+function clickedEdit(name: string) {
+    const setting = HTMLSetting.find(name);
+    const input=<HTMLInputElement>document.getElementById(name +'value');
+    if (input.readOnly) {
+        console.log('edit:', name);
+        editSetting(name);
+    } else {
+        console.log('cancel:', name);
+        readonlySetting(name);
+    }
+}
+function clickedSaved(name: string) {
+    console.log('clickedSaved:');
+    const input = <HTMLInputElement>document.getElementById(name +'value');
+    const SaveBtn = <HTMLButtonElement>document.getElementById(name +'save');
+    const setting: HTMLSetting = HTMLSetting.find(name);
+    if (!input || !setting || !SaveBtn) {
+        console.error('clickedSaved: could not find all HTML element');
+        return;
+    }
+    setting.backstore = input.value;
+    setting.value = input.value;
+    SaveBtn.setAttribute('style', 'display:none');
+    readonlySetting(name);
+    socket.send(JSON.stringify({command: 'saveSetting', data: <Setting>setting}));
+}
+
+function readonlySetting(name: string) {
+    const input = <HTMLInputElement>document.getElementById(name +'value');
+    const editBtn = <HTMLButtonElement>document.getElementById(name +'edit');
+    const SaveBtn = <HTMLButtonElement>document.getElementById(name +'save');
+    const setting = HTMLSetting.find(name);
+
+    input.classList.remove('settingEdit');
+    input.classList.add('settingReadonly');
+
+    editBtn.innerHTML='Edit';
+
+    editBtn.blur();
+
+    input.value=setting.backstore;
+    input.readOnly=true;
+
+    SaveBtn.setAttribute('style', 'display:none');
+}
+
+
+function receiveSettings(allSettings: Setting[]) {
+    const section = document.getElementById('settingsSection');
+    for (const setting of allSettings) {
+        if (HTMLSetting.has(setting.name)) {
+            updateSetting(setting);
+        } else {
+            addSetting(setting, section);
+        }
+    }
 }
 function setConnectionStatus(connected: boolean) {
     const status = document.getElementById('connection');
     isMonitoring = connected && isMonitoring;
     setMonitoringButton();
-    if (connected && isMonitoring) {
+    if (status && connected && isMonitoring) {
         status.innerHTML = ' (live)';
-    } else if (connected) {
+    } else if (status && connected) {
         status.innerHTML = ' (Connected)';
-    } else {
+    } else if (status) {
         status.innerHTML = ' (Disconnected)';
     }
 }
-
-
 
 function monitor() {
     if (isMonitoring) {
@@ -195,8 +439,10 @@ function clearSensorValue() {
     for (const sensor of sensors) {
         const sampleDate = sensor.samples[0].date;
         if (Date.now() - sampleDate > 60_000) {
-            const sensorValue = document.getElementById(sensorId(sensor));
-            sensorValue.innerHTML = 'No sensor data received last 60 seconds';
+            const sensorValue = document.getElementById(sensorId(sensor.desc));
+            if (sensorValue) {
+                sensorValue.innerHTML = 'No sensor data received last 60 seconds';
+            }
         }
     }
 
@@ -206,7 +452,7 @@ function clearSensorValue() {
     }
 }
 
-function round(value, precision) {
+function round(value: number, precision: number) {
     //    precision || (precision = 1);
     const inverse = 1.0 / precision;
     return Math.round(value * inverse) / inverse;

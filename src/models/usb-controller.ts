@@ -8,13 +8,6 @@ import { SensorLog } from './sensor-log';
 
 import { log } from '../logger';
 
-export class USBDeviceConfig {
-        vendorId: number;
-        productId: number;
-        product: string;
-        interface: number;
-    }
-
 const VID = 0x0C45;
 const PID = 0x7401;
 const TEMPER_GOLD = 'TEMPerV1.4';
@@ -42,46 +35,49 @@ export class USBController {
     public static getLoggers(): SensorLog[] {
         return USBController.loggers;
     }
-    private static initializeLogger(sensorState: SensorState) {
-        const sensorlogger = new SensorLog(sensorState);
-        USBController.loggers.push(sensorlogger);
-        sensorlogger.startLogging();
+    private static createSensorLog(sensorState: SensorState) {
+        const sensorLog = new SensorLog(sensorState);
+        USBController.loggers.push(sensorLog);
+        sensorLog.startLogging();
     }
-    private static initializeDevice(path: string, reporter: USBReporter) {
+    private static createUSBDevice(path: string, reporter: USBReporter) {
         const hid = new HID.HID(path);
-        const device = new USBDevice (hid, reporter);
-        USBController.devices.push(device);
+        const usbDevice = new USBDevice (hid, reporter);
+        USBController.devices.push(usbDevice);
     }
 
     public static initializeDevices(): void {
-        log.info ('Application started: ' + new Date().toISOString());
+        log.info ('USBController.initializeDevices: start time=' + new Date().toISOString());
         HID.devices().find(device => {
-            log.debug('USBController find device: ' + device);
+            const deviceStr = JSON.stringify(device);
             if (isTemperGold(device) && device.path !== undefined) {
-                log.debug('USBController sensor TEMPer Gold found: ' +  JSON.stringify(device));
+                log.info('USBController.initializeDevices: TEMPer Gold found: ' +  deviceStr);
 
-                const sensor = new TemperGold();
-                USBController.initializeLogger(sensor);
-                USBController.initializeDevice(device.path, sensor);
+                const sensorState = new TemperGold(device);
+                USBController.createUSBDevice(device.path, sensorState);
+                USBController.createSensorLog(sensorState);
+
                 // return true;
             } else if (isTemper8(device) && device.path !== undefined) {
-                log.debug('USBController sensor TEMPer 8 found: ' +  JSON.stringify(device));
+                log.info('USBController sensor TEMPer 8 found: ' +  deviceStr);
 
-                const sensor = new Temper8();
+                const sensorState = new Temper8(device);
+                USBController.createUSBDevice(device.path, sensorState);
+                USBController.createSensorLog(sensorState);
 
-                USBController.initializeLogger(sensor);
-                USBController.initializeDevice(device.path, sensor);
                // return true;
+            } else {
+                log.debug('USBController.initializeDevices: unsupported USB device found=' + deviceStr);
             }
 
             return false;
         });
-        log.info('Found ' + USBController.devices.length + ' HID device(s)');
+        log.info('USBController.initializeDevices: Found ' + USBController.devices.length + ' HID device(s)');
 
     }
 
     public static setPollingInterval(ms: number) {
-        log.debug('USBController.setPollingInterval: ' + ms);
+        log.debug('USBController.setPollingInterval: ms=' + ms);
         for (const device of USBController.devices) {
             device.setPollingInterval(ms);
         }

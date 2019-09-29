@@ -1,4 +1,4 @@
-import { HOSTNAME } from './config';
+import { conf } from './config';
 
 import { createLogger, format, Logger, transports} from 'winston';
 const { combine, timestamp, printf, label } = format;
@@ -7,16 +7,17 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
   return `${level}: ${timestamp} [${label}]: ${message}`;
 });
 
-import { CONSOLE_LEVEL, ERROR_LEVEL, ERROR_LOG_FILE } from './config';
 const trans = {
-    file: new transports.File({ filename: ERROR_LOG_FILE, level: ERROR_LEVEL }),
+    file: new transports.File({ filename: conf.ERROR_LOG_FILE,
+                                level: conf.ERROR_LEVEL }),
     console: new (transports.Console)(),
 };
 
 export const log: Logger =  createLogger ({
-    format: combine (timestamp(), label ({ label: 'iTemper-device:' + HOSTNAME}), myFormat),
+    format: combine (timestamp(), label ({ label: 'iTemper-device:' +
+                                           conf.HOSTNAME}), myFormat),
     exitOnError: false,
-    level: CONSOLE_LEVEL,
+    level: conf.CONSOLE_LEVEL,
     transports: [
         trans.file,
         trans.console,

@@ -18,6 +18,7 @@ FROM resin/raspberry-pi-node:6
 RUN apt-get update && apt-get install -yq \
     libudev-dev \
     libusb-1.0-0-dev \
+    libsecret-1-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Defines our working directory in container
