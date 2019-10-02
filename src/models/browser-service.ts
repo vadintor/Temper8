@@ -65,6 +65,7 @@ export interface SensorSample {
 }
 export interface SensorLog {
     desc: SensorDescription;
+    attr: SensorAttributes;
     samples: SensorSample[];
 }
 
@@ -85,7 +86,7 @@ function AddSensorLogs(sensorLogs: SensorLog[], state: SensorState): void {
     for (const sensor of sensorData) {
         const samples: SensorSample[] = [];
         samples.push(sensorSample(sensor));
-        sensorLogs.push({ desc: description(attr, sensor), samples});
+        sensorLogs.push({ desc: description(attr, sensor), attr, samples});
     }
 }
 export function getSensors(ws: WebSocket) {

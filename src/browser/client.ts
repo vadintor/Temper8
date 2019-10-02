@@ -1,5 +1,7 @@
 import { settings } from 'cluster';
 
+import {SensorAttributes} from './../models/sensor-attributes';
+
 init();
 
 function init() {
@@ -69,6 +71,7 @@ export interface SensorSample {
 }
 export interface SensorLog {
     desc: SensorDescription;
+    attr: SensorAttributes;
     samples: SensorSample[];
 }
 export type SettingValue = string | number;
@@ -202,7 +205,7 @@ function log(sensorData: SensorLog[]) {
             const date = new Date(sensor.samples[0].date);
             const value = sensor.samples[0].value;
             desc.innerHTML = 'by ' + sensorName(sensor.desc)  + ': ' +
-                date.toLocaleDateString() + ', ' + date.toLocaleTimeString();
+                date.toLocaleDateString() + ', ' + date.toLocaleTimeString() + '. model: ' + sensor.attr.model;
         }
         clearTimeout(logTimer);
         logTimer = setInterval(clearSensorValue, 3000);

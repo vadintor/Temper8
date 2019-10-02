@@ -1,4 +1,5 @@
 import * as WebSocket from 'ws';
+import { SensorAttributes } from './sensor-attributes';
 import { Setting } from './settings';
 export interface InboundMessage {
     command: 'getSensors' | 'getSettings' | 'startMonitor' | 'stopMonitor' | 'saveSetting';
@@ -20,6 +21,7 @@ export interface SensorSample {
 }
 export interface SensorLog {
     desc: SensorDescription;
+    attr: SensorAttributes;
     samples: SensorSample[];
 }
 export declare function getSensors(ws: WebSocket): void;
