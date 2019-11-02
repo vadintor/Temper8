@@ -182,8 +182,8 @@ export class SensorLog {
                     ' date: ' + new Date(data.timestamp()).toLocaleString());
             })
             .catch(function(e) {
-                log.error('SensorLog.onSensorDataReceived: axios.post catch error code='+ e.status);
-                if (e.status === 403) {
+                log.error('SensorLog.onSensorDataReceived: axios.post catch error code='+ JSON.stringify(e));
+                if (e.status === '403') {
                     log.debug('SensorLog.onSensorDataReceived: register sensor');
                     this.registerSensor(data);
                 }
