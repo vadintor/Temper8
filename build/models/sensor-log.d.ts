@@ -29,5 +29,6 @@ export declare class SensorLog {
     startLogging(filter?: FilterConfig): void;
     stopLogging(): void;
     private onSensorDataReceived;
+    private registerSensor;
     private onMonitor;
 }

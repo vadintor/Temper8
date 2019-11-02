@@ -182,7 +182,11 @@ export class SensorLog {
                     ' date: ' + new Date(data.timestamp()).toLocaleString());
             })
             .catch(function(e) {
-                log.info('SensorLog.onSensorDataReceived: axios.post catch error='+ e);
+                log.error('SensorLog.onSensorDataReceived: axios.post catch error code='+ e.status);
+                if (e.status === 403) {
+                    log.debug('SensorLog.onSensorDataReceived: register sensor');
+                    this.registerSensor(data);
+                }
             });
             // AZURE IOT
             // const message = new Message(JSON.stringify(sensorLog));
@@ -191,6 +195,25 @@ export class SensorLog {
         }
     }
 
+    private registerSensor(data: SensorData): void {
+        const self = this;
+        const attr = this.state.getAttr();
+        const desc = { SN: attr.SN, port: data.getPort()};
+        const body = { desc, attr };
+        const url = '';
+
+        const Authorization = 'Bearer ' + this.SHARED_ACCESS_KEY;
+
+        this.axios.post(url, body, {headers: { Authorization }})
+        .then (function(res) {
+            log.info('SensorLog.registerSensor: axios.post - register sensor desc=' + JSON.stringify(res));
+        })
+        .catch(function(e) {
+            log.error('SensorLog.registerSensor: axios.post - cannot register desc=' +
+                        JSON.stringify(desc) + ', status=' + e.status);
+            setTimeout(() => self.registerSensor(data), 5_000);
+        });
+    }
     private onMonitor(data: SensorData): void {
         log.debug('SensorLog.onMonitor');
         const desc = { SN: this.state.getAttr().SN, port: data.getPort()};
