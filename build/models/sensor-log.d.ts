@@ -8,6 +8,7 @@ export interface SensorLogData {
     samples: SensorData[];
 }
 export declare class SensorLog {
+    retryCounter: number;
     private state;
     private timestamp;
     private logging;

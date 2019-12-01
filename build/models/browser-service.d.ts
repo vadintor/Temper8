@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import * as WebSocket from 'ws';
 import { SensorAttributes } from './sensor-attributes';
 import { Setting } from './settings';

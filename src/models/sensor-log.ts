@@ -8,19 +8,13 @@ import {Setting, Settings} from './settings';
 
 import WebSocket from 'isomorphic-ws';
 
-// Import Azure
-
-// import { Client, Message } from 'azure-iot-device';
-// import { Mqtt } from 'azure-iot-device-mqtt';
-
-
-
 export interface SensorLogData {
     desc: { SN: string, port: number};
     samples: SensorData[];
 }
 
 export class SensorLog {
+    public retryCounter = 0;
     private state: SensorState;
 
     private timestamp: number = 0;
@@ -35,15 +29,8 @@ export class SensorLog {
     private WS_URL: string = '';
     private WS_ORIGIN: string = '';
     private ITEMPER_URL: string = '';
- // private AZURE_CONNECTION_STRING: string;
-
 
     private socket: WebSocket;
-
-    // Azure IOT
-    // tslint:disable-next-line:max-line-length
-    // private connectionString: string = '';
-    // private client: Client;
 
     private createAxiosInstance(): AxiosInstance {
         return this.axios = axios.create({
@@ -163,6 +150,7 @@ export class SensorLog {
 //   }
 
     private onSensorDataReceived(data: SensorData): void {
+        const self = this;
         if (this.logging) {
             const desc = { SN: this.state.getAttr().SN, port: data.getPort()};
             const samples = [{date: data.timestamp(), value: data.getValue()}];
@@ -174,7 +162,6 @@ export class SensorLog {
             log.debug('URL: ' + url);
 
             const Authorization = 'Bearer ' + this.SHARED_ACCESS_KEY;
-
             this.axios.post(url, sensorLog, {headers: { Authorization }})
             .then (function(res) {
                 log.info('SensorLog.onSensorDataReceived: axios.post ' + url + ' ' + res.statusText +
@@ -182,11 +169,9 @@ export class SensorLog {
                     ' date: ' + new Date(data.timestamp()).toLocaleString());
             })
             .catch(function(e) {
-                log.error('SensorLog.onSensorDataReceived: axios.post catch error code='+ JSON.stringify(e));
-                if (e.status === '403') {
-                    log.debug('SensorLog.onSensorDataReceived: register sensor');
-                    this.registerSensor(data);
-                }
+                log.debug('SensorLog.onSensorDataReceived: axios.post sensor data:'+  e.response.status);
+                log.info('SensorLog.onSensorDataReceived: try registering the sensor');
+                self.registerSensor(data);
             });
             // AZURE IOT
             // const message = new Message(JSON.stringify(sensorLog));
@@ -197,23 +182,35 @@ export class SensorLog {
 
     private registerSensor(data: SensorData): void {
         const self = this;
-        const attr = this.state.getAttr();
-        const desc = { SN: attr.SN, port: data.getPort()};
+        const stateAttr = this.state.getAttr();
+        const attr = {  model: stateAttr.model,
+                        category: stateAttr.category.toString(),
+                        accuracy: stateAttr.accuracy,
+                        resolution: stateAttr.resolution,
+                        maxSampleRate: stateAttr.maxSampleRate};
+        const desc = { SN: stateAttr.SN, port: data.getPort()};
         const body = { desc, attr };
         const url = '';
 
         const Authorization = 'Bearer ' + this.SHARED_ACCESS_KEY;
 
         this.axios.post(url, body, {headers: { Authorization }})
-        .then (function(res) {
-            log.info('SensorLog.registerSensor: axios.post - register sensor desc=' + JSON.stringify(res));
+        .then (function() {
+            log.info('SensorLog.registerSensor: axios.post - successful');
         })
         .catch(function(e) {
-            log.error('SensorLog.registerSensor: axios.post - cannot register desc=' +
-                        JSON.stringify(desc) + ', status=' + e.status);
-            setTimeout(() => self.registerSensor(data), 5_000);
+            try {
+                log.error('SensorLog.registerSensor: axios.post - cannot register desc=' +
+                JSON.stringify(desc) + ', status=' + e.response.status + ', retry=' + self.retryCounter);
+                if (self.retryCounter < 5) {
+                    setTimeout(() => { self.retryCounter += 1; self.registerSensor(data);}, 5_000);
+                }
+            } catch (e) {
+                log.error('SensorLog.registerSensor: catch register: ' + e);
+            }
         });
     }
+
     private onMonitor(data: SensorData): void {
         log.debug('SensorLog.onMonitor');
         const desc = { SN: this.state.getAttr().SN, port: data.getPort()};

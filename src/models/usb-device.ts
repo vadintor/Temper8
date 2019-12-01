@@ -29,7 +29,7 @@ export class USBDevice {
     private MAX_SAMPLE_RATE = 1/this.POLL_INTERVAL;
     private deviceInitialized = false;
 
-    private timer: number;
+    private timer: NodeJS.Timer;
 
     constructor(hid: HID.HID, reporter: USBReporter) {
         this.hid = hid;

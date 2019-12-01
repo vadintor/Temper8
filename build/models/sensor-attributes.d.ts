@@ -1,8 +1,8 @@
 export declare enum SensorCategory {
-    Temperature = 0,
-    AbsoluteHumidity = 1,
-    RelativeHumidity = 2,
-    WindSpeed = 3
+    Temperature = "Temperature",
+    AbsoluteHumidity = "AbsoluteHumidity",
+    RelativeHumidity = "RelativeHumidity",
+    WindSpeed = "WindSpeed"
 }
 export declare class SensorAttributes {
     SN: string;

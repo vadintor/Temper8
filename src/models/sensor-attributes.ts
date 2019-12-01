@@ -1,8 +1,8 @@
 export enum SensorCategory {
-    Temperature,
-    AbsoluteHumidity,
-    RelativeHumidity,
-    WindSpeed,
+    Temperature = 'Temperature',
+    AbsoluteHumidity = 'AbsoluteHumidity',
+    RelativeHumidity = 'RelativeHumidity',
+    WindSpeed = 'WindSpeed',
 }
 
 export class SensorAttributes {

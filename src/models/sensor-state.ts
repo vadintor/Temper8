@@ -2,6 +2,8 @@ import { log } from './../logger';
 import { SensorAttributes } from './sensor-attributes';
 import { SensorData } from './sensor-data';
 
+import { Setting, Settings  } from './settings';
+
 export interface FilterConfig {
     resolution?: number;
     maxTimeDiff?: number;
@@ -21,6 +23,7 @@ export class SensorState {
 
     constructor(attr: SensorAttributes) {
         this.attr = attr;
+        Settings.onChange(Settings.SERIAL_NUMBER, this.SNChanged.bind(this));
     }
 
     public getAttr(): SensorAttributes {
@@ -44,6 +47,11 @@ export class SensorState {
     }
     public addSensorDataListener(onSensorDataReceived: (sensor: SensorData) => void, filter?: FilterConfig): void {
         this.sensorDataListeners.push ({publish: onSensorDataReceived, filter});
+    }
+    private SNChanged(setting: Setting) {
+        const sn = <string>setting.value;
+        this.attr.SN = sn;
+        log.info('SensorState.SNChanged to' + sn);
     }
     private round(data: SensorData, resolution: number): number {
         const multiplier = Math.pow(10, resolution || 0);

@@ -23,6 +23,7 @@ export declare class SensorState {
     maxSampleRate(): number;
     getSensorData(): SensorData[];
     addSensorDataListener(onSensorDataReceived: (sensor: SensorData) => void, filter?: FilterConfig): void;
+    private SNChanged;
     private round;
     private valueDiff;
     private timeDiff;
