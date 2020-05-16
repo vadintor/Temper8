@@ -1,16 +1,25 @@
-import axios, { AxiosInstance } from 'axios';
-import { SensorData } from '../models/sensor-data';
+import axios, { AxiosError, AxiosInstance } from 'axios';
+import { SensorData, } from '../models/sensor-data';
 import { FilterConfig, SensorState } from '../models/sensor-state';
 
 import { log } from './../logger';
 
 import {Setting, Settings} from './settings';
 
+import { settings } from 'cluster';
 import WebSocket from 'isomorphic-ws';
+export interface Sample {
+    date: number;
+    value: number;
+}
 
+export interface SensorDescriptor {
+    SN: string;
+    port: number;
+}
 export interface SensorLogData {
-    desc: { SN: string, port: number};
-    samples: SensorData[];
+    desc: SensorDescriptor;
+    samples: Sample[];
 }
 
 export class SensorLog {
@@ -154,7 +163,7 @@ export class SensorLog {
         if (this.logging) {
             const desc = { SN: this.state.getAttr().SN, port: data.getPort()};
             const samples = [{date: data.timestamp(), value: data.getValue()}];
-            const sensorLog = { desc, samples };
+            const sensorLog: SensorLogData = { desc, samples };
             const diff = data.timestamp() - this.timestamp;
             this.timestamp = data.timestamp();
 
@@ -162,16 +171,37 @@ export class SensorLog {
             log.debug('URL: ' + url);
 
             const Authorization = 'Bearer ' + this.SHARED_ACCESS_KEY;
-            this.axios.post(url, sensorLog, {headers: { Authorization }})
+            this.axios.post<SensorLogData>(url, sensorLog, {headers: { Authorization }})
             .then (function(res) {
                 log.info('SensorLog.onSensorDataReceived: axios.post ' + url + ' ' + res.statusText +
                     ' res.data: ' + JSON.stringify(sensorLog) + ' ms: ' + diff +
                     ' date: ' + new Date(data.timestamp()).toLocaleString());
             })
-            .catch(function(e) {
-                log.debug('SensorLog.onSensorDataReceived: axios.post sensor data:'+  e.response.status);
-                log.info('SensorLog.onSensorDataReceived: try registering the sensor');
-                self.registerSensor(data);
+            .catch(function(error: AxiosError) {
+                log.debug('SensorLog.onSensorDataReceived: catch sensor data:'+  error.response);
+
+                if (error.response) {
+                    // The request was made and the server responded with a status code
+                    // that falls out of the range of 2xx
+                    log.debug('SensorLog.onSensorDataReceived:' +  error.response.status + ' - ' +
+                    JSON.stringify(error.response.data));
+                    if (error.response.status === 308) {
+                        const {  name } = error.response.data;
+                        Settings.update(Settings.SERIAL_NUMBER, name, ( updated ) => {
+                            if (!updated) {
+                                log.error('SensorLog.onSensorDataReceived: cannot update serial number after redirect request from itemper ');
+                            }
+                        });
+                        self.registerSensor(data);
+                    }
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    log.error('SensorLog.onSensorDataReceived, request, no response:' + error.request);
+                } else {
+                    // Something happened in setting up the request that triggered an Error
+                    log.error('SensorLog.onSensorDataReceived,  error.config:' + error.config);
+                }
+
             });
             // AZURE IOT
             // const message = new Message(JSON.stringify(sensorLog));
@@ -181,14 +211,13 @@ export class SensorLog {
     }
 
     private registerSensor(data: SensorData): void {
-        const self = this;
         const stateAttr = this.state.getAttr();
         const attr = {  model: stateAttr.model,
                         category: stateAttr.category.toString(),
                         accuracy: stateAttr.accuracy,
                         resolution: stateAttr.resolution,
                         maxSampleRate: stateAttr.maxSampleRate};
-        const desc = { SN: stateAttr.SN, port: data.getPort()};
+        const desc: SensorDescriptor = { SN: stateAttr.SN, port: data.getPort()};
         const body = { desc, attr };
         const url = '';
 
@@ -198,13 +227,28 @@ export class SensorLog {
         .then (function() {
             log.info('SensorLog.registerSensor: axios.post - successful');
         })
-        .catch(function(e) {
+        .catch(function(error: AxiosError) {
             try {
-                log.error('SensorLog.registerSensor: axios.post - cannot register desc=' +
-                JSON.stringify(desc) + ', status=' + e.response.status + ', retry=' + self.retryCounter);
-                if (self.retryCounter < 5) {
-                    setTimeout(() => { self.retryCounter += 1; self.registerSensor(data);}, 5_000);
+                log.debug('SensorLog.registerSensor: catch sensor data:' +  error.response);
+                log.info('SensorLog.registerSensor: trying registering the sensor');
+
+                if (error.response) {
+                    // The request was made and the server responded with a status code
+                    // that falls out of the range of 2xx
+                    log.debug('SensorLog.registerSensor:' +  error.response.status + ' - ' +
+                    JSON.stringify(error.response.data));
+                    if (error.response.status === 503) {
+                        log.debug('SensorLog.registerSensor: trying register sensor again: ' +
+                            JSON.stringify(desc));
+                    }
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    log.error('SensorLog.registerSensor, request, no response:' + error.request.toString());
+                } else {
+                    // Something happened in setting up the request that triggered an Error
+                    log.error('SensorLog.registerSensor,  error.config:' + error.config);
                 }
+
             } catch (e) {
                 log.error('SensorLog.registerSensor: catch register: ' + e);
             }

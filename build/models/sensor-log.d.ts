@@ -1,11 +1,15 @@
-import { SensorData } from '../models/sensor-data';
 import { FilterConfig, SensorState } from '../models/sensor-state';
+export interface Sample {
+    date: number;
+    value: number;
+}
+export interface SensorDescriptor {
+    SN: string;
+    port: number;
+}
 export interface SensorLogData {
-    desc: {
-        SN: string;
-        port: number;
-    };
-    samples: SensorData[];
+    desc: SensorDescriptor;
+    samples: Sample[];
 }
 export declare class SensorLog {
     retryCounter: number;

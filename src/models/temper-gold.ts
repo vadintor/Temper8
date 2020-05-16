@@ -8,7 +8,7 @@ import {Setting, Settings} from './settings';
 import { log } from '../logger';
 
 
-// Temper Gold parser understands HID reports from Temper8 devices
+// Temper Gold parser understands HID reports from Temper Gold devices
 // Independent of USB lib used.
 
 export class TemperGold extends SensorState implements USBReporter {
