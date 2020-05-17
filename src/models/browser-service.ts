@@ -27,6 +27,14 @@ function broadcast(ws: WebSocket, message: OutboundMessage, includeSelf: boolean
       });
 
 }
+function broadcastAll(message: OutboundMessage) {
+    wss.clients.forEach(function each(client) {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify(message));
+        }
+    });
+    log.debug('browser-Service.broadcastAll: message sent');
+}
 export function initOutboundMessageService(server: WebSocket.Server) {
     wss=server;
 }
@@ -68,16 +76,12 @@ export interface SensorLog {
     attr: SensorAttributes;
     samples: SensorSample[];
 }
-
-
 function description(attr: SensorAttributes, data: SensorData): SensorDescription {
     return {SN: attr.SN, port: data.getPort()};
 }
-
 function sensorSample(data: SensorData): SensorSample {
     return {value: data.getValue(), date: data.timestamp()};
 }
-
 function AddSensorLogs(sensorLogs: SensorLog[], state: SensorState): void {
 
     const attr: SensorAttributes = state.getAttr(); // Common attributes for all sensors connected
@@ -106,9 +110,18 @@ export function getSettings(ws: WebSocket) {
     const data: Setting[] = Settings.all();
     const message = JSON.stringify({command:'settings', data});
     ws.send(message);
-    log.info('browser-service.getSettings: ' + message);
+    log.info('browser-service.getSettings: sends settings to client' + message);
+    for (const setting of data) {
+        Settings.onChange(setting.name, publishSetting);
+    }
+    log.info('browser-service.getSettings: subscribed to future setting changes');
 }
+export function publishSetting(setting: Setting) {
+    const data: Setting[] = [setting];
+    const message: OutboundMessage = {command:'settings', data};
+    broadcastAll(message);
 
+}
 export function saveSetting(ws: WebSocket, setting: Setting) {
     log.debug('browser-service.saveSetting: ' + JSON.stringify(setting));
     if (setting.name && setting.value) {

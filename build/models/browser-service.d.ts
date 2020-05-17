@@ -27,6 +27,7 @@ export interface SensorLog {
 }
 export declare function getSensors(ws: WebSocket): void;
 export declare function getSettings(ws: WebSocket): void;
+export declare function publishSetting(setting: Setting): void;
 export declare function saveSetting(ws: WebSocket, setting: Setting): void;
 export declare function startMonitor(ws: WebSocket, desc: SensorDescription[]): void;
 export declare function stopMonitor(ws: WebSocket, desc: SensorDescription[]): void;

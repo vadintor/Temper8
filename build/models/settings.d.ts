@@ -7,7 +7,7 @@ export interface Setting {
     text: string;
     readonly: boolean;
 }
-export declare type Listener = (settings: Setting) => void;
+export declare type Listener = (setting: Setting) => void;
 export interface SettingListener {
     settingName: string;
     publish: Listener;

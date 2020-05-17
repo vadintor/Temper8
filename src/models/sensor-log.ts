@@ -6,7 +6,6 @@ import { log } from './../logger';
 
 import {Setting, Settings} from './settings';
 
-import { settings } from 'cluster';
 import WebSocket from 'isomorphic-ws';
 export interface Sample {
     date: number;

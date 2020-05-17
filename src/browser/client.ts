@@ -1,5 +1,3 @@
-import { settings } from 'cluster';
-
 import {SensorAttributes} from './../models/sensor-attributes';
 
 init();
