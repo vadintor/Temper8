@@ -27,7 +27,7 @@ export declare class Settings {
     static WS_URL: string;
     static SHARED_ACCESS_KEY: string;
     static READONLY: boolean;
-    static initializeSettings(): void;
+    static initialize(): void;
     static onChange(settingName: string, publish: Listener): void;
     private static publish;
     static all(): Setting[];

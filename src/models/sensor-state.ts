@@ -51,7 +51,7 @@ export class SensorState {
     private SNChanged(setting: Setting) {
         const sn = <string>setting.value;
         this.attr.SN = sn;
-        log.info('SensorState.SNChanged to' + sn);
+        log.info('SensorState.SNChanged to ' + sn);
     }
     private round(data: SensorData, resolution: number): number {
         const multiplier = Math.pow(10, resolution || 0);

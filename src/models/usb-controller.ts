@@ -46,12 +46,12 @@ export class USBController {
         USBController.devices.push(usbDevice);
     }
 
-    public static initializeDevices(): void {
-        log.info ('USBController.initializeDevices: start time=' + new Date().toISOString());
+    public static initialize(): void {
+        log.info ('USBController.initialize: start time=' + new Date().toISOString());
         HID.devices().find(device => {
             const deviceStr = JSON.stringify(device);
             if (isTemperGold(device) && device.path !== undefined) {
-                log.info('USBController.initializeDevices: TEMPer Gold found: ' +  deviceStr);
+                log.info('USBController.initialize: TEMPer Gold found: ' +  deviceStr);
 
                 const sensorState = new TemperGold(device);
                 USBController.createUSBDevice(device.path, sensorState);
@@ -59,7 +59,7 @@ export class USBController {
 
                 // return true;
             } else if (isTemper8(device) && device.path !== undefined) {
-                log.info('USBController sensor TEMPer 8 found: ' +  deviceStr);
+                log.info('USBController.initialize sensor TEMPer 8 found: ' +  deviceStr);
 
                 const sensorState = new Temper8(device);
                 USBController.createUSBDevice(device.path, sensorState);
@@ -67,12 +67,12 @@ export class USBController {
 
                // return true;
             } else {
-                log.debug('USBController.initializeDevices: unsupported USB device found=' + deviceStr);
+                log.debug('USBController.initialize: unsupported USB device found=' + deviceStr);
             }
 
             return false;
         });
-        log.info('USBController.initializeDevices: Found ' + USBController.devices.length + ' HID device(s)');
+        log.info('USBController.initialize: Found ' + USBController.devices.length + ' HID device(s)');
 
     }
 

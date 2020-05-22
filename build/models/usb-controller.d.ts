@@ -8,7 +8,7 @@ export declare class USBController {
     static getLoggers(): SensorLog[];
     private static createSensorLog;
     private static createUSBDevice;
-    static initializeDevices(): void;
+    static initialize(): void;
     static setPollingInterval(ms: number): void;
     static getPollingInterval(): number;
 }

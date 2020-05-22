@@ -37,7 +37,7 @@ export class Settings {
 
     public static READONLY = true;
 
-    public static initializeSettings() {
+    public static initialize() {
         Settings.add(Settings.SERIAL_NUMBER, 'Serial Number', conf.SERIAL_NUMBER,  '',
         'Serial Number (SN)', !Settings.READONLY);
         Settings.add(Settings.AZURE_CONNECTION_STRING, 'Azure connection string', conf.AZURE_CONNECTION_STRING,  '',

@@ -1,5 +1,5 @@
 ﻿import { Settings } from './models/settings';
-Settings.initializeSettings();
+
 import { log } from './logger';
 
 // import cors from 'cors';
@@ -15,10 +15,8 @@ import route_settings from './routes/settings';
 
 import * as BrowserService from './models/browser-service';
 
+import { Device } from './models/device';
 import { USBController } from './models/usb-controller';
-
-
-
 
 const app = express();
 // const app = expressWs(express()).app;
@@ -31,7 +29,9 @@ const app = express();
 // app.use(cors(corsOptions));
 // app.disable('etag');
 
-USBController.initializeDevices();
+Settings.initialize();
+Device.initialize();
+USBController.initialize();
 
 // view engine setup
 // app.set('views', path.join(__dirname, 'views'));

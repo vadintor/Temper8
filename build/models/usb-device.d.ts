@@ -15,7 +15,7 @@ export declare class USBDevice {
     private timer;
     constructor(hid: HID.HID, reporter: USBReporter);
     private pollIntervalChanged;
-    initializeDevice(): void;
+    initialize(): void;
     close(): void;
     private sampleRate;
     setPollingInterval(ms: number): void;

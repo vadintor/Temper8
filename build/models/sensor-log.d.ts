@@ -33,7 +33,7 @@ export declare class SensorLog {
     islogging(): boolean;
     startLogging(filter?: FilterConfig): void;
     stopLogging(): void;
-    private onSensorDataReceived;
+    private onDataReceived;
     private registerSensor;
     private onMonitor;
 }

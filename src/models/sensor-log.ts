@@ -42,7 +42,7 @@ export class SensorLog {
 
     private createAxiosInstance(): AxiosInstance {
         return this.axios = axios.create({
-            baseURL: this.ITEMPER_URL,
+            baseURL: this.ITEMPER_URL + '/sensors',
             headers: {'Content-Type': 'application/json'}});
     }
 
@@ -56,10 +56,7 @@ export class SensorLog {
             log.info('SensorLog: socket.on(open): Device.SensorLog connected to backend!');
         });
         socket.on('message', (data: WebSocket.Data): void => {
-            log.info('SensorLog: socket.on(message): received from back-end' + JSON.stringify(data));
-        });
-        socket.on('message', (data: WebSocket.Data): void => {
-            log.info('SensorLog: socket.on(message): received from back-end' + JSON.stringify(data));
+            log.info('SensorLog: socket.on(message): ' + data);
         });
 
         socket.on('error', (): void => {
@@ -76,7 +73,7 @@ export class SensorLog {
         this.state = state;
         this.initSettings();
 
-        this.state.addSensorDataListener(this.onSensorDataReceived.bind(this), this.dataFilter);
+        this.state.addSensorDataListener(this.onDataReceived.bind(this), this.dataFilter);
         this.state.addSensorDataListener(this.onMonitor.bind(this));
 
         this.axios = this.createAxiosInstance();
@@ -157,7 +154,7 @@ export class SensorLog {
 //     };
 //   }
 
-    private onSensorDataReceived(data: SensorData): void {
+    private onDataReceived(data: SensorData): void {
         const self = this;
         if (this.logging) {
             const desc = { SN: this.state.getAttr().SN, port: data.getPort()};
@@ -177,20 +174,22 @@ export class SensorLog {
                     ' date: ' + new Date(data.timestamp()).toLocaleString());
             })
             .catch(function(error: AxiosError) {
-                log.debug('SensorLog.onSensorDataReceived: catch sensor data:'+  error.response);
-
                 if (error.response) {
                     // The request was made and the server responded with a status code
                     // that falls out of the range of 2xx
                     log.debug('SensorLog.onSensorDataReceived:' +  error.response.status + ' - ' +
                     JSON.stringify(error.response.data));
-                    if (error.response.status === 308) {
+                    if (error.response.status === 308 ||
+                        error.response.status === 404 ||
+                        error.response.status === 422) {
                         const {  name } = error.response.data;
-                        Settings.update(Settings.SERIAL_NUMBER, name, ( updated ) => {
-                            if (!updated) {
-                                log.error('SensorLog.onSensorDataReceived: cannot update serial number after redirect request from itemper ');
-                            }
-                        });
+                        if (name) {
+                            Settings.update(Settings.SERIAL_NUMBER, name, ( updated ) => {
+                                if (!updated) {
+                                    log.error('SensorLog.onSensorDataReceived: cannot update serial number after redirect request from itemper ');
+                                }
+                            });
+                        }
                         self.registerSensor(data);
                     }
                 } else if (error.request) {

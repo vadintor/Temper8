@@ -39,7 +39,7 @@ export class USBDevice {
             this.POLL_INTERVAL = 1_000 * 1/this.MAX_SAMPLE_RATE;
         }
         Settings.onChange(Settings.POLL_INTERVAL, this.pollIntervalChanged.bind(this));
-        this.initializeDevice();
+        this.initialize();
         this.pollSensors();
     }
 
@@ -52,7 +52,7 @@ export class USBDevice {
             log.info('USBDevice.pollIntervalChanged to' + pollInterval);
         }
     }
-    public initializeDevice() {
+    public initialize() {
         if (!this.deviceInitialized) {
             this.hid.on('data', this.parseInput.bind(this));
             this.hid.on('error', this.parseError.bind(this));
@@ -84,7 +84,7 @@ export class USBDevice {
         }
         clearInterval(this.timer);
         this.timer = setInterval(this.pollSensors.bind(this), this.POLL_INTERVAL);
-        log.info('USBDevice.setPollingInterval:' + ms);
+        log.info('USBDevice.setPollingInterval: ' + ms + 'ms');
     }
 
     public getPollingInterval(): number {
@@ -94,7 +94,7 @@ export class USBDevice {
     // This is were all starts when set interval time expires
     private pollSensors() {
         if (! this.deviceInitialized) {
-            this.initializeDevice();
+            this.initialize();
         } else {
             log.debug('+++ USBController.pollSensors');
             const initCommands = this.reporter.initWriteReport();
