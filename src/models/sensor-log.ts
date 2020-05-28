@@ -179,6 +179,10 @@ export class SensorLog {
                     // that falls out of the range of 2xx
                     log.debug('SensorLog.onSensorDataReceived:' +  error.response.status + ' - ' +
                     JSON.stringify(error.response.data));
+                    if (error.response.status === 401) {
+                        // Wrong shared access key
+                        log.debug('SensorLog.onDataReceived: ACCESS DENIED wrong shared access key: ');
+                    } else
                     if (error.response.status === 308 ||
                         error.response.status === 404 ||
                         error.response.status === 422) {
@@ -235,8 +239,12 @@ export class SensorLog {
                     // that falls out of the range of 2xx
                     log.debug('SensorLog.registerSensor:' +  error.response.status + ' - ' +
                     JSON.stringify(error.response.data));
+                    if (error.response.status === 401) {
+                        // Wrong shared access key
+                        log.debug('SensorLog.registerSensor: ACCESS DENIED wrong shared access key: ');
+                    } else
                     if (error.response.status === 503) {
-                        log.debug('SensorLog.registerSensor: trying register sensor again: ' +
+                        log.debug('SensorLog.registerSensor: itemper backend '+ this.ITEMPER_URL +' + not available: ' +
                             JSON.stringify(desc));
                     }
                 } else if (error.request) {
