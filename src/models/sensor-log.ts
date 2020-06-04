@@ -50,7 +50,7 @@ export class SensorLog {
         // const wsTestUrl = 'wss://test.itemper.io/ws';
         const wsTestUrl = this.WS_URL;
         const origin = this.WS_ORIGIN;
-        const socket = new WebSocket (wsTestUrl, { origin });
+        const socket = new WebSocket (wsTestUrl, { origin, perMessageDeflate: false });
 
         socket.on('open', () => {
             log.info('SensorLog: socket.on(open): Device.SensorLog connected to backend!');
@@ -58,11 +58,19 @@ export class SensorLog {
         socket.on('message', (data: WebSocket.Data): void => {
             log.info('SensorLog: socket.on(message): ' + data);
         });
-
-        socket.on('error', (): void => {
-            log.info('SensorLog: socket.on(error): ');
+        socket.on('error', (self: WebSocket, error: Error) => {
+            log.error('SensorLog: socket.on(error): ws=' + JSON.stringify(self));
+            log.error('SensorLog: socket.on(error): error=' + JSON.stringify(error));
         });
 
+        socket.on('close', (self: WebSocket, code: number, reason: string) => {
+
+            if (code === 404) {
+                log.info('SensorLog: socket.on(close): code: 404');
+            }
+            log.info('SensorLog: socket.on(close): ws=' + JSON.stringify(self));
+            log.info('SensorLog: socket.on(close): code/reason=' + code + reason);
+        });
         return socket;
     }
 
