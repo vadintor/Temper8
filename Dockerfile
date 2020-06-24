@@ -21,6 +21,12 @@ RUN apt-get update && apt-get install -yq \
     libsecret-1-dev \
     && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get install \
+    bluetooth \
+    bluez \
+    libbluetooth-dev \ 
+    libudev-dev
+
 # Defines our working directory in container
 WORKDIR /usr/src/app
 
@@ -36,6 +42,9 @@ COPY CHANGELOG.md CHANGELOG.md
 RUN npm install --production node-hid --build-from-source --unsafe-perm && \
     npm cache clean && rm -rf /tmp/*
 RUN JOBS=MAX npm install --production --unsafe-perm && npm cache clean && rm -rf /tmp/*
+
+# Enable udevd so that plugged dynamic hardware devices show up in our container.
+ENV UDEV=1
 
 # This will copy all files in our root to the working  directory in the container
 COPY ./build ./build
