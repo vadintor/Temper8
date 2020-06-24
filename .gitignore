@@ -56,3 +56,6 @@ jspm_packages/
 
 # sd card for resin OS
 sd
+
+#build
+build

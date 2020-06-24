@@ -4,14 +4,20 @@ init();
 
 function init() {
     initMenu();
+
     openSection('sensorSection');
     const monitorBtn = document.getElementById('monitor');
     on('click', monitorBtn,  ()=> { monitor();});
-}
+    window.addEventListener('message', receiveItemperDevice, false);
 
+}
+function receiveItemperDevice(event: any) {
+    console.log('client.receiveItemperDevice, event=' + JSON.stringify(event.data));
+}
 function initMenu() {
     const menu = document.getElementById('menu');
     console.log('initMenu()');
+    menu.appendChild(menuItem('Device','deviceSection'));
     menu.appendChild(menuItem('Sensors','sensorSection'));
     menu.appendChild(menuItem('Settings','settingsSection'));
 }

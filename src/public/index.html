@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <title>iTemper device</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="Sensor device for logging environmental data">
     <meta name="author" content="Torbjörn Vading">
 
@@ -30,6 +31,11 @@
         </ul>
     </nav>
     <div id="app">
+        <section id="deviceSection" style="display: none">
+            <h2>Device provisioning</h2>
+            <iframe width="100%" src="https://itemper.io/itemper-device/index.html"></iframe>
+        </section>
+
         <section id="sensorSection" style="display: none">
             <h2>Sensors</h2>
             <button id="monitor" type="button">Start Monitor</button>
