@@ -42,7 +42,7 @@
         "express": "^4.17.1",
         "isomorphic-ws": "^4.0.1",
         "node-hid": "^0.7.9",
-        "npm": "^6.12.1",
+        "npm": "^6.13.4",
         "pug": "^2.0.4",
         "systeminformation": "^4.26.9",
         "typescript": "^3.6.4",
