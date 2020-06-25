@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
   <meta charset="utf-8" />
-  <title>balenaBLE</title>
+  <title>iTemper DEvice</title>
   <link rel="stylesheet" href="style.css" />
   <script src="ble-client.js"></script>
   <body>
-    <h1>balenaBLE</h1>
+    <h1>Bluetooth Device</h1>
 
     <div class="lamp">
       <?xml version="1.0" encoding="iso-8859-1"?>
@@ -117,7 +117,7 @@
 
     <div id="stats">
       <div id="not-connected">
-        <p>Connect to a balenaBLE device to get started</p>
+        <p>Connect to an itemper BLE device to get started</p>
         <button id="btn-connect" class="btn">Connect</button>
       </div>
       <div id="container" class="hidden">
@@ -134,55 +134,21 @@
       </div>
     </div>
     <footer>
-      <div>
-        Icons made by
-        <a
-          href="https://www.flaticon.com/authors/creaticca-creative-agency"
-          title="Creaticca Creative Agency"
-          >Creaticca Creative Agency</a
-        >
-        from
-        <a href="https://www.flaticon.com/" title="Flaticon"
-          >www.flaticon.com</a
-        >
-      </div>
     </footer>
   </body>
 </html>
-<script>
-  /* updates UI when LED is turned on/off */
-  function handleLedStatusChanged(event) {
-    let status = event.target.value.getUint8(0);
-    rays = document.getElementsByClassName("rays");
+<script lang="ts">
 
-    if (status) {
-      for (let ray of rays) {
-        ray.style.setProperty("display", "block");
-        let toggle = document.getElementById("toggle");
-      }
-      toggle.checked = true;
-    } else {
-      for (let ray of rays) {
-        ray.style.setProperty("display", "none");
-      }
-      toggle.checked = false;
-    }
-  }
-
-  /* helper function to decode message sent from peripheral */
-  function decode(buf) {
-    let dec = new TextDecoder("utf-8");
-    return dec.decode(buf);
-  }
+  import { ItemperBLE } from './itemper-ble';
 
   /* Disconnect from peripheral and update UI */
   function disconnect() {
-    balenaBLE.disconnect();
+    itemperBLE.disconnect();
     document.getElementById("not-connected").classList.remove("hidden");
     document.getElementById("container").classList.add("hidden");
   }
 
-  var balenaBLE = new BalenaBLE();
+  var itemperBLE = new ItemperBLE();
   var toggle = document.getElementById("toggle");
 
   /* connect to peripheral, load data and add event listeners */
@@ -190,27 +156,24 @@
     .getElementById("btn-connect")
     .addEventListener("click", async event => {
       try {
-        await balenaBLE.request();
-        await balenaBLE.connect();
-        await balenaBLE.setLedCharacteristic();
-        await balenaBLE.setDeviceCharacteristic();
+        await itemperBLE.request();
+        await itemperBLE.connect();
+        await itemperBLE.setDeviceCharacteristic();
         document.getElementById("not-connected").classList.add("hidden");
         document.getElementById(
           "vendor"
-        ).textContent = await balenaBLE.readCPUVendor();
+        ).textContent = await itemperBLE.readCPUVendor();
         document.getElementById(
           "speed"
-        ).textContent = await balenaBLE.readCPUSpeed();
+        ).textContent = await itemperBLE.readCPUSpeed();
 
         toggle.addEventListener("change", e => {
           if (e.target.checked) {
-            balenaBLE.writeLed(1);
             toggle.disabled = true;
             setTimeout(() => {
               toggle.disabled = false;
             }, 1000);
           } else {
-            balenaBLE.writeLed(0);
             toggle.disabled = true;
             setTimeout(() => {
               toggle.disabled = false;

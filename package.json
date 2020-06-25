@@ -32,6 +32,7 @@
     "dependencies": {
         "@types/bleno": "^0.4.1",
         "@types/dotenv": "^6.1.1",
+        "@types/web-bluetooth": "0.0.6",
         "@types/ws": "^4.0.2",
         "axios": "^0.19.0",
         "bleno": "^0.5.0",
@@ -43,6 +44,7 @@
         "node-hid": "^0.7.9",
         "npm": "^6.12.1",
         "pug": "^2.0.4",
+        "systeminformation": "^4.26.9",
         "typescript": "^3.6.4",
         "uuid": "^3.3.3",
         "winston": "^3.2.1",

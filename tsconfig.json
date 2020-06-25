@@ -4,6 +4,13 @@
         "declaration": true,
         "declarationDir": "build",
         "outDir": "build",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+              "src/*"
+            ]
+        },
+        "allowSyntheticDefaultImports": true,
         "noImplicitAny": true,
         "removeComments": true,
         "preserveConstEnums": true,
