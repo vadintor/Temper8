@@ -1,6 +1,6 @@
 {
     "name": "itemper-device",
-    "version": "0.0.32",
+    "version": "0.0.33",
     "description": "This application reads and publish the local temperature on the Internet",
     "homepage": "https://github.com/vadintor/",
     "main": "build/app.js",
@@ -32,6 +32,7 @@
     "dependencies": {
         "axios": "^0.19.2",
         "bleno": "^0.5.0",
+        "bluetooth-hci-socket": "^0.5.1",
         "cors": "^2.8.5",
         "debug": "^2.2.0",
         "express": "^4.17.1",
