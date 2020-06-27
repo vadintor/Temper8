@@ -1,6 +1,6 @@
 
-import HID = require('node-hid');
-import os = require('os');
+import * as HID from 'node-hid';
+import * as os from 'os';
 import { log } from '../logger';
 import { Setting, Settings  } from './settings';
 

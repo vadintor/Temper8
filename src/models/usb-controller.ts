@@ -1,4 +1,4 @@
-import HID = require('node-hid');
+import * as HID from 'node-hid';
 import { SensorState } from './sensor-state';
 import { Temper8 } from './temper-8';
 import { TemperGold } from './temper-gold';

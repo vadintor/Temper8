@@ -1,6 +1,6 @@
 import { CPUManufacturerCharacteristic } from '../../ble/characteristics/cpu-manufacturer-characteristic';
 import { CPUSpeedCharacteristic } from '../../ble/characteristics/cpu-speed-characteristic';
-import { CPUInfoService } from '../../ble/services/device-info-service';
+import { DeviceInfoService } from '../../ble/services/device-info-service';
 
 export class ItemperBLE {
 
@@ -14,7 +14,7 @@ export class ItemperBLE {
 
   /* the Device characteristic providing CPU information */
   async setDeviceCharacteristic() {
-    const service = await this.device.gatt.getPrimaryService(CPUInfoService.ID);
+    const service = await this.device.gatt.getPrimaryService(DeviceInfoService.UUID);
     const vendor = await service.getCharacteristic(
       CPUManufacturerCharacteristic.UUID,
     );
@@ -32,9 +32,9 @@ export class ItemperBLE {
       filters: [
         {
           name: 'itemperBLE',
-        }
+        },
       ],
-      optionalServices: [CPUInfoService.ID],
+      optionalServices: [DeviceInfoService.UUID],
     };
     if (navigator.bluetooth === undefined) {
       alert('Sorry, Your device does not support Web BLE!');
@@ -87,3 +87,49 @@ function decode(buf: any) {
   const dec = new TextDecoder('utf-8');
   return dec.decode(buf);
 }
+
+/* Disconnect from peripheral and update UI */
+function disconnect() {
+  itemperBLE.disconnect();
+  document.getElementById('not-connected').classList.remove('hidden');
+  document.getElementById('container').classList.add('hidden');
+}
+
+const itemperBLE = new ItemperBLE();
+const toggle: HTMLInputElement = <HTMLInputElement> document.getElementById('toggle');
+
+/* connect to peripheral, load data and add event listeners */
+document
+  .getElementById('btn-connect')
+  .addEventListener('click', async event => {
+      try {
+          await itemperBLE.request();
+          await itemperBLE.connect();
+          await itemperBLE.setDeviceCharacteristic();
+          document.getElementById('not-connected').classList.add('hidden');
+          document.getElementById(
+              'vendor',
+          ).textContent = await itemperBLE.readCPUVendor();
+          document.getElementById(
+              'speed',
+          ).textContent = await itemperBLE.readCPUSpeed();
+
+          toggle.addEventListener('change', (e: any) => {
+              if (e.target.checked) {
+                  toggle.disabled = true;
+                  setTimeout(() => {
+                      toggle.disabled = false;
+                  }, 1000);
+              } else {
+                  toggle.disabled = true;
+                  setTimeout(() => {
+                      toggle.disabled = false;
+                  }, 1000);
+              }
+          });
+
+          document.getElementById('container').classList.remove('hidden');
+      } catch (error) {
+          console.log(error.message);
+      }
+  });

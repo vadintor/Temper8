@@ -6,7 +6,7 @@ import { log } from './logger';
 import express from 'express';
 // import expressWs from 'express-ws';
 import http from 'http';
-import path = require('path');
+import path from 'path';
 import * as WebSocket from 'ws';
 
 import route_api from './routes/api';
@@ -17,6 +17,10 @@ import * as BrowserService from './models/browser-service';
 
 import { Device } from './models/device';
 import { USBController } from './models/usb-controller';
+
+import { initBLE } from './ble/';
+
+initBLE();
 
 const app = express();
 // const app = expressWs(express()).app;
@@ -141,8 +145,9 @@ wss.on('connection', (ws: WebSocket, request: http.IncomingMessage): void  => {
         log.debug('ws.on: Error: ');
       });
 } );
-const server = httpServer.listen(process.env.PORT || 80, () => {
-    log.info('iTemper device listening on port ' + server.address().port);
+const port = process.env.PORT || 80;
+const server = httpServer.listen(port, () => {
+    log.info('iTemper device listening on port ' + port);
 });
 
 export default server;

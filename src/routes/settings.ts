@@ -2,7 +2,7 @@
  * GET sensor data.
  */
 import cors from 'cors';
-import express = require('express');
+import * as express from 'express';
 const router: express.Router = express.Router();
 import { getLevel, log, setLevel } from './../logger';
 
@@ -28,7 +28,7 @@ router.post('/', cors(), (_req: express.Request, res: express.Response) => {
 
     if (_req.query.interval) {
         try {
-            const interval: number = _req.query.interval;
+            const interval: number = parseInt(<string> _req.query.interval, 10);
             log.debug('/settings _req.query.interval:' + interval);
             if (1 <= interval && interval <= 60 * 60) {
                 const ms: number = 1000 * interval;

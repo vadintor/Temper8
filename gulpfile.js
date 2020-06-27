@@ -1,8 +1,7 @@
 const gulp = require('gulp');
-const log = require('fancy-log');
-const typescript = require('gulp-typescript');
 const sourcemaps = require('gulp-sourcemaps');
 const watch = require('gulp-watch');
+const typescript = require('gulp-typescript');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var tsify = require('tsify');
@@ -11,30 +10,28 @@ const tsBrowser = typescript.createProject('tsconfig.browser.json');
 const srcGlobs = tsProject.config.include;
 const publicGlobs = ["src/public/**/*"];
 
-// Compile the TS sources
-gulp.task('typescript', () => {
+// Compile the device sources
+async function buildDevice() {
     tsProject.src()
         .pipe(sourcemaps.init())
-        .pipe(tsProject()).on('error', (error) => { log.error(error.toString()); })
+        .pipe(tsProject())
+        .on('error', (error) => { log.error(error.toString()); })
         .pipe(sourcemaps.write())
         .pipe(gulp.dest(tsProject.options.outDir));
-});
-// Compile for browser
+}
 
 // Copy any pre-defined declarations
-gulp.task('copydecl', () => {
+async function copyDecl() {
     const decDirs = [];
     srcGlobs.forEach((dir) => {
         decDirs.push(`${dir.split('/')[0]}/**/*.d.ts`);
     });
     gulp.src(decDirs)
         .pipe(gulp.dest(tsProject.options.declarationDir));
-});
+}
 
 // Copy any other files
-gulp.task('copyfiles', () => {
-    gulp.src('src/views/*.pug')
-        .pipe(gulp.dest(tsProject.options.outDir.concat('/views/')));
+async function copyFiles() {
     const publicDirs = [];
     publicGlobs.forEach(dir => {
         publicDirs.push(`${dir.split('/')[0]}/**/*.css`);
@@ -45,14 +42,14 @@ gulp.task('copyfiles', () => {
     })
     gulp.src(publicDirs)
         .pipe(gulp.dest(tsProject.options.outDir));
-});
+}
 
-gulp.task('browser', () => {
+async function buildBrowser() {
     return browserify({
             basedir: '.',
-            debug: true,
             entries: ['src/browser/client.ts'],
             cache: {},
+            transform: ['babelify'],
             packageCache: {}
         })
         .plugin(tsify, { p: "./tsconfig.browser.json" })
@@ -60,18 +57,6 @@ gulp.task('browser', () => {
         .on('error', function(error) { console.error(error.toString()); })
         .pipe(source('bundle.js'))
         .pipe(gulp.dest(tsBrowser.options.outDir));
-    //  tsBrowser.src()
+}
 
-    //     .pipe(sourcemaps.init())
-    //     .pipe(tsBrowser()).on('error', log)
-    //     .pipe(sourcemaps.write())
-    //     .pipe(gulp.dest(tsBrowser.options.outDir));
-});
-
-gulp.task('watch', () => {
-    watch(srcGlobs, () => {
-        gulp.start('build');
-    });
-});
-
-gulp.task('build', ['typescript', 'copydecl', 'copyfiles', 'browser']);
+exports.build = gulp.series(buildDevice, copyDecl, copyFiles, buildBrowser);
