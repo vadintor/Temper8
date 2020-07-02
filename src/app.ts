@@ -13,7 +13,7 @@ import route_api from './routes/api';
 import route_index from './routes/index';
 import route_settings from './routes/settings';
 
-import * as BrowserService from './features/browser/browser-service';
+import * as websocketService from './features/websocket/websocket-service';
 
 import { Device } from './features/device/device';
 import { USBController } from './features/sensors/usb-controller';
@@ -125,7 +125,7 @@ app.use('/settings', route_settings);
 
 const httpServer = http.createServer(app);
 const wss = new WebSocket.Server({ server: httpServer });
-BrowserService.initOutboundMessageService(wss);
+websocketService.initOutboundMessageService(wss);
 wss.on('connection', (ws: WebSocket, request: http.IncomingMessage): void  => {
     log.info('app.ws: new connection url/headers: ' + ws.url + '/' + JSON.stringify(request.headers));
 
@@ -137,7 +137,7 @@ wss.on('connection', (ws: WebSocket, request: http.IncomingMessage): void  => {
     ws.on('message', (data: Buffer): void => {
       log.debug('ws.on: received message: ' + data.toString());
 
-      BrowserService.parseInboundMessage(ws, data);
+      websocketService.parseInboundMessage(ws, data);
 
     });
 
