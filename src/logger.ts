@@ -1,10 +1,12 @@
+import chalk from 'chalk';
 import { conf } from './config';
 
 import { createLogger, format, Logger, transports} from 'winston';
 const { combine, timestamp, printf, label } = format;
 
 const myFormat = printf(({ level, message, label, timestamp }) => {
-  return `${level}: ${timestamp} [${label}]: ${message}`;
+  const msg = `${level}: ${timestamp} [${label}]: ${message}`;
+  return level === 'error' ? chalk.red(msg) : level === 'info' ? chalk.green(msg) : msg;
 });
 
 const trans = {

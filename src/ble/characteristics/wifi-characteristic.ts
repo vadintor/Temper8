@@ -1,15 +1,15 @@
 import bleno from 'bleno';
 
-export class CPUSpeedCharacteristic extends bleno.Characteristic {
+export class WiFiCharacteristic extends bleno.Characteristic {
   public static UUID = 'd7e84cb2-ff37-4afc-9ed8-5577aeb84541';
   constructor() {
     super({
-      uuid: CPUSpeedCharacteristic.UUID,
+      uuid: WiFiCharacteristic.UUID,
       properties: ['read'],
       descriptors: [
         new bleno.Descriptor({
           uuid: '2901',
-          value: 'CPU Speed',
+          value: 'WiFi Settings',
       })],
     });
   }

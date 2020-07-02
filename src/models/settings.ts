@@ -150,6 +150,9 @@ export class Settings {
         if (setting && !setting.readonly) {
             setting.value = value;
             log.info('Settings.update: setting ' + name + ' has new value:' + setting.value);
+            if (name === Settings.SHARED_ACCESS_KEY) {
+                conf.saveSharedKey(value.toString());
+            }
             callback(true);
             this.publish(setting);
         } else {

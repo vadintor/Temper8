@@ -1,6 +1,6 @@
-import * as fs from 'fs';
+import chalk from 'chalk';
+import * as fs from 'fs-extra';
 import * as os from 'os';
-import * as path from 'path';
 
 interface Options {
     _SERIAL_NUMBER?: string;
@@ -67,34 +67,20 @@ get CONSOLE_LEVEL() {return Config.env._CONSOLE_LEVEL;}
 
 get HOSTNAME() {return Config.env._HOSTNAME;}
 
-get SHARED_ACCESS_KEY() { this.readSharedKey() ;return Config.env._SHARED_ACCESS_KEY || '';}
+public get SHARED_ACCESS_KEY(): string { return Config.env._SHARED_ACCESS_KEY || '';}
 
-set SHARED_ACCESS_KEY(value: string) { Config.env._SHARED_ACCESS_KEY=value;this.saveSharedKey(); }
+public set SHARED_ACCESS_KEY(value: string) { Config.env._SHARED_ACCESS_KEY=value; this.saveSharedKey(value); }
 
-private sharedKeyFileName = '.key';
+private sharedKeyFileName = './itemper.json';
 private readSharedKey(): void {
-    const defaultKey = process.env.SHARED_ACCESS_KEY;
 
-    fs.readFile(path.join(__dirname, this.sharedKeyFileName), 'utf8', (err, data)=> {
-        if (err) {
-            Config.env._SHARED_ACCESS_KEY = defaultKey;
-        } else {
-            try {
-                Config.env._SHARED_ACCESS_KEY =  JSON.parse(data).SHARED_ACCESS_KEY;
-            } catch(e) {
-                Config.env._SHARED_ACCESS_KEY= defaultKey;
-            }
-        }
-    });
+    const conf = fs.readJSONSync(this.sharedKeyFileName);
+    Config.env._SHARED_ACCESS_KEY = conf.SHARED_ACCESS_KEY || process.env.SHARED_ACCESS_KEY;
+    console.debug(chalk.yellow('config.readSharedKey conf=' + JSON.stringify(conf)));
 }
-private saveSharedKey(): void {
-    fs.writeFile(path.join(__dirname, this.sharedKeyFileName),
-            { SHARED_ACCESS_KEY: Config.env._SHARED_ACCESS_KEY }, 'utf8',
-            (err)=> {
-                if (err) {
-                    throw Error();
-                }
-    });
+public saveSharedKey(key: string): void {
+    console.debug(chalk.yellow('config.writeSharedKey writing SHARED_ACCESS_KEY to file'));
+    fs.writeJSONSync( this.sharedKeyFileName, { SHARED_ACCESS_KEY:key });
 }
 
 }
