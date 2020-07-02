@@ -4,7 +4,7 @@ import { DeviceState } from './device-state';
 
 import * as os from 'os';
 
-import { log } from '../logger';
+import { log } from '../../core/logger';
 
 export class DeviceChecks extends DeviceState {
     // Interface methods implementation

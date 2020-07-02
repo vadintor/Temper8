@@ -8,7 +8,7 @@ import cors from 'cors';
 
 // import { USBController } from '../models/usb-controller';
 
-import { log } from './../logger';
+import { log } from '../core/logger';
 
 router.get('/', cors(), (_req: express.Request, res: express.Response) => {
     log.debug ('GET /');

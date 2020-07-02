@@ -1,8 +1,8 @@
 
 import * as HID from 'node-hid';
 import * as os from 'os';
-import { log } from '../logger';
-import { Setting, Settings  } from './settings';
+import { log } from '../../core/logger';
+import { Setting, Settings  } from '../../core/settings';
 
 
 export interface USBConfig extends HID.Device {

@@ -1,6 +1,6 @@
 import bleno from 'bleno';
-import { log } from '../../logger';
-import { Settings } from '../../models/settings';
+import { log } from '../../../core/logger';
+import { Settings } from '../../../core/settings';
 export class DeviceCharacteristic extends bleno.Characteristic {
   public static UUID = 'd7e84cb2-ff37-4afc-9ed8-5577aeb84542';
   constructor() {

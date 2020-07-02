@@ -2,7 +2,7 @@ import {DeviceChecks} from './device-checks';
 
 import { DeviceLog } from './device-log';
 
-import { log } from '../logger';
+import { log } from '../../core/logger';
 
 export class Device {
     private static loggers: DeviceLog[] = [];

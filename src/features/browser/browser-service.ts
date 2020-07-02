@@ -1,10 +1,10 @@
 import * as WebSocket from 'ws';
-import { log } from '../logger';
-import { SensorAttributes } from './sensor-attributes';
-import { SensorData } from './sensor-data';
-import { SensorState } from './sensor-state';
-import { Setting, Settings } from './settings';
-import { USBController } from './usb-controller';
+import { log } from '../../core/logger';
+import { Setting, Settings } from '../../core/settings';
+import { SensorAttributes } from '../sensors/sensor-attributes';
+import { SensorData } from '../sensors/sensor-data';
+import { SensorState } from '../sensors/sensor-state';
+import { USBController } from '../sensors/usb-controller';
 
 export interface InboundMessage {
     command: 'getSensors'|'getSettings'| 'startMonitor' | 'stopMonitor' | 'saveSetting';

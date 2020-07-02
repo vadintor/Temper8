@@ -1,6 +1,6 @@
-﻿import { Settings } from './models/settings';
+﻿import { Settings } from './core/settings';
 
-import { log } from './logger';
+import { log } from './core/logger';
 
 // import cors from 'cors';
 import express from 'express';
@@ -13,12 +13,12 @@ import route_api from './routes/api';
 import route_index from './routes/index';
 import route_settings from './routes/settings';
 
-import * as BrowserService from './models/browser-service';
+import * as BrowserService from './features/browser/browser-service';
 
-import { Device } from './models/device';
-import { USBController } from './models/usb-controller';
+import { Device } from './features/device/device';
+import { USBController } from './features/sensors/usb-controller';
 
-import { initBLE } from './ble/';
+import { initBLE } from './features/ble';
 
 initBLE();
 

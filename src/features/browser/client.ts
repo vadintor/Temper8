@@ -1,4 +1,4 @@
-import {SensorAttributes} from './../models/sensor-attributes';
+import {SensorAttributes} from '../sensors/sensor-attributes';
 
 init();
 
@@ -364,7 +364,6 @@ function editSetting(name: string) {
     SaveBtn.setAttribute('style', 'display:block');
 }
 function clickedEdit(name: string) {
-    const setting = HTMLSetting.find(name);
     const input=<HTMLInputElement>document.getElementById(name +'value');
     if (input.readOnly) {
         console.log('edit:', name);

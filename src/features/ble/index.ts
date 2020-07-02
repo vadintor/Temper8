@@ -1,5 +1,5 @@
 import bleno from 'bleno';
-import { log } from '../logger';
+import { log } from '../../core/logger';
 import { DeviceInfoService } from './services/device-info-service';
 const deviceInfoService = new DeviceInfoService();
 

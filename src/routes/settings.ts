@@ -4,9 +4,9 @@
 import cors from 'cors';
 import * as express from 'express';
 const router: express.Router = express.Router();
-import { getLevel, log, setLevel } from './../logger';
+import { getLevel, log, setLevel } from '../core/logger';
 
-import { USBController } from '../models/usb-controller';
+import { USBController } from '../features/sensors/usb-controller';
 
 router.post('/', cors(), (_req: express.Request, res: express.Response) => {
     res.setHeader('Content-Type', 'application/json');

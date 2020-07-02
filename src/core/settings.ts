@@ -1,6 +1,6 @@
-import { conf } from '../config';
+import { conf } from './config';
 
-import { log, setLevel } from './../logger';
+import { log, setLevel } from './logger';
 
 export type SettingValue = string | number;
 

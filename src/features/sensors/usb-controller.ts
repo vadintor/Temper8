@@ -6,7 +6,7 @@ import { USBDevice, USBReporter } from './usb-device';
 
 import { SensorLog } from './sensor-log';
 
-import { log } from '../logger';
+import { log } from '../../core/logger';
 
 const VID = 0x0C45;
 const PID = 0x7401;

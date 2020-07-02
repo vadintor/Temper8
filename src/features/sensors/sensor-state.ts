@@ -1,8 +1,8 @@
-import { log } from './../logger';
+import { log } from '../../core/logger';
 import { SensorAttributes } from './sensor-attributes';
 import { SensorData } from './sensor-data';
 
-import { Setting, Settings  } from './settings';
+import { Setting, Settings  } from '../../core/settings';
 
 export interface FilterConfig {
     resolution?: number;

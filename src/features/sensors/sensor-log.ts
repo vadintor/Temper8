@@ -1,10 +1,10 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
-import { SensorData, } from '../models/sensor-data';
-import { FilterConfig, SensorState } from '../models/sensor-state';
+import { SensorData, } from './sensor-data';
+import { FilterConfig, SensorState } from './sensor-state';
 
-import { log } from './../logger';
+import { log } from '../../core/logger';
 
-import {Setting, Settings} from './settings';
+import {Setting, Settings} from '../../core/settings';
 
 import WebSocket from 'isomorphic-ws';
 export interface Sample {

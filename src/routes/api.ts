@@ -5,9 +5,9 @@ import * as express from 'express';
 const router: express.Router = express.Router();
 import cors from 'cors';
 
-import { USBController } from '../models/usb-controller';
+import { USBController } from '../features/sensors/usb-controller';
 
-import { log } from './../logger';
+import { log } from '../core/logger';
 
 router.get('/', cors(), (_req: express.Request, res: express.Response) => {
 

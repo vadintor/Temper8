@@ -1,12 +1,9 @@
 
+import { log } from '../../core/logger';
+import {Setting, Settings} from '../../core/settings';
 import { SensorAttributes, SensorCategory } from './sensor-attributes';
 import { SensorState } from './sensor-state';
 import { USBConfig, USBReporter } from './usb-device';
-
-import {Setting, Settings} from './settings';
-
-import { log } from '../logger';
-
 
 // Temper Gold parser understands HID reports from Temper Gold devices
 // Independent of USB lib used.

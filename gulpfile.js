@@ -47,7 +47,7 @@ async function copyFiles() {
 async function buildBrowser() {
     return browserify({
             basedir: '.',
-            entries: ['src/browser/client.ts'],
+            entries: ['src/features/browser/client.ts'],
             cache: {},
             transform: ['babelify'],
             packageCache: {}

@@ -2,9 +2,9 @@ import axios, { AxiosError, AxiosInstance } from 'axios';
 import { DeviceData } from './device-data';
 import { DeviceState } from './device-state';
 
-import { log } from '../logger';
+import { log } from '../../core/logger';
 
-import {Setting, Settings} from './settings';
+import {Setting, Settings} from '../../core/settings';
 
 export interface DeviceDataLog {
     data: DeviceData;

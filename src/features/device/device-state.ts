@@ -1,7 +1,7 @@
 import { DeviceData } from './device-data';
 
-import { log } from '../logger';
-import { Setting, Settings  } from './settings';
+import { log } from '../../core/logger';
+import { Setting, Settings  } from '../../core/settings';
 export interface DeviceDataListener {
     publish: (status: DeviceData) => void;
 }
