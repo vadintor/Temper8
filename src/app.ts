@@ -2,6 +2,8 @@
 
 import { log } from './core/logger';
 
+import * as wifi from './features/wifi/wifi-data';
+wifi.init();
 // import cors from 'cors';
 import express from 'express';
 // import expressWs from 'express-ws';
