@@ -15,17 +15,21 @@ FROM balenalib/%%BALENA_MACHINE_NAME%%-node
 #    python2.7 make gcc && \
 #    rm -rf /var/lib/apt/lists/* && ln -s /usr/bin/python2.7 /usr/bin/python
 
-RUN apt-get update && apt-get install -yq \
+# RUN apt-get update && apt-get install -yq \
+#     libudev-dev \
+#     libusb-1.0-0-dev \
+#     libsecret-1-dev \
+#     && rm -rf /var/lib/apt/lists/*
+RUN install_packages \
     libudev-dev \
     libusb-1.0-0-dev \
-    libsecret-1-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN apt-get install -y \
-    bluetooth \
-    bluez \
-    libbluetooth-dev \ 
-    libudev-dev
+    libsecret-1-dev 
+# RUN apt-get install -y \
+#     bluetooth \
+#     bluez \
+#     libbluetooth-dev \ 
+#     libudev-dev
+RUN install_packages bluetooth bluez libbluetooth-dev libudev-dev
 
 # Defines our working directory in container
 WORKDIR /usr/src/app
