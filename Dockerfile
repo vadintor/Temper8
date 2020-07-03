@@ -2,7 +2,7 @@
 # see more about dockerfile templates here: http://docs.resin.io/deployment/docker-templates/
 # and about resin base images here: http://docs.resin.io/runtime/resin-base-images/
 # Note the node:slim image doesn't have node-gyp
-FROM balenalib/%%BALENA_MACHINE_NAME%%-node:10-stretch-run
+FROM balenalib/%%BALENA_MACHINE_NAME%%-node:12-stretch-run
 
 # use apt-get if you need to install dependencies,
 # for instance if you need ALSA sound utils, just uncomment the lines below.
