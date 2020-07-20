@@ -1,6 +1,9 @@
 import bleno from 'bleno';
 import { log } from '../../../core/logger';
 import { Settings } from '../../../core/settings';
+
+import * as util from 'util';
+
 export class DeviceCharacteristic extends bleno.Characteristic {
   public static UUID = 'd7e84cb2-ff37-4afc-9ed8-5577aeb84542';
   constructor() {
@@ -52,14 +55,14 @@ export class DeviceCharacteristic extends bleno.Characteristic {
 }
 
 // helper function to decode message sent from peripheral
-export function decode(buf: BufferSource): string {
+export function decode(buf: Buffer): string {
   log.debug('device-characteristic.decode');
-  const dec = new TextDecoder('utf-8');
+  const dec = new util.TextDecoder('utf-8');
   return dec.decode(buf);
 }
 export function encode(value: string ): BufferSource {
   log.debug('device-characteristic.encode');
-  const enc = new TextEncoder();
+  const enc = new util.TextEncoder();
   return enc.encode(value);
 }
 

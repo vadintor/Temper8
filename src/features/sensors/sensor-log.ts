@@ -4,7 +4,9 @@ import { FilterConfig, SensorState } from './sensor-state';
 
 import { log } from '../../core/logger';
 
-import {Setting, Settings} from '../../core/settings';
+import { stringify } from '../../core/helpers';
+import { Setting, Settings } from '../../core/settings';
+
 
 import WebSocket from 'isomorphic-ws';
 export interface Sample {
@@ -46,30 +48,30 @@ export class SensorLog {
             headers: {'Content-Type': 'application/json'}});
     }
 
-    private openSocket(): WebSocket {
+    private openWebSocket(): WebSocket {
         // const wsTestUrl = 'wss://test.itemper.io/ws';
         const wsTestUrl = this.WS_URL;
         const origin = this.WS_ORIGIN;
         const socket = new WebSocket (wsTestUrl, { origin, perMessageDeflate: false });
 
         socket.on('open', () => {
-            log.info('SensorLog: socket.on(open): Device.SensorLog connected to backend!');
+            log.info('SensorLog.openWebSocket.on(open): Device.SensorLog connected to backend!');
         });
         socket.on('message', (data: WebSocket.Data): void => {
-            log.info('SensorLog: socket.on(message): ' + data);
+            log.info('SensorLog.openWebSocket.on(message): ' + data);
         });
         socket.on('error', (self: WebSocket, error: Error) => {
-            log.error('SensorLog: socket.on(error): ws=' + JSON.stringify(self));
-            log.error('SensorLog: socket.on(error): error=' + JSON.stringify(error));
+            log.error('SensorLog.openWebSocket.on(error): ws=' + JSON.stringify(self));
+            log.error('SensorLog.openWebSocket.on(error): error=' + JSON.stringify(error));
         });
 
         socket.on('close', (self: WebSocket, code: number, reason: string) => {
 
             if (code === 404) {
-                log.info('SensorLog: socket.on(close): code: 404');
+                log.info('SensorLog.openWebSocket.on(close): code: 404');
             }
-            log.info('SensorLog: socket.on(close): ws=' + JSON.stringify(self));
-            log.info('SensorLog: socket.on(close): code/reason=' + code + reason);
+            log.info('SensorLog.openWebSocket.on(close): ws=' + JSON.stringify(self));
+            log.info('SensorLog.openWebSocket.on(close): code/reason=' + code +'/'+ reason);
         });
         return socket;
     }
@@ -85,7 +87,7 @@ export class SensorLog {
         this.state.addSensorDataListener(this.onMonitor.bind(this));
 
         this.axios = this.createAxiosInstance();
-        this.socket = this.openSocket();
+        this.socket = this.openWebSocket();
 
         // AZURE IOT
         // this.connectionString = AZURE_CONNECTION_STRING + '';
@@ -106,7 +108,7 @@ export class SensorLog {
         Settings.onChange('WS_URL', (setting: Setting)=> {
             this.WS_URL = setting.value.toString();
             log.debug('SensorLog.settingChanged: WS_URL=' + this.WS_URL);
-            this.socket = this.openSocket();
+            this.socket = this.openWebSocket();
         });
         Settings.onChange('WS_ORIGIN', (setting: Setting)=> {
             this.WS_ORIGIN = setting.value.toString();
@@ -114,7 +116,7 @@ export class SensorLog {
             // if (this.socket.OPEN) {
             //     this.socket.close();
             // }
-            this.socket = this.openSocket();
+            this.socket = this.openWebSocket();
         });
         Settings.onChange('ITEMPER_URL', (setting: Setting)=> {
             this.ITEMPER_URL = setting.value.toString();
@@ -172,7 +174,7 @@ export class SensorLog {
             this.timestamp = data.timestamp();
 
             const url = '/' + desc.SN + '/'+ desc.port;
-            log.debug('URL: ' + url);
+            log.debug('SensorLog.onDataReceived, URL: ' + url);
 
             const Authorization = 'Bearer ' + this.SHARED_ACCESS_KEY;
             this.axios.post<SensorLogData>(url, sensorLog, {headers: { Authorization }})
@@ -206,10 +208,10 @@ export class SensorLog {
                     }
                 } else if (error.request) {
                     // The request was made but no response was received
-                    log.error('SensorLog.onSensorDataReceived, request, no response:' + error.request);
+                    log.error('SensorLog.onSensorDataReceived, request, no response');
                 } else {
                     // Something happened in setting up the request that triggered an Error
-                    log.error('SensorLog.onSensorDataReceived,  error.config:' + error.config);
+                    log.error('SensorLog.onSensorDataReceived,  error.config:' + stringify(error.config));
                 }
 
             });
@@ -280,7 +282,7 @@ export class SensorLog {
             log.debug('SensorLog.onMonitor: sensor log sent');
         } else if (!this.socket || this.socket.readyState === WebSocket.CLOSED) {
             log.debug('SensorLog.onMonitor: socket closed, re-open');
-            this.socket = this.openSocket();
+            this.socket = this.openWebSocket();
         } else {
             log.debug('SensorLog.onMonitor: socket not open yet');
         }

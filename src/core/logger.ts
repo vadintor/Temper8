@@ -9,6 +9,7 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
   return level === 'error' ? chalk.red(msg) : level === 'info' ? chalk.green(msg) : msg;
 });
 
+console.log(chalk.yellow('conf.ERROR_LOG_FILE=' + conf.ERROR_LOG_FILE));
 const trans = {
     file: new transports.File({ filename: conf.ERROR_LOG_FILE,
                                 level: conf.ERROR_LEVEL }),

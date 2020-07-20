@@ -129,22 +129,20 @@ const httpServer = http.createServer(app);
 const wss = new WebSocket.Server({ server: httpServer });
 websocketService.initOutboundMessageService(wss);
 wss.on('connection', (ws: WebSocket, request: http.IncomingMessage): void  => {
-    log.info('app.ws: new connection url/headers: ' + ws.url + '/' + JSON.stringify(request.headers));
+    log.info('wss.on (connection):  url/headers: ' + ws.url + '/' + JSON.stringify(request.headers));
 
 
     ws.on('close', (ws: WebSocket, code: number, reason: string): void => {
-      log.info('ws.on: Websocket: '+ ws.url + ' + code: ' + code +  'reason: ' + reason);
+      log.info('wss.on (close): '+ ws.url + ' + code: ' + code +  'reason: ' + reason);
     });
 
     ws.on('message', (data: Buffer): void => {
-      log.debug('ws.on: received message: ' + data.toString());
-
+      log.debug('wss.on (message): message: ' + data.toString());
       websocketService.parseInboundMessage(ws, data);
-
     });
 
     ws.on('error', (): void => {
-        log.debug('ws.on: Error: ');
+        log.debug('wss.on (error)');
       });
 } );
 const port = process.env.PORT || 80;

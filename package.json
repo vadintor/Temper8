@@ -1,7 +1,7 @@
 {
     "name": "itemper-device",
-    "version": "0.0.37",
-    "description": "This application reads and publish the local temperature on the Internet",
+    "version": "0.0.38",
+    "description": "This application reads and publish local temperatures on the Internet",
     "homepage": "https://github.com/vadintor/",
     "main": "build/app.js",
     "type": "src/app.ts",
