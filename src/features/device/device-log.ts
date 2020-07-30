@@ -13,8 +13,6 @@ export interface DeviceDataLog {
 export class DeviceLog {
     public retryCounter = 0;
     private state: DeviceState;
-
-    private timestamp: number = 0;
     private logging: boolean = false;
 
     private axios: AxiosInstance;
@@ -28,7 +26,6 @@ export class DeviceLog {
     }
 
     constructor(state: DeviceState) {
-        this.timestamp = Date.now();
         this.logging = false;
         this.state = state;
         this.initSettings();
@@ -44,12 +41,12 @@ export class DeviceLog {
 
         Settings.onChange('SHARED_ACCESS_KEY', (setting: Setting) => {
             this.SHARED_ACCESS_KEY = setting.value.toString();
-            log.debug('DeviceLog.settingChanged: SHARED_ACCESS_KEY=' + this.SHARED_ACCESS_KEY);
+            log.info('DeviceLog.settingChanged: SHARED_ACCESS_KEY=' + this.SHARED_ACCESS_KEY);
         });
 
         Settings.onChange('ITEMPER_URL', (setting: Setting)=> {
             this.ITEMPER_URL = setting.value.toString();
-            log.debug('DeviceLog.settingChanged: ITEMPER_URL=' +  this.ITEMPER_URL);
+            log.info('DeviceLog.settingChanged: ITEMPER_URL=' +  this.ITEMPER_URL);
             this.axios = this.createAxiosInstance();
         });
     }
@@ -60,36 +57,30 @@ export class DeviceLog {
         return this.logging;
     }
     public startLogging(): void {
-        log.debug('DeviceLog.startLogging');
+        log.info('DeviceLog.startLogging');
         this.logging = true;
     }
 
     public stopLogging(): void {
-        log.debug('DeviceLog.stopLogging');
+        log.info('DeviceLog.stopLogging');
         this.logging = false;
     }
 
     private onDataReceived(data: DeviceData): void {
         if (this.logging) {
-
-            const diff = data.timestamp - this.timestamp;
-            this.timestamp = data.timestamp;
             const deviceLog: DeviceDataLog = {data};
             const url = '/status';
             log.debug('DeviceLog.onDataReceived, URL: ' + url);
-
             const Authorization = 'Bearer ' + this.SHARED_ACCESS_KEY;
             this.axios.post<DeviceDataLog>(url, deviceLog, {headers: { Authorization }})
             .then (function(res) {
-                log.info('DeviceLog.onDataReceived, post ' + url + ' ' + res.statusText +
-                    ' res.data: ' + JSON.stringify(deviceLog) + ' ms: ' + diff +
-                    ' date: ' + new Date(data.timestamp.toLocaleString()));
+                log.info('DeviceLog.onDataReceived, post ' + url + ' ' + res.statusText);
             })
             .catch(function(error: AxiosError) {
                 if (error.response) {
                     // The request was made and the server responded with a status code
                     // that falls out of the range of 2xx
-                    log.debug('DeviceLog.onDataReceived:' +  error.response.status + ' - ' +
+                    log.error('DeviceLog.onDataReceived:' +  error.response.status + ' - ' +
                     JSON.stringify(error.response.data));
                 } else if (error.request) {
                     // The request was made but no response was received

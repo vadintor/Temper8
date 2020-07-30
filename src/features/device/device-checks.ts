@@ -14,7 +14,6 @@ export class DeviceChecks extends DeviceState {
     }
 
     public check(): void {
-        log.debug('DeviceChecks.check');
         const data: DeviceData = new DeviceData();
         data.timestamp = Date.now();
         data.hostname = os.hostname();
@@ -28,7 +27,7 @@ export class DeviceChecks extends DeviceState {
         data.memoryUsage = process.memoryUsage();
         data.cpuUsage = process.cpuUsage();
         data.pid = process.pid;
-        log.debug('DeviceChecks.check data=' + JSON.stringify(data));
+        log.debug('DeviceChecks.check data=' + JSON.stringify(data.memoryUsage));
         this.updateDeviceData(data);
     }
 

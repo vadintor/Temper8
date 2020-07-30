@@ -5,6 +5,7 @@ import { TemperGold } from './temper-gold';
 import { USBDevice, USBReporter } from './usb-device';
 
 import { SensorLog } from './sensor-log';
+import { sensorLogService } from './sensor-log-service';
 
 import { log } from '../../core/logger';
 
@@ -36,7 +37,7 @@ export class USBController {
         return USBController.loggers;
     }
     private static createSensorLog(sensorState: SensorState) {
-        const sensorLog = new SensorLog(sensorState);
+        const sensorLog = new SensorLog(sensorState, sensorLogService);
         USBController.loggers.push(sensorLog);
         sensorLog.startLogging();
     }
@@ -46,8 +47,7 @@ export class USBController {
         USBController.devices.push(usbDevice);
     }
 
-    public static initialize(): void {
-        log.info ('USBController.initialize: start time=' + new Date().toISOString());
+    public static init(): void {
         HID.devices().find(device => {
             const deviceStr = JSON.stringify(device);
             if (isTemperGold(device) && device.path !== undefined) {
@@ -66,23 +66,17 @@ export class USBController {
                 USBController.createSensorLog(sensorState);
 
                // return true;
-            } else {
-                log.debug('USBController.initialize: unsupported USB device found=' + deviceStr);
             }
-
             return false;
         });
         log.info('USBController.initialize: Found ' + USBController.devices.length + ' HID device(s)');
 
     }
-
     public static setPollingInterval(ms: number) {
-        log.debug('USBController.setPollingInterval: ms=' + ms);
         for (const device of USBController.devices) {
             device.setPollingInterval(ms);
         }
     }
-
     public static getPollingInterval(): number {
         for (const device of USBController.devices) {
            return device.getPollingInterval();

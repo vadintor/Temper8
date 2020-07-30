@@ -23,7 +23,7 @@ router.get('/', cors(), (_req: express.Request, res: express.Response) => {
         res.status(200).send(JSON.stringify(sensorData));
 
     } else {
-        res.status(200).send(JSON.stringify([]));
+        res.status(200).send('no sensor log available');
         log.debug('api.router.get: no sensor log');
     }
 

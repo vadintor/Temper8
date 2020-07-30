@@ -19,7 +19,7 @@ export class Device {
         return Device.loggers;
     }
 
-    public static initialize(): void {
+    public static init(): void {
         log.info ('Device.initialize: start time=' + new Date().toISOString());
 
         const deviceChecks = new DeviceChecks();
@@ -44,7 +44,7 @@ export class Device {
     }
     private static poll() {
         if (! Device.deviceInitialized) {
-            Device.initialize();
+            Device.init();
         } else {
             log.debug('Device.poll');
             for (const check of Device.checks) {

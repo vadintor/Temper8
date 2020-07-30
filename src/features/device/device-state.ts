@@ -30,12 +30,9 @@ export class DeviceState {
     // }
     private updateDeviceDataListeners(deviceData: DeviceData, previousData: DeviceData) {
         let published: boolean = false;
-        log.debug('DeviceState.updateDeviceDataListeners: no filtering before publishing');
         for (const listener of this.deviceDataListeners) {
                 listener.publish(deviceData);
                 published = true;
-                log.debug('DeviceState.updateDeviceDataListeners, previousData=' + previousData);
-                log.debug('DeviceState.updateDeviceDataListeners, deviceData=' + deviceData);
                 Object.assign(previousData, deviceData);
         }
         if (published) {
@@ -47,6 +44,5 @@ export class DeviceState {
     protected updateDeviceData(data: DeviceData) {
         this.deviceData = data;
         this.updateDeviceDataListeners(data, this.previousData);
-        log.info('DeviceState.updateDeviceData: device data updated' + data.timestamp);
     }
 }

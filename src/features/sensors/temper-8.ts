@@ -25,7 +25,7 @@ export class Temper8 extends SensorState implements USBReporter {
 
         Settings.onChange(Settings.SERIAL_NUMBER, (setting: Setting) => {
             this.attr.SN = setting.value.toString();
-            log.debug('SensorLog.settingChanged: SERIAL_NUMBER=' + this.attr.SN);
+            log.info('SensorLog.settingChanged: SERIAL_NUMBER=' + this.attr.SN);
         });
     }
 
@@ -56,13 +56,11 @@ export class Temper8 extends SensorState implements USBReporter {
     public readReport(data: number[]): number[] {
         try {
             if (this.matchUsedPorts(data)) {
-                log.debug('+++ Temper8.matchUsedPorts:', data);
                 const response = this.temperatureRequest(this.sensors[this.nextSensor].s.getPort());
                 this.nextSensor += 1;
                 return response;
 
             } else if (this.matchTemperature(data)) {
-                log.debug('+++ Temper8.matchTemperature:', data);
                 if (this.nextSensor < this.sensors.length) {
                     const response = this.temperatureRequest(this.sensors[this.nextSensor].s. getPort());
                     this.nextSensor += 1;
@@ -108,7 +106,6 @@ export class Temper8 extends SensorState implements USBReporter {
             if ((used & bits[bit]) === bits[bit]) {
                 const port = bit;
                 usedPorts[portIndex] = port;
-                log.debug('+++ Temper8: Sensor connected to port: ' + port);
                 portIndex += 1;
                 }
         }
@@ -148,7 +145,6 @@ export class Temper8 extends SensorState implements USBReporter {
             && data[0] === 0x80
             && data[1] === 0x08
             && data[2] === 0x01) {
-            log.debug('+++ matchTemperature, data: %d', data);
             const port: number = data[4];
             const msb: number = data[5];
             const lsb: number = data[6];

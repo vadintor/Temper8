@@ -1,4 +1,6 @@
+import http from 'http';
 import * as WebSocket from 'ws';
+
 import { log } from '../../core/logger';
 import { Setting, Settings } from '../../core/settings';
 import { SensorAttributes } from '../sensors/sensor-attributes';
@@ -16,13 +18,27 @@ export interface OutboundMessage {
     data: any;
 }
 let wss: WebSocket.Server;
-
+export function init(server: WebSocket.Server) {
+    wss=server;
+    wss.on('connection', (ws: WebSocket, request: http.IncomingMessage): void  => {
+        log.info('client-service.wss.on (connection):  url/headers: ' + ws.url + '/' + JSON.stringify(request.headers));
+        ws.on('close', (ws: WebSocket, code: number, reason: string): void => {
+          log.info('client-service.wss.on (close): '+ ws.url + ' + code: ' + code +  'reason: ' + reason);
+        });
+        ws.on('message', (data: Buffer): void => {
+            log.info('client-service.wss.on (message): message: ' + data.toString());
+            parseInboundMessage(ws, data);
+        });
+        ws.on('error', (): void => {
+            log.error('client-service.wss.on (error)');
+          });
+    } );
+}
 function broadcast(ws: WebSocket, message: OutboundMessage, includeSelf: boolean ) {
-    log.debug('browser-Service.broadcast: sending message=' + JSON.stringify(message));
     wss.clients.forEach(function each(client) {
         if ((client !== ws || includeSelf) && client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify(message));
-          log.debug('browser-Service.broadcast: message sent');
+          log.info('client-service.broadcast: message sent');
         }
       });
 
@@ -31,32 +47,34 @@ function broadcastAll(message: OutboundMessage) {
     wss.clients.forEach(function each(client) {
         if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify(message));
+          log.info('client-service.broadcastAll: message sent');
         }
     });
-    log.debug('browser-Service.broadcastAll: message sent');
+
 }
-export function initOutboundMessageService(server: WebSocket.Server) {
-    wss=server;
-}
-export function parseInboundMessage(ws: WebSocket, data: Buffer): void  {
+function parseInboundMessage(ws: WebSocket, data: Buffer): void  {
     const message = <InboundMessage> JSON.parse(data.toString());
-    log.debug('browser-service.parseInboundMessage: received message=' + message);
     switch (message.command) {
         case 'getSensors':
+            log.debug('client-service.parseInboundMessage.getSensors');
             getSensors(ws);
             break;
         case 'getSettings':
+            log.debug('client-service.parseInboundMessage.getSettings');
             getSettings(ws);
             break;
         case 'startMonitor':
+            log.debug('client-service.parseInboundMessage.startMonitor');
             message.data = <SensorDescription[]> <any> message.data;
             startMonitor(ws, message.data);
             break;
         case 'stopMonitor':
+            log.debug('client-service.parseInboundMessage.stopMonitor');
             message.data = <SensorDescription[]> <any> message.data;
             stopMonitor(ws, message.data);
             break;
         case 'saveSetting':
+            log.debug('client-service.parseInboundMessage.saveSetting');
             message.data = <Setting> <any> message.data;
             saveSetting(ws, message.data);
             break;
@@ -103,18 +121,18 @@ export function getSensors(ws: WebSocket) {
     }
     const message = JSON.stringify({command, data});
     ws.send(message);
-    log.info('browser-services.getSensors, sent: ' + message);
+    log.info('client-services.getSensors, sent: ' + message);
 }
 
 export function getSettings(ws: WebSocket) {
     const data: Setting[] = Settings.all();
     const message = JSON.stringify({command:'settings', data});
     ws.send(message);
-    log.info('browser-service.getSettings: sends settings to client' + message);
+    log.info('client-service.getSettings: sends settings to client' + message);
     for (const setting of data) {
         Settings.onChange(setting.name, publishSetting);
     }
-    log.info('browser-service.getSettings: subscribed to future setting changes');
+    log.info('client-service.getSettings: subscribed to future setting changes');
 }
 export function publishSetting(setting: Setting) {
     const data: Setting[] = [setting];
@@ -123,7 +141,7 @@ export function publishSetting(setting: Setting) {
 
 }
 export function saveSetting(ws: WebSocket, setting: Setting) {
-    log.debug('browser-service.saveSetting: ' + JSON.stringify(setting));
+    log.debug('client-service.saveSetting: ' + JSON.stringify(setting));
     if (setting.name && setting.value) {
         Settings.update(setting.name, setting.value, (updated) => {
             if (updated) {
@@ -141,19 +159,18 @@ const MonitoringClients = new Set();
 let logTimer: NodeJS.Timer;
 
 export function startMonitor(ws: WebSocket, desc: SensorDescription[]) {
-    log.info('browser-service.startMonitor: has not implemented filter on Desc yet: ' + JSON.stringify(desc));
     if (!MonitoringClients.has(ws)) {
         MonitoringClients.add(ws);
     }
 
     if (MonitoringClients.size === 1) {
-        logTimer = setInterval(logSensorData, USBController.getPollingInterval());
+        const interval = USBController.getPollingInterval();
+        logTimer = setInterval(logSensorData, interval === 0 ? 60_000 : interval);
     }
-    log.info ('Browser-service.startMonitor: ' + MonitoringClients.size + ' clients');
+    log.info ('client-service.startMonitor: ' + desc.length);
 }
 
 export function stopMonitor(ws: WebSocket, desc: SensorDescription[]) {
-    log.info('browser-service.stopMonitor: has not implemented filter on Descr yet: ' + JSON.stringify(desc));
 
     if (MonitoringClients.has(ws)) {
         MonitoringClients.delete(ws);
@@ -161,7 +178,7 @@ export function stopMonitor(ws: WebSocket, desc: SensorDescription[]) {
     if (MonitoringClients.size === 0) {
         clearTimeout(logTimer);
     }
-    log.info ('Browser-service.stopMonitor: ' + MonitoringClients.size + ' clients');
+    log.info ('client-service.stopMonitor: ' + desc.length);
 }
 
 function logSensorData() {
@@ -172,18 +189,19 @@ function logSensorData() {
         const state = logger.getState();
         AddSensorLogs(data, state);
     }
-    const message = JSON.stringify({command, data});
+    if (data.length > 0) {
+        const message = JSON.stringify({command, data});
 
-    MonitoringClients.forEach((ws: WebSocket) => {
-        if (ws.readyState === ws.OPEN) {
-            ws.send(message);
-        }
+        MonitoringClients.forEach((ws: WebSocket) => {
+            if (ws.readyState === ws.OPEN) {
+                ws.send(message);
+            }
 
-        if (ws.readyState === ws.CLOSED || ws.readyState === ws.CLOSING ) {
-            MonitoringClients.delete(ws);
-        }
-    });
-    log.info ('Browser-service.logSensorData: sent to ' + MonitoringClients.size + ' clients, message: ' + message);
+            if (ws.readyState === ws.CLOSED || ws.readyState === ws.CLOSING ) {
+                MonitoringClients.delete(ws);
+            }
+        });
+        log.info ('client-service.logSensorData: sent to ' + MonitoringClients.size + ' clients, message: ' + message);
+    }
+
 }
-
-

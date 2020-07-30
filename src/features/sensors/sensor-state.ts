@@ -59,13 +59,11 @@ export class SensorState {
     }
     private valueDiff(sensorData: SensorData, previousData: SensorData, resolution: number): boolean {
         const valueDiff =  Math.abs(this.round(sensorData, resolution) - this.round(previousData, resolution));
-        log.debug('SensorState.valueDiff: diff=' + valueDiff);
         return valueDiff > 0;
     }
 
     private timeDiff(sensorData: SensorData, previousData: SensorData, maxTimeDiff: number): boolean {
         const timeDiff = sensorData.timestamp() - previousData.timestamp();
-        log.debug('SensorState.timeDiff diff=' + timeDiff);
         return timeDiff > maxTimeDiff;
     }
     private filterPort(sensorData: SensorData, filter: FilterConfig): boolean {
@@ -73,11 +71,8 @@ export class SensorState {
     }
     private updateSensorDataListeners(sensorData: SensorData, previousData: SensorData) {
         let published: boolean = false;
-        log.debug('SensorState.updateSensorDataListeners: filtering before publishing');
         for (const listener of this.sensorDataListeners) {
-            log.debug('SensorState.updateSensorDataListeners: filter:' + JSON.stringify(listener.filter));
             if (!listener.filter) {
-                log.debug('SensorState.updateSensorDataListeners: no filter found');
                 listener.publish(sensorData);
                 published = true;
                 Object.assign(previousData, sensorData);
@@ -93,13 +88,11 @@ export class SensorState {
             } else if (this.filterPort(sensorData, listener.filter) &&
                     listener.filter.maxTimeDiff && sensorData.valid() &&
                     this.timeDiff(sensorData, previousData, listener.filter.maxTimeDiff)) {
-                log.debug('SensorState.updateSensorDataListeners: publish.filter.maxTimeDiff');
                 listener.publish(sensorData);
                 published = true;
                 Object.assign(previousData, sensorData);
 
             } else if (this.filterPort(sensorData, listener.filter)) {
-                log.debug('SensorState.updateSensorDataListeners: publish.filter.port');
                 listener.publish(sensorData);
                 published = true;
                 Object.assign(previousData, sensorData);
@@ -107,36 +100,29 @@ export class SensorState {
         }
         if (published) {
             log.info('SensorState.updateSensorDataListeners: Sensor data published to listener(s)');
-        } else {
-            log.debug('SensorState.updateSensorDataListeners: No sensor data published');
         }
-
     }
-    protected updateSensor(port: number, temperature: number) {
+    protected updateSensor(port: number, sampleValue: number) {
         if (this.sensors !== null) {
             const sensor: Sensor | undefined = this.sensors.find(s => s.s.getPort() === port);
             if (sensor) {
-                sensor.s.setValue(temperature);
+                sensor.s.setValue(sampleValue);
                 this.updateSensorDataListeners(sensor.s, sensor.p);
-                log.info('SensorState.updateSensor: sensor updated, port=' + port + ', temperature=' + temperature);
+                log.info('SensorState.updateSensor: sensor updated, port=' + port + ', sampleValue=' + sampleValue);
             } else {
-                log.error('SensorState.updateSensor: undefined port=' + port + ', temperature=' + temperature);
+                log.error('SensorState.updateSensor: undefined port=' + port + ', sampleValue=' + sampleValue);
             }
         } else {
-            log.error('SensorState.updateSensor: no sensors, port=' + port + ', temperature=' + temperature);
+            log.error('SensorState.updateSensor: no sensors, port=' + port + ', sampleValue=' + sampleValue);
         }
     }
 
     protected connectSensors(ports: number[]) {
-        log.debug('SensorState.connectSensors: ports=' + JSON.stringify(ports));
         if (this.sensors.length === 0) {
-
             this.sensors = new Array<Sensor>(ports.length);
-
             for (let port = 0; port < ports.length; port++) {
                 this.sensors[port] = { p: new SensorData(ports[port]), s: new SensorData(ports[port]) };
             }
         }
-
     }
 }

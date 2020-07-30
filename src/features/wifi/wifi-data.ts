@@ -8,8 +8,8 @@ export function init() {
       });
     wifi.getCurrentConnections()
     .then((networks: Partial<WiFi> ) => {
-        log.debug('wifi, networks=' + JSON.stringify(networks));
+        log.info('wifi, networks=' + JSON.stringify(networks));
     })
-    .catch((e: Error) => { log.debug('wifi, error=' + JSON.stringify(e)); });
+    .catch((e: Error) => { log.error('wifi, error=' + JSON.stringify(e)); });
 }
 

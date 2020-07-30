@@ -36,6 +36,7 @@
         "fs-extra": "^9.0.1",
         "isomorphic-ws": "^4.0.1",
         "node-hid": "^0.7.9",
+        "node-ruuvitag": "^4.6.1",
         "node-wifi": "^2.0.13",
         "typescript": "^3.9.5",
         "uuid": "^3.4.0",

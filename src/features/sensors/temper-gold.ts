@@ -21,7 +21,7 @@ export class TemperGold extends SensorState implements USBReporter {
         this.connectSensors([0]);
         Settings.onChange(Settings.SERIAL_NUMBER, (setting: Setting) => {
             this.attr.SN = setting.value.toString();
-            log.debug('TemperGold.settingChanged: SERIAL_NUMBER=' + this.attr.SN);
+            log.info('TemperGold.settingChanged: SERIAL_NUMBER=' + this.attr.SN);
         });
     }
 
@@ -35,15 +35,14 @@ export class TemperGold extends SensorState implements USBReporter {
     public initWriteReport(): number[][] {
         return [this.temperatureRequest()];
     }
-    // This function parses all input reports and check what to do
+    // This function parses all input reports and checks what to do
     public readReport(data: number[]): number[] {
         try {
-            log.debug('TemperGold.readReport: data=', data);
             if (!this.matchTemperature(data)) {
                 log.warning('TemperGold.readReport: no match data=', data);
             }
         } catch (e) {
-            console.log(e);
+            log.error('TemperGold.readReport: error=', e);
         }
         return [];
     }
@@ -64,8 +63,6 @@ export class TemperGold extends SensorState implements USBReporter {
         if (data.length === 8
             && data[0] === 0x80
             && data[1] === 0x02) {
-            log.debug('TemperGold.matchTemperature: data=', data);
-
             const msb: number = data[2];
             const lsb: number = data[3];
             const temperatureCelsius: number = this.GetTemperature(msb, lsb);
