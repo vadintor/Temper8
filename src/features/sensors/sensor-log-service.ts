@@ -5,8 +5,6 @@ import { log } from '../../core/logger';
 import { stringify } from '../../core/helpers';
 import { Setting, Settings } from '../../core/settings';
 
-import { SensorLogData } from './sensor-log';
-
 import WebSocket from 'isomorphic-ws';
 
 export enum Category {
@@ -149,34 +147,10 @@ export class SensorLogService implements  ISensorLogService {
             })
             .catch(function(error: AxiosError) {
                 try {
-                    if (error.response) {
-                        // The request was made and the server responded with a status code
-                        // that falls out of the range of 2xx
-                        if (error.response.status === 401) {
-                            // Wrong shared access key
-                            log.error('sensor-log-service.registerSensor: ACCESS DENIED wrong shared access key: ');
-                            const err: SensorLogError = {status: error.response.status, desc: registration.desc};
-                            reject(err);
-                        } else
-                        if (error.response.status === 503) {
-                            log.error('sensor-log-service.registerSensor: itemper backend '+ this.ITEMPER_URL +' + not available: ' +
-                                JSON.stringify(registration.desc));
-                            const err: SensorLogError = {status: error.response.status, desc: registration.desc};
-                            reject(err);
-                        }
-                    } else if (error.request) {
-                        // The request was made but no response was received
-                        log.error('sensor-log-service.registerSensor, request, no response:' 
-                            + error.request.toString());
-                        const err: SensorLogError = {status: 0, desc: registration.desc};
-                        reject(err);
-                    } else {
-                        // Something happened in setting up the request that triggered an Error
-                        log.error('sensor-log-service.registerSensor,  error.config:' + error.config);
-                    }
-                } catch (e) {
-                    log.error('sensor-log-service.registerSensor: catch register: ' + e);
-                    const err: SensorLogError = {status: 1, desc: registration.desc};
+                    const err = { status: handleError(error), desc: registration.desc };
+                    reject(err);
+                } catch {
+                    const err = { status: handleError(error), desc: registration.desc };
                     reject(err);
                 }
             });
@@ -186,43 +160,17 @@ export class SensorLogService implements  ISensorLogService {
         return new Promise((resolve, reject) => {
             const url = '/' + data.desc.SN + '/'+ data.desc.port;
             const Authorization = 'Bearer ' + this.SHARED_ACCESS_KEY;
-            this.axios.post<SensorLogData>(url, data, {headers: { Authorization }})
+            this.axios.post<Log>(url, data, {headers: { Authorization }})
             .then (function(res) {
                 log.info('sensor-log-service.PostSensorLog: ' + url + ' ' + res.statusText);
                 resolve(data.desc);
             })
             .catch(function(error: AxiosError) {
-                if (error.response) {
-                    if (error.response.status === 308) {
-                        const {  name } = error.response.data;
-                        if (name) {
-                            Settings.update(Settings.SERIAL_NUMBER, name, ( updated ) => {
-                                if (!updated) {
-                                    log.error('sensor-log-service.PostSensorLog: cannot update serial number after redirect request from itemper ');
-                                }
-                            });
-                        }
-                        const err: SensorLogError = {status: 308, desc: data.desc};
-                        reject(err);
-                    } else if (error.response.status === 401) {
-                        // Wrong shared access key
-                        log.error('SensorLog.PostSensorLog: No ACCESS:' + error.response.statusText);
-                        const err: SensorLogError = {status: error.response.status, desc: data.desc};
-                        reject(err);
-                    } else {
-                        const err: SensorLogError = {status: error.response.status, desc: data.desc};
-                        reject(err);
-                    }
-
-                } else if (error.request) {
-                    // The request was made but no response was received
-                    log.error('SensorLog.onSensorDataReceived, request, no response');
-                    const err: SensorLogError = {status: 0, desc: data.desc};
+                try {
+                    const err = { status: handleError(error), desc: data.desc };
                     reject(err);
-                } else {
-                    // Something happened in setting up the request that triggered an Error
-                    log.error('SensorLog.onSensorDataReceived,  error.config:' + stringify(error.config));
-                    const err: SensorLogError = {status: 1, desc: data.desc};
+                } catch {
+                    const err = { status: handleError(error), desc: data.desc };
                     reject(err);
                 }
             });
@@ -245,5 +193,30 @@ export let sensorLogService: SensorLogService;
 
 export function init() {
     sensorLogService = new SensorLogService();
+}
+
+function handleError(error: AxiosError): number {
+    let status = 1;
+    if (error.response) {
+        log.error('SensorLog.handleError: Error=' + error.response.statusText);
+        status = error.response.status;
+        if (error.response.status === 308) {
+            const {  name } = error.response.data;
+            if (name) {
+                Settings.update(Settings.SERIAL_NUMBER, name, ( updated ) => {
+                    if (!updated) {
+                        log.error('sensor-log-service.PostSensorLog: cannot update serial number after redirect request from itemper ');
+                    }
+                });
+            }
+        }
+    } else if (error.request) {
+        // The request was made but no response was received
+        log.error('SensorLog.handleError, no response' + JSON.stringify(error.request));
+    } else {
+        // Something happened in setting up the request that triggered an Error
+        log.error('SensorLog.handleError,  error.config:' + stringify(error.config));
+    }
+    return status;
 }
 
