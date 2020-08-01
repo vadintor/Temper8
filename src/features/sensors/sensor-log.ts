@@ -4,6 +4,8 @@ import { FilterConfig, SensorState } from './sensor-state';
 
 import { log } from '../../core/logger';
 
+import { stringify } from '../../core/helpers';
+
 import { Category, Descriptor, ISensorLogService, SensorLogError } from './sensor-log-service';
 
 enum LogStatus { Unregistered, Registering, Registered}
@@ -68,7 +70,7 @@ export class SensorLog {
                 log.info('sensor-log.onDataReceived: postSensorLog successful, desc=' + JSON.stringify(desc));
             })
             .catch((error: SensorLogError) => {
-                log.error('sensor-log.onDataReceived: ' + JSON.stringify(error));
+                log.error('sensor-log.onDataReceived: ' + stringify(error));
                 if (error.status === 404) {
                     this.status = LogStatus.Unregistered;
                     this.registerSensor(data);
@@ -76,7 +78,7 @@ export class SensorLog {
             });
         } else {
             const debug = {status: LogStatus[this.status], logging: this.logging, data };
-            log.error('sensor-log.onDataReceived: ' + JSON.stringify(debug));
+            log.error('sensor-log.onDataReceived: ' + stringify(debug));
         }
     }
     private registerSensor(data: SensorData): void {
@@ -88,16 +90,16 @@ export class SensorLog {
                         maxSampleRate: stateAttr.maxSampleRate};
         const desc = { SN: stateAttr.SN, port: data.getPort()};
         const registration = { desc, attr };
-        log.error('sensor-log.registerSensor: desc=' + JSON.stringify(desc));
+        log.error('sensor-log.registerSensor: desc=' + stringify(desc));
         if (this.status !== LogStatus.Registered) {
             const self = this;
             this.logService.registerSensor(registration)
             .then (function() {
                 self.status = LogStatus.Registered;
-                log.error('sensor-log.registerSensor: successful, desc=' + JSON.stringify(desc));
+                log.error('sensor-log.registerSensor: successful, desc=' + stringify(desc));
             })
             .catch(function(error: SensorLogError) {
-                log.error('sensor-log.registerSensor: ' + JSON.stringify(error));
+                log.error('sensor-log.registerSensor: ' + stringify(error));
                 self.status = LogStatus.Registering;
             });
         }

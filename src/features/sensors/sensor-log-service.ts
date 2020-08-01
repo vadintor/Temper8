@@ -142,7 +142,7 @@ export class SensorLogService implements  ISensorLogService {
             this.axios.post(url, body, {headers: { Authorization }})
             .then (function() {
                 log.info('sensor-log-service.registerSensor: registration successful: '
-                    + JSON.stringify(registration.desc));
+                    + stringify(registration.desc));
                 resolve(registration.desc);
             })
             .catch(function(error: AxiosError) {
@@ -179,7 +179,7 @@ export class SensorLogService implements  ISensorLogService {
     public writeSensorLog(data: Log): void {
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
             const message = {command: 'log', data};
-            log.info('sensor-log-service.writeSensorLog: ' + JSON.stringify(message));
+            log.info('sensor-log-service.writeSensorLog: ' + stringify(message));
             this.socket.send(JSON.stringify(message));
         } else if (!this.socket || this.socket.readyState === WebSocket.CLOSED) {
             log.info('sensor-log-service.writeSensorLog: socket closed, re-open');
@@ -212,7 +212,7 @@ function handleError(error: AxiosError): number {
         }
     } else if (error.request) {
         // The request was made but no response was received
-        log.error('SensorLog.handleError, no response' + JSON.stringify(error.request));
+        log.error('SensorLog.handleError, no response');
     } else {
         // Something happened in setting up the request that triggered an Error
         log.error('SensorLog.handleError,  error.config:' + stringify(error.config));
