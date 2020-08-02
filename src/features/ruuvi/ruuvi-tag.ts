@@ -93,7 +93,7 @@ export function StopLogging(tagID: string, category: Category) {
         found.log.stopLogging();
     }
 }
-let nextAvailablePort = 0;
+let nextAvailablePort = 4;
 function newSensor(category: Category) {
     const attr: SensorAttributes = new SensorAttributes(
         'SN',

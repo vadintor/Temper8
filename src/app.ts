@@ -23,6 +23,7 @@ import * as logService from './features/sensors/sensor-log-service';
 
 import * as wifi from './features/wifi/wifi-data';
 
+import * as shutdown from './core/shutdown';
 // Init itemper modules
 // initBLE();
 
@@ -55,5 +56,7 @@ const port = process.env.PORT || 80;
 const server = httpServer.listen(port, () => {
     log.info('iTemper device listening on port ' + port);
 });
+
+shutdown.init(server);
 
 export default server;

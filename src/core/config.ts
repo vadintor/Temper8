@@ -14,6 +14,7 @@ interface Options {
     _CONSOLE_LEVEL?: string;
     _HOSTNAME?: string;
     _SHARED_ACCESS_KEY?: string;
+    _ITEMPER_CONFIG_FILE?: string;
 }
 class Config {
     private static env: Options;
@@ -35,20 +36,21 @@ class Config {
             _CONSOLE_LEVEL : process.env.CONSOLE_LEVEL,
             _HOSTNAME : os.hostname(),
             _SHARED_ACCESS_KEY: process.env.SHARED_ACCESS_KEY,
+            _ITEMPER_CONFIG_FILE: process.env.ITEMPER_CONFIG_FILE,
            };
     }
 
-    get SERIAL_NUMBER() { return Config.env._SERIAL_NUMBER || '';}
+    get SERIAL_NUMBER() { return Config.env._SERIAL_NUMBER || ''; }
 
     set SERIAL_NUMBER(value: string) { Config.env._SERIAL_NUMBER=value; }
 
-    get ITEMPER_URL(): string { return Config.env._ITEMPER_URL || '';}
+    get ITEMPER_URL(): string { return Config.env._ITEMPER_URL || ''; }
 
     get WS_URL(): string { return Config.env._WS_URL || ''; }
 
-    get WS_ORIGIN(): string {return Config.env._WS_ORIGIN || '';}
+    get WS_ORIGIN(): string { return Config.env._WS_ORIGIN || ''; }
 
-    get AZURE_CONNECTION_STRING(): string {return Config.env._AZURE_CONNECTION_STRING || '';}
+    get AZURE_CONNECTION_STRING(): string { return Config.env._AZURE_CONNECTION_STRING || ''; }
 
     get POLL_INTERVAL(): number {
         if (!Config.env._POLL_INTERVAL) {
@@ -57,38 +59,39 @@ class Config {
             return +Config.env._POLL_INTERVAL;
         }
     }
-    set POLL_INTERVAL(value: number) {Config.env._POLL_INTERVAL = value.toString();}
+    set POLL_INTERVAL(value: number) { Config.env._POLL_INTERVAL = value.toString(); }
 
-    get ERROR_LOG_FILE() {return Config.env._ERROR_LOG_FILE;}
+    get ERROR_LOG_FILE() { return Config.env._ERROR_LOG_FILE; }
 
-    get ERROR_LEVEL() {return Config.env._ERROR_LEVEL;}
+    get ERROR_LEVEL() { return Config.env._ERROR_LEVEL; }
 
-    get CONSOLE_LEVEL() {return Config.env._CONSOLE_LEVEL;}
+    get CONSOLE_LEVEL() { return Config.env._CONSOLE_LEVEL; }
 
-    get HOSTNAME() {return Config.env._HOSTNAME;}
+    get HOSTNAME() { return Config.env._HOSTNAME; }
 
-    public get SHARED_ACCESS_KEY(): string { return Config.env._SHARED_ACCESS_KEY || '';}
+    public get SHARED_ACCESS_KEY(): string { return Config.env._SHARED_ACCESS_KEY || ''; }
 
     public set SHARED_ACCESS_KEY(value: string) { Config.env._SHARED_ACCESS_KEY=value; this.saveSharedKey(value); }
 
-    private sharedKeyFileName = './itemper.json';
+    get ITEMPER_CONFIG_FILE() { return Config.env._ITEMPER_CONFIG_FILE || '/data/itemper.json'; }
+
     private readSharedKey(): void {
         try {
-            const conf = fs.readJSONSync(this.sharedKeyFileName);
+            const conf = fs.readJSONSync(this.ITEMPER_CONFIG_FILE);
             this.SHARED_ACCESS_KEY = conf.SHARED_ACCESS_KEY || process.env.SHARED_ACCESS_KEY;
-            console.debug(chalk.yellow('config.readSharedKey: Found conf=' + JSON.stringify(conf)));
+            console.info(chalk.yellow('config.readSharedKey: Found conf=' + JSON.stringify(conf)));
         } catch (error) {
-            const msg =  'config.readSharedKey: cannot read SHARED_ACCESS_KEY from ' + this.sharedKeyFileName;
-            console.debug(chalk.yellow(msg));
+            const msg =  'config.readSharedKey: cannot read SHARED_ACCESS_KEY from ' + this.ITEMPER_CONFIG_FILE;
+            console.error(chalk.red(msg));
         }
     }
     public saveSharedKey(key: string): void {
         try {
             const conf =  { SHARED_ACCESS_KEY:key };
-            fs.writeJSONSync( this.sharedKeyFileName, conf);
+            fs.writeJSONSync( this.ITEMPER_CONFIG_FILE, conf);
             console.info(chalk.yellow('config.writeSharedKey: saved conf=' + JSON.stringify(conf)));
         } catch (error) {
-            const msg =  'config.saveSharedKey: cannot save SHARED_ACCESS_KEY to ' + this.sharedKeyFileName;
+            const msg =  'config.saveSharedKey: cannot save SHARED_ACCESS_KEY to ' + this.ITEMPER_CONFIG_FILE;
             console.error(chalk.red(msg));
         }
     }
