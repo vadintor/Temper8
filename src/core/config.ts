@@ -78,11 +78,10 @@ class Config {
     private readSharedKey(): void {
         try {
             const conf = fs.readJSONSync(this.ITEMPER_CONFIG_FILE);
-            this.SHARED_ACCESS_KEY = conf.SHARED_ACCESS_KEY || process.env.SHARED_ACCESS_KEY;
             console.info(chalk.yellow('config.readSharedKey: Found conf=' + JSON.stringify(conf)));
+            Config.env._SHARED_ACCESS_KEY = conf.SHARED_ACCESS_KEY;       // no implicit saving here
         } catch (error) {
-            const msg =  'config.readSharedKey: cannot read SHARED_ACCESS_KEY from ' + this.ITEMPER_CONFIG_FILE;
-            console.error(chalk.red(msg));
+            this.SHARED_ACCESS_KEY = process.env.SHARED_ACCESS_KEY || ''; // implicit saving the key to config file here
         }
     }
     public saveSharedKey(key: string): void {
