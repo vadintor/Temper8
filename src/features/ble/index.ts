@@ -3,11 +3,11 @@ import { log } from '../../core/logger';
 import { DeviceInfoService } from './services/device-info-service';
 const deviceInfoService = new DeviceInfoService();
 
-export const AdvertisedName = 'itemperBLE';
+const AdvertisedName = 'itemperBLE';
 
-export function initBLE() {
+export function init() {
   bleno.on('stateChange', (state: any) => {
-    log.info(`initBLE.on -> stateChange: ${state}`);
+    log.info(`ble.init.on(stateChange): ${state}`);
 
     if (state === 'poweredOn') {
       bleno.startAdvertising(AdvertisedName, [
@@ -19,10 +19,10 @@ export function initBLE() {
   });
 
   bleno.on('advertisingStart', (error: Error) => {
-    log.info(`initBLE.on -> advertisingStart: ${error ? 'error ' + error : 'success'}`);
+    log.info(`ble.init.on(advertisingStart): ${error ? 'error ' + error : 'success'}`);
     if (!error) {
       bleno.setServices([deviceInfoService], (error: Error) => {
-        error ? log.error('initBLE.setServices: error=' +  error) : log.info('initBLE.setServices: success');
+        error ? log.error('ble.init.on(advertisingStart): error=' +  error) : log.info('initBLE.setServices: success');
       });
     }
   });

@@ -19,10 +19,16 @@ export class DeviceCharacteristic extends bleno.Characteristic {
   }
 
   onReadRequest(offset: any, callback: any) {
+    const data =  {
+      name: 'Inside',
+      deviceID: 'abc',
+      key: '1234',
+      color: '000000',
+    };
     if (offset) {
       callback(this.RESULT_ATTR_NOT_LONG, null);
     } else {
-      callback(this.RESULT_SUCCESS, Buffer.from('iTemper ab'));
+      callback(this.RESULT_SUCCESS, Buffer.from(JSON.stringify(data)));
     }
   }
 

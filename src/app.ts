@@ -13,6 +13,8 @@ import route_settings from './routes/settings';
 
 import * as clientService from './features/client-service/client-service';
 
+import * as ble from './features/ble';
+
 import { Device } from './features/device/device';
 import { USBController } from './features/sensors/usb-controller';
 
@@ -23,16 +25,16 @@ import * as logService from './features/sensors/sensor-log-service';
 
 import * as wifi from './features/wifi/wifi-data';
 
+
 import * as shutdown from './core/shutdown';
 // Init itemper modules
-// initBLE();
-
 Settings.init();
 logService.init();
 Device.init();
 USBController.init();
 wifi.init();
 ruuvi.init();
+ble.init();
 
 // Init itemper device server
 const app = express();

@@ -5,7 +5,7 @@ export class WiFiCharacteristic extends bleno.Characteristic {
   constructor() {
     super({
       uuid: WiFiCharacteristic.UUID,
-      properties: ['read'],
+      properties: ['read', 'write'],
       descriptors: [
         new bleno.Descriptor({
           uuid: '2901',
@@ -14,10 +14,32 @@ export class WiFiCharacteristic extends bleno.Characteristic {
     });
   }
   public onReadRequest(offset: any, callback: any) {
+    const data =  { networks: { current:  {
+                                            ssid: 'limited',
+                                            security: 'WPA2',
+                                            channel: 11,
+                                            quality: 78,
+                                          },
+                                available:[
+                                  {
+                                    ssid: 'Resin',
+                                    security: 'WPA2',
+                                    channel: 6,
+                                    quality: 67,
+                                  },
+                                  {
+                                    ssid: 'StickoBrinn',
+                                    security: 'Open',
+                                    channel: 1,
+                                    quality: 47,
+                                  },
+                                ],
+                              },
+                  };
     if (offset) {
       callback(this.RESULT_ATTR_NOT_LONG, null);
     } else {
-      callback(this.RESULT_SUCCESS, Buffer.from('110%', 'utf-8'));
+      callback(this.RESULT_SUCCESS, Buffer.from(JSON.stringify(data), 'utf-8'));
     }
   }
 }
