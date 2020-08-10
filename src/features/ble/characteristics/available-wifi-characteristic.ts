@@ -30,8 +30,8 @@ export class AvailableWiFiCharacteristic extends  BaseCharacteristic{
                 + JSON.stringify(data));
         resolve({result: this.RESULT_SUCCESS, data});
       })
-      .catch(() => {
-        log.error('available-wifi-characteristic.handleReadRequest - error retrieving available WiFi networks');
+      .catch((e: Error) => {
+        log.error('available-wifi-characteristic.handleReadRequest - error retrieving available WiFi networks', e);
         resolve({result: this.RESULT_UNLIKELY_ERROR});
       });
     });
