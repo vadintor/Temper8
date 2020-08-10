@@ -33,7 +33,13 @@ export abstract class BaseCharacteristic extends bleno.Characteristic {
         callback(this.RESULT_ATTR_NOT_LONG);
     } else {
         this.handleReadRequest()
-        .then((response) =>  callback(response.result, Buffer.from(JSON.stringify(response.data))));
+        .then((response) =>  {
+          if (response.data) {
+            callback(response.result, Buffer.from(JSON.stringify(response.data)));
+          } else {
+            callback(response.result);
+          }
+        });
     }
   }
 
