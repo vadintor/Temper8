@@ -35,9 +35,9 @@ export abstract class BaseCharacteristic extends bleno.Characteristic {
         this.handleReadRequest()
         .then((response) =>  {
           if (response.data) {
-            callback(response.result, Buffer.from(JSON.stringify(response.data)));
+            callback(this.RESULT_SUCCESS, Buffer.from(JSON.stringify(response.data)));
           } else {
-            callback(response.result);
+            callback(this.RESULT_SUCCESS);
           }
         })
         .catch(() => {
@@ -60,9 +60,9 @@ export abstract class BaseCharacteristic extends bleno.Characteristic {
       try {
         const raw = JSON.parse(decode(data));
         this.handleWriteRequest(raw)
-        .then((response) => {
-            log.info('base-characteristic.onWriteRequest: ' + response.result);
-            callback(response.result);
+        .then(() => {
+            log.info('base-characteristic.onWriteRequest: ');
+            callback(this.RESULT_SUCCESS);
         });
       } catch {
         log.error('base-characteristic.onWriteRequest: Cannot parse BLE write request data.');
