@@ -21,6 +21,8 @@ export class DeviceCharacteristic extends  BaseCharacteristic{
       data.key = Settings.get(Settings.SHARED_ACCESS_KEY).toString();
       data.name =  Settings.get(Settings.SERIAL_NUMBER).toString();
       data.color =  Settings.get(Settings.COLOR).toString();
+      log.info('device-characteristic.handleReadRequest: successfully retrieving device data='
+      + JSON.stringify(data));
       resolve({result: this.RESULT_SUCCESS, data});
     });
   }
