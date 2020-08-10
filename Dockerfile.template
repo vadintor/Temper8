@@ -14,6 +14,9 @@ RUN apt-get update && apt-get install -yq \
 # # bleno pre-req
 RUN install_packages bluetooth bluez libbluetooth-dev libudev-dev
 
+# # network manager
+RUN install_packages network-manager
+
 # Defines our working directory in container
 WORKDIR /usr/src/itemper
 
