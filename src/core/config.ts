@@ -3,6 +3,7 @@ import * as fs from 'fs-extra';
 import * as os from 'os';
 
 interface Options {
+    _COLOR?: string;
     _SERIAL_NUMBER?: string;
     _ITEMPER_URL?: string;
     _WS_URL?: string;
@@ -25,6 +26,7 @@ class Config {
     }
     private reset() {
         Config.env = {
+            _COLOR: process.env.COLOR|| '#0000cc',
             _SERIAL_NUMBER: process.env.SERIAL_NUMBER || os.hostname(),
             _ITEMPER_URL : process.env.ITEMPER_URL,
             _WS_URL : process.env.WS_URL,
@@ -40,8 +42,10 @@ class Config {
            };
     }
 
-    get SERIAL_NUMBER() { return Config.env._SERIAL_NUMBER || ''; }
+    get COLOR() { return Config.env._COLOR || ''; }
+    set COLOR(value: string) { Config.env._COLOR=value; }
 
+    get SERIAL_NUMBER() { return Config.env._SERIAL_NUMBER || ''; }
     set SERIAL_NUMBER(value: string) { Config.env._SERIAL_NUMBER=value; }
 
     get ITEMPER_URL(): string { return Config.env._ITEMPER_URL || ''; }
@@ -70,7 +74,6 @@ class Config {
     get HOSTNAME() { return Config.env._HOSTNAME; }
 
     public get SHARED_ACCESS_KEY(): string { return Config.env._SHARED_ACCESS_KEY || ''; }
-
     public set SHARED_ACCESS_KEY(value: string) { Config.env._SHARED_ACCESS_KEY=value; this.saveSharedKey(value); }
 
     get ITEMPER_CONFIG_FILE() { return Config.env._ITEMPER_CONFIG_FILE || '/data/itemper.json'; }

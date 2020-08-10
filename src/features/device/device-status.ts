@@ -36,7 +36,7 @@ export interface WiFi {
     security_flags: string; // encryption protocols (format currently depending of the OS)
     mode: string; // network mode like Infra (format currently depending of the OS)
 }
-export class DeviceData {
+export class DeviceStatus {
     timestamp: number;
     hostname: string;
     loadavg: number[];
@@ -50,3 +50,4 @@ export class DeviceData {
     cpuUsage: CpuUsage;
     pid: number;
 }
+

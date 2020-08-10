@@ -1,22 +1,22 @@
-import { DeviceData } from './device-data';
+import { DeviceStatus } from './device-status';
 
 import { log } from '../../core/logger';
 import { Setting, Settings  } from '../../core/settings';
 export interface DeviceDataListener {
-    publish: (status: DeviceData) => void;
+    publish: (status: DeviceStatus) => void;
 }
 export class DeviceState {
-    protected deviceData: DeviceData;
+    protected deviceData: DeviceStatus;
     protected deviceDataListeners: DeviceDataListener[] = [];
-    private previousData: DeviceData = new DeviceData();
+    private previousData: DeviceStatus = new DeviceStatus();
 
     constructor() {
         Settings.onChange(Settings.HOSTNAME, this.hostnameChanged.bind(this));
     }
-    public getDeviceData(): DeviceData {
+    public getDeviceData(): DeviceStatus {
         return this.deviceData;
     }
-    public addDeviceDataListener(onDeviceDataReceived: (device: DeviceData) => void): void {
+    public addDeviceDataListener(onDeviceDataReceived: (device: DeviceStatus) => void): void {
         this.deviceDataListeners.push ({publish: onDeviceDataReceived});
     }
     private hostnameChanged(setting: Setting) {
@@ -28,7 +28,7 @@ export class DeviceState {
     //     log.debug('deviceState.timeDiff diff=' + timeDiff);
     //     return timeDiff > maxTimeDiff;
     // }
-    private updateDeviceDataListeners(deviceData: DeviceData, previousData: DeviceData) {
+    private updateDeviceDataListeners(deviceData: DeviceStatus, previousData: DeviceStatus) {
         let published: boolean = false;
         for (const listener of this.deviceDataListeners) {
                 listener.publish(deviceData);
@@ -41,7 +41,7 @@ export class DeviceState {
             log.debug('DeviceState.updateDeviceDataListeners: No device data published');
         }
     }
-    protected updateDeviceData(data: DeviceData) {
+    protected updateDeviceData(data: DeviceStatus) {
         this.deviceData = data;
         this.updateDeviceDataListeners(data, this.previousData);
     }

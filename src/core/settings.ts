@@ -22,7 +22,7 @@ export interface SettingListener {
 export class Settings {
     private static map = new Map<string, Setting>();
     private static listeners: SettingListener[] = [];
-
+    public static COLOR= 'COLOR';
     public static SERIAL_NUMBER = 'SERIAL_NUMBER';
     public static AZURE_CONNECTION_STRING: string = 'AZURE_CONNECTION_STRING';
     public static CONSOLE_LEVEL = 'CONSOLE_LEVEL';
@@ -38,6 +38,8 @@ export class Settings {
     public static READONLY = true;
 
     public static init() {
+        Settings.add(Settings.COLOR, 'Color', conf.COLOR,  '',
+        'Color', !Settings.READONLY);
         Settings.add(Settings.SERIAL_NUMBER, 'Serial Number', conf.SERIAL_NUMBER,  '',
         'Serial Number (SN)', !Settings.READONLY);
         Settings.add(Settings.AZURE_CONNECTION_STRING, 'Azure connection string', conf.AZURE_CONNECTION_STRING,  '',

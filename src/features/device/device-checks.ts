@@ -1,6 +1,7 @@
 
-import { DeviceData } from './device-data';
 import { DeviceState } from './device-state';
+import { DeviceStatus } from './device-status';
+
 
 import * as os from 'os';
 
@@ -14,7 +15,7 @@ export class DeviceChecks extends DeviceState {
     }
 
     public check(): void {
-        const data: DeviceData = new DeviceData();
+        const data: DeviceStatus = new DeviceStatus();
         data.timestamp = Date.now();
         data.hostname = os.hostname();
         data.loadavg = os.loadavg();

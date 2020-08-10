@@ -1,13 +1,13 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
-import { DeviceData } from './device-data';
-import { DeviceState } from './device-state';
-
 import { log } from '../../core/logger';
+import { DeviceState } from './device-state';
+import { DeviceStatus } from './device-status';
+
 
 import {Setting, Settings} from '../../core/settings';
 
 export interface DeviceDataLog {
-    data: DeviceData;
+    data: DeviceStatus;
 }
 
 export class DeviceLog {
@@ -66,7 +66,7 @@ export class DeviceLog {
         this.logging = false;
     }
 
-    private onDataReceived(data: DeviceData): void {
+    private onDataReceived(data: DeviceStatus): void {
         if (this.logging) {
             const deviceLog: DeviceDataLog = {data};
             const url = '/status';

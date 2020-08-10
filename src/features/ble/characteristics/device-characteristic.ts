@@ -1,75 +1,53 @@
-import bleno from 'bleno';
+// import bleno from 'bleno';
+// import * as util from 'util';
 import { log } from '../../../core/logger';
 import { Settings } from '../../../core/settings';
+import { BaseCharacteristic, ReadResponse, WriteResponse } from './base-characteristic';
+import { DeviceData, isDeviceDataValid } from './characteristic-data';
 
-import * as util from 'util';
-
-export class DeviceCharacteristic extends bleno.Characteristic {
+export class DeviceCharacteristic extends  BaseCharacteristic{
   public static UUID = 'd7e84cb2-ff37-4afc-9ed8-5577aeb84542';
   constructor() {
-    super({
-      uuid: DeviceCharacteristic.UUID,
-      properties: ['read', 'write'],
-      descriptors: [
-        new bleno.Descriptor({
-          uuid: '2901',
-          value: 'Device settings',
-      })],
+    super(DeviceCharacteristic.UUID, 'Device settings',  ['read', 'write']);
+  }
+  handleReadRequest(): Promise<ReadResponse> {
+    return new Promise((resolve) => {
+      const data =  {
+        name: '',
+        deviceID: '123',
+        key: '',
+        color: '',
+      };
+      data.key = Settings.get(Settings.SHARED_ACCESS_KEY).toString();
+      data.name =  Settings.get(Settings.SERIAL_NUMBER).toString();
+      data.color =  Settings.get(Settings.COLOR).toString();
+      resolve({result: this.RESULT_SUCCESS, data});
     });
   }
 
-  onReadRequest(offset: any, callback: any) {
-    const data =  {
-      name: 'Inside',
-      deviceID: 'abc',
-      key: '1234',
-      color: '000000',
-    };
-    if (offset) {
-      callback(this.RESULT_ATTR_NOT_LONG, null);
-    } else {
-      callback(this.RESULT_SUCCESS, Buffer.from(JSON.stringify(data)));
-    }
-  }
-
-  onWriteRequest(data: Buffer, offset: number, withoutResponse: boolean, callback: (result: number) => void): void {
-    log.debug('device-characteristic.onWriteRequest: offset=' + offset);
-    log.debug('device-characteristic.onWriteRequest: withoutResponse=' + withoutResponse);
-    log.debug('device-characteristic.onWriteRequest: data=' + decode(data));
-
-    if (offset) {
-      callback(this.RESULT_ATTR_NOT_LONG);
-      log.error('device-characteristic.onWriteRequest: RESULT_ATTR_NOT_LONG');
-    } else {
-      const value = JSON.parse(decode(data));
-      if (value.key) {
-        Settings.update(Settings.SHARED_ACCESS_KEY, value.key, (updated) => {
-          if (updated) {
-            log.info('device-characteristic.onWriteRequest: SHARED_ACCESS_KEY updated by bluetooth client');
-            callback(this.RESULT_SUCCESS);
-          } else {
-            log.error('device-characteristic.onWriteRequest: SHARED_ACCESS_KEY not updated. Read-only?');
-            callback(this.RESULT_UNLIKELY_ERROR);
-          }
-        });
+  handleWriteRequest(raw: unknown): Promise<WriteResponse> {
+    return new Promise((resolve) => {
+      if (isDeviceDataValid(raw)) {
+        const deviceData = raw as DeviceData;
+        this.update(Settings.SERIAL_NUMBER, deviceData.name);
+        this.update(Settings.SHARED_ACCESS_KEY, deviceData.key);
+        if (deviceData.color ) {
+          this.update(Settings.COLOR, deviceData.color);
+        }
+        resolve({result: this.RESULT_SUCCESS});
       } else {
-        log.error('device-characteristic.onWriteRequest: SHARED_ACCESS_KEY not in write request data.');
-        callback(this.RESULT_UNLIKELY_ERROR);
+        resolve ({result: this.RESULT_UNLIKELY_ERROR});
       }
-    }
+    });
+  }
+
+  update(setting: string, value: string) {
+    Settings.update(setting, value, (updated: boolean) => {
+      if (updated) {
+        log.info('device-characteristic: ' + setting + ' updated, value= ' + value);
+      } else {
+        log.error('device-characteristic: ' + setting + ' not updated');
+      }
+    });
   }
 }
-
-// helper function to decode message sent from peripheral
-export function decode(buf: Buffer): string {
-  log.debug('device-characteristic.decode');
-  const dec = new util.TextDecoder('utf-8');
-  return dec.decode(buf);
-}
-export function encode(value: string ): BufferSource {
-  log.debug('device-characteristic.encode');
-  const enc = new util.TextEncoder();
-  return enc.encode(value);
-}
-
-

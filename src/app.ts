@@ -23,7 +23,7 @@ import { USBController } from './features/sensors/usb-controller';
 import * as ruuvi from './features/ruuvi/ruuvi-tag';
 import * as logService from './features/sensors/sensor-log-service';
 
-import * as wifi from './features/wifi/wifi-data';
+import * as wifi from './features/wifi';
 
 
 import * as shutdown from './core/shutdown';
