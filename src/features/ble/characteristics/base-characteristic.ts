@@ -39,6 +39,9 @@ export abstract class BaseCharacteristic extends bleno.Characteristic {
           } else {
             callback(response.result);
           }
+        })
+        .catch(() => {
+          callback(this.RESULT_UNLIKELY_ERROR);
         });
     }
   }

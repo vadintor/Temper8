@@ -36,7 +36,7 @@ export class DeviceCharacteristic extends  BaseCharacteristic{
         }
         resolve({result: this.RESULT_SUCCESS});
       } else {
-        resolve ({result: this.RESULT_UNLIKELY_ERROR});
+        resolve({result: this.RESULT_UNLIKELY_ERROR});
       }
     });
   }
