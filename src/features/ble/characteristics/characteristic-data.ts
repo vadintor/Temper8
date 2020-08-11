@@ -12,8 +12,6 @@ export interface DeviceData {
 export interface WiFiData {
      ssid: string;
      security: string;
-     channel: number;
-     quality: number;
 }
 export interface DeviceWiFiData {
      current: WiFiData;
@@ -31,12 +29,6 @@ export interface DeviceData {
      color?: string;
      statusTime?: number;
      uptime?: number;
-}
-export interface WiFiData {
-     ssid: string;
-     security: string;
-     channel: number;
-     quality: number;
 }
 export interface WiFiRequest {
     ssid: string;
@@ -79,8 +71,6 @@ export function isWiFiDataValid(raw: unknown): boolean {
         valid = valid
         && 'ssid' in data && typeof data.ssid === 'string'
         && 'security' in data && typeof data.security === 'string'
-        && 'channel' in data && typeof data.channel === 'number'
-        && 'quality' in data && typeof data.quality === 'number';
         if (!valid) {
             log.error('device-characteristic-data.isWiFiDataValid - not valid');
         }

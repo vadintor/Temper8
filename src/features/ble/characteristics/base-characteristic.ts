@@ -30,6 +30,7 @@ export abstract class BaseCharacteristic extends bleno.Characteristic {
 
   onReadRequest(offset: number, callback: (result: number, data?: Buffer) => void) {
     if (offset) {
+        log.error('base-characteristic.onReadRequest: RESULT_ATTR_NOT_LONG, offset' + offset);
         callback(this.RESULT_ATTR_NOT_LONG);
     } else {
         this.handleReadRequest()
@@ -54,8 +55,8 @@ export abstract class BaseCharacteristic extends bleno.Characteristic {
     log.debug('base-characteristic.onWriteRequest: data=' + decode(data));
 
     if (offset) {
+      log.error('base-characteristic.onWriteRequest: RESULT_ATTR_NOT_LONG, offset' + offset);
       callback(this.RESULT_ATTR_NOT_LONG);
-      log.error('base-characteristic.onWriteRequest: RESULT_ATTR_NOT_LONG');
     } else {
       try {
         const raw = JSON.parse(decode(data));

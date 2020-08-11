@@ -22,8 +22,6 @@ export class AvailableWiFiCharacteristic extends  BaseCharacteristic{
             data.push({
                 ssid: network.ssid,
                 security: network.security,
-                channel: network.channel,
-                quality: network.quality,
             });
         });
         log.info('available-wifi-characteristic.handleReadRequest: successfully retrieving networks='

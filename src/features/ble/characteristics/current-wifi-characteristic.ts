@@ -15,8 +15,8 @@ export class CurrentWiFiCharacteristic extends  BaseCharacteristic {
       wifi.getCurrentConnections()
       .then((networks: WiFi[]) => {
         if (networks.length > 0) {
-          const {ssid, security, channel, quality} = networks[0]; // Just takes the first one and hope for the best
-          const data: WiFiData = { ssid, security, channel, quality };
+          const {ssid, security } = networks[0]; // Just takes the first one and hope for the best
+          const data: WiFiData = { ssid, security };
           log.info('current-wifi-characteristic.handleReadRequest: successfully retrieving network data='
           + JSON.stringify(data));
           resolve({result: this.RESULT_SUCCESS, data});
