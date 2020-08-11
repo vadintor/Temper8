@@ -3,7 +3,6 @@ import wifi from 'node-wifi';
 import { log } from '../../../core/logger';
 import { WiFi } from '../../device/device-status';
 import { BaseCharacteristic, ReadResponse, WriteResponse } from './base-characteristic';
-import { WiFiData } from './characteristic-data';
 
 export class AvailableWiFiCharacteristic extends  BaseCharacteristic{
   public static UUID = 'd7e84cb2-ff37-4afc-9ed8-5577aeb84540';
@@ -17,12 +16,9 @@ export class AvailableWiFiCharacteristic extends  BaseCharacteristic{
     return new Promise((resolve) => {
       wifi.scan()
       .then((networks: WiFi[]) => {
-        const data: WiFiData[] = [];
+        const data: string[][] = [];
         networks.forEach((network: WiFi) => {
-            data.push({
-                ssid: network.ssid,
-                security: network.security,
-            });
+            data.push([network.ssid, network.security]);
         });
         log.info('available-wifi-characteristic.handleReadRequest: successfully retrieving networks='
                 + JSON.stringify(data));
