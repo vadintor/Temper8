@@ -14,6 +14,7 @@ export interface WriteResponse {
     result: number;
 }
 export abstract class BaseCharacteristic extends bleno.Characteristic {
+  private result: Buffer;
   constructor(UUID: string, descriptorValue: string, properties: ReadonlyArray<Property>) {
     super({
       uuid: UUID,
@@ -29,13 +30,12 @@ export abstract class BaseCharacteristic extends bleno.Characteristic {
   abstract handleReadRequest(): Promise<ReadResponse>;
 
   onReadRequest(offset: number, callback: (result: number, data?: Buffer) => void) {
-    if (offset) {
-        log.error('base-characteristic.onReadRequest: RESULT_ATTR_NOT_LONG, offset' + offset);
-        callback(this.RESULT_ATTR_NOT_LONG);
-    } else {
+
+    if (offset === 0) {
         this.handleReadRequest()
         .then((response) =>  {
           if (response.data) {
+            this.result = new Buffer(JSON.stringify(response.data));
             callback(this.RESULT_SUCCESS, Buffer.from(JSON.stringify(response.data)));
           } else {
             callback(this.RESULT_SUCCESS);
@@ -43,8 +43,13 @@ export abstract class BaseCharacteristic extends bleno.Characteristic {
         })
         .catch(() => {
           callback(this.RESULT_UNLIKELY_ERROR);
-        });
-    }
+        }); 
+    }  else if (offset  < this.result.length) {
+      callback(this.RESULT_SUCCESS, this.result.slice(offset));
+    } else {
+      log.error('base-characteristic.onReadRequest: RESULT_INVALID_OFFSET, offset' + offset);
+      callback(this.RESULT_INVALID_OFFSET);
+  } 
   }
 
   abstract handleWriteRequest(raw: unknown): Promise<WriteResponse>;

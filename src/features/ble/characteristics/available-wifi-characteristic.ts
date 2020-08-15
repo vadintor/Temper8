@@ -16,12 +16,15 @@ export class AvailableWiFiCharacteristic extends  BaseCharacteristic{
     return new Promise((resolve) => {
       wifi.scan()
       .then((networks: WiFi[]) => {
+        const MaxNetworks = 5;
+        const sorted = networks.sort((a,b) => b.quality - a.quality)
+        .slice(0, networks.length < MaxNetworks ? networks.length : MaxNetworks);
         const data: string[][] = [];
-        networks.forEach((network: WiFi) => {
+        sorted.forEach((network: WiFi) => {
             data.push([network.ssid, network.security]);
         });
-        log.info('available-wifi-characteristic.handleReadRequest: successfully retrieving networks='
-                + JSON.stringify(data));
+        log.info('available-wifi-characteristic.handleReadRequest: successfully sorted='
+                + JSON.stringify(sorted));
         resolve({result: this.RESULT_SUCCESS, data});
       })
       .catch((e: Error) => {
