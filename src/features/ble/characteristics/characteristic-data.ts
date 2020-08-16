@@ -12,6 +12,8 @@ export interface DeviceData {
 export interface WiFiData {
      ssid: string;
      security: string;
+     quality: number;
+     channel: number;
 }
 export interface DeviceWiFiData {
      current: WiFiData;

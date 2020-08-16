@@ -2,30 +2,30 @@
 // import * as util from 'util';
 import { log } from '../../../core/logger';
 import { Settings } from '../../../core/settings';
-import { BaseCharacteristic, ReadResponse, WriteResponse } from './base-characteristic';
+import { BaseCharacteristic } from './base-characteristic';
 import { DeviceData, isDeviceDataValid } from './characteristic-data';
 
-export class DeviceCharacteristic extends  BaseCharacteristic{
+export class DeviceCharacteristic extends  BaseCharacteristic<DeviceData>{
   public static UUID = 'd7e84cb2-ff37-4afc-9ed8-5577aeb84542';
   constructor() {
     super(DeviceCharacteristic.UUID, 'Device settings',  ['read', 'write']);
   }
-  handleReadRequest(): Promise<ReadResponse> {
+  handleReadRequest(): Promise<DeviceData> {
     return new Promise((resolve) => {
       const data = {
-          key: Settings.get(Settings.SHARED_ACCESS_KEY).value,
-          name: Settings.get(Settings.SERIAL_NUMBER).value,
-          color:  Settings.get(Settings.COLOR).value,
+          key: Settings.get(Settings.SHARED_ACCESS_KEY).value as string,
+          name: Settings.get(Settings.SERIAL_NUMBER).value as string,
+          color:  Settings.get(Settings.COLOR).value as string,
           deviceID: '123',
       };
       log.info('device-characteristic.handleReadRequest: successfully retrieving device data='
       + JSON.stringify(data));
-      resolve({result: this.RESULT_SUCCESS, data});
+      resolve(data);
     });
   }
 
-  handleWriteRequest(raw: unknown): Promise<WriteResponse> {
-    return new Promise((resolve) => {
+  handleWriteRequest(raw: unknown): Promise<boolean> {
+    return new Promise((resolve, reject) => {
       if (isDeviceDataValid(raw)) {
         const deviceData = raw as DeviceData;
         this.update(Settings.SERIAL_NUMBER, deviceData.name);
@@ -33,9 +33,9 @@ export class DeviceCharacteristic extends  BaseCharacteristic{
         if (deviceData.color ) {
           this.update(Settings.COLOR, deviceData.color);
         }
-        resolve({result: this.RESULT_SUCCESS});
+        resolve(true);
       } else {
-        resolve({result: this.RESULT_UNLIKELY_ERROR});
+        reject();
       }
     });
   }

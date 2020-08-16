@@ -13,8 +13,9 @@ export interface ReadResponse {
 export interface WriteResponse {
     result: number;
 }
-export abstract class BaseCharacteristic extends bleno.Characteristic {
+export abstract class BaseCharacteristic<T> extends bleno.Characteristic {
   private result: Buffer;
+
   constructor(UUID: string, descriptorValue: string, properties: ReadonlyArray<Property>) {
     super({
       uuid: UUID,
@@ -27,32 +28,30 @@ export abstract class BaseCharacteristic extends bleno.Characteristic {
     });
   }
 
-  abstract handleReadRequest(): Promise<ReadResponse>;
+  abstract handleReadRequest(): Promise<T>;
 
   onReadRequest(offset: number, callback: (result: number, data?: Buffer) => void) {
-
     if (offset === 0) {
         this.handleReadRequest()
         .then((response) =>  {
-          if (response.data) {
-            this.result = new Buffer(JSON.stringify(response.data));
-            callback(this.RESULT_SUCCESS, Buffer.from(JSON.stringify(response.data)));
+          if (response) {
+            callback(this.RESULT_SUCCESS, Buffer.from(JSON.stringify(response)));
           } else {
             callback(this.RESULT_SUCCESS);
           }
         })
         .catch(() => {
           callback(this.RESULT_UNLIKELY_ERROR);
-        }); 
+        });
     }  else if (offset  < this.result.length) {
       callback(this.RESULT_SUCCESS, this.result.slice(offset));
     } else {
-      log.error('base-characteristic.onReadRequest: RESULT_INVALID_OFFSET, offset' + offset);
+      log.error('base-characteristic.onReadRequest: RESULT_INVALID_OFFSET, offset' + offset +
+                ', result.length=' + this.result.length);
       callback(this.RESULT_INVALID_OFFSET);
-  } 
+    }
   }
-
-  abstract handleWriteRequest(raw: unknown): Promise<WriteResponse>;
+  abstract handleWriteRequest(raw: unknown): Promise<boolean>;
 
   onWriteRequest(data: Buffer, offset: number, withoutResponse: boolean, callback: (result: number) => void): void {
     log.debug('base-characteristic.onWriteRequest: offset=' + offset);
@@ -74,19 +73,16 @@ export abstract class BaseCharacteristic extends bleno.Characteristic {
         log.error('base-characteristic.onWriteRequest: Cannot parse BLE write request data.');
         callback(this.RESULT_UNLIKELY_ERROR);
       }
-
     }
   }
 }
 
 // helper function to decode message sent from peripheral
 export function decode(buf: Buffer): string {
-  log.debug('base-characteristic.decode');
   const dec = new util.TextDecoder('utf-8');
   return dec.decode(buf);
 }
 export function encode(value: string ): BufferSource {
-  log.debug('base-characteristic.encode');
   const enc = new util.TextEncoder();
   return enc.encode(value);
 }
