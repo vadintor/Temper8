@@ -33,7 +33,7 @@ class Config {
             _WS_ORIGIN : process.env.WS_ORIGIN,
             _AZURE_CONNECTION_STRING : process.env.AZURE_CONNECTION_STRING,
             _POLL_INTERVAL : process.env.POLL_INTERVAL,
-            _ERROR_LOG_FILE : process.env.ERROR_LOG_FILE,
+            _ERROR_LOG_FILE : process.env.ERROR_LOG_FILE || 'itemper-error.log',
             _ERROR_LEVEL : process.env.ERROR_LEVEL,
             _CONSOLE_LEVEL : process.env.CONSOLE_LEVEL,
             _HOSTNAME : os.hostname(),

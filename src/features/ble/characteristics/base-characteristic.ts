@@ -35,7 +35,8 @@ export abstract class BaseCharacteristic<T> extends bleno.Characteristic {
         this.handleReadRequest()
         .then((response) =>  {
           if (response) {
-            callback(this.RESULT_SUCCESS, Buffer.from(JSON.stringify(response)));
+            this.result = Buffer.from(JSON.stringify(response));
+            callback(this.RESULT_SUCCESS, this.result);
           } else {
             callback(this.RESULT_SUCCESS);
           }
@@ -43,7 +44,7 @@ export abstract class BaseCharacteristic<T> extends bleno.Characteristic {
         .catch(() => {
           callback(this.RESULT_UNLIKELY_ERROR);
         });
-    }  else if (offset  < this.result.length) {
+    }  else if ( this.result && offset  < this.result.length) {
       callback(this.RESULT_SUCCESS, this.result.slice(offset));
     } else {
       log.error('base-characteristic.onReadRequest: RESULT_INVALID_OFFSET, offset' + offset +
