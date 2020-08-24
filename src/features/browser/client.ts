@@ -43,7 +43,7 @@ function on(event: string, element: HTMLElement | null, fn: () => void) {
 function setElementBackgroundColor(id: string, color: string) {
     const element = document.getElementById(id);
     if (element) {
-        element.style.backgroundColor = color;
+        element.setAttribute('style', 'background-color:' + color);
     }
 }
 function setBackgroundColor(color: string) {

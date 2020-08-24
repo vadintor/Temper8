@@ -13,10 +13,10 @@ export class DeviceCharacteristic extends  BaseCharacteristic<DeviceData>{
   handleReadRequest(): Promise<DeviceData> {
     return new Promise((resolve) => {
       const data = {
-          key: Settings.get(Settings.SHARED_ACCESS_KEY).value as string,
           name: Settings.get(Settings.SERIAL_NUMBER).value as string,
           color:  Settings.get(Settings.COLOR).value as string,
           deviceID: '123',
+          key: Settings.get(Settings.SHARED_ACCESS_KEY).value as string,
       };
       log.info('device-characteristic.handleReadRequest: successfully retrieving device data='
       + JSON.stringify(data));
