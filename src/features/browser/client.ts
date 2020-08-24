@@ -40,7 +40,16 @@ function on(event: string, element: HTMLElement | null, fn: () => void) {
         element.addEventListener(event, fn);
     }
 }
-
+function setElementBackgroundColor(id: string, color: string) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.style.backgroundColor = color;
+    }
+}
+function setBackgroundColor(color: string) {
+    setElementBackgroundColor('header', color);
+    setElementBackgroundColor('footer', color);
+}
 function openSection(id: string) {
     console.log('openSection: ', id);
     closeActiveSections();
@@ -387,6 +396,9 @@ function clickedSaved(name: string) {
     SaveBtn.setAttribute('style', 'display:none');
     readonlySetting(name);
     socket.send(JSON.stringify({command: 'saveSetting', data: <Setting>setting}));
+    if (isBrowserSetting(setting)) {
+        updateBrowser(setting);
+    }
 }
 
 function readonlySetting(name: string) {
@@ -408,7 +420,17 @@ function readonlySetting(name: string) {
     SaveBtn.setAttribute('style', 'display:none');
 }
 
-
+const BrowserSettings  = ['color'];
+function isBrowserSetting(setting: Setting) {
+    return BrowserSettings.find((s) => s === setting.name);
+}
+function updateBrowser(setting: Setting) {
+    switch (setting.name) {
+        case 'color':
+            setBackgroundColor(setting.value as string);
+            break;
+    }
+}
 function receiveSettings(allSettings: Setting[]) {
     const section = document.getElementById('settingsSection');
     for (const setting of allSettings) {
@@ -416,6 +438,9 @@ function receiveSettings(allSettings: Setting[]) {
             updateSetting(setting);
         } else {
             addSetting(setting, section);
+        }
+        if (isBrowserSetting(setting)) {
+            updateBrowser(setting);
         }
     }
 }
