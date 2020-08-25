@@ -43,12 +43,16 @@ function on(event: string, element: HTMLElement | null, fn: () => void) {
 function setElementBackgroundColor(id: string, color: string) {
     const element = document.getElementById(id);
     if (element) {
-        element.setAttribute('style', 'background-color:' + color);
+        const backgroundColor = 'background-color:' + color;
+        element.setAttribute('style', backgroundColor);
+        console.log('setElementBackgroundColor: %s', id);
+    } else {
+        console.error('setElementBackgroundColor: ID NOT FOUND: %s', id);
     }
 }
 function setBackgroundColor(color: string) {
-    setElementBackgroundColor('header', color);
-    setElementBackgroundColor('footer', color);
+    setElementBackgroundColor('itemper-header', color);
+    setElementBackgroundColor('itemper-footer', color);
 }
 function openSection(id: string) {
     console.log('openSection: ', id);
