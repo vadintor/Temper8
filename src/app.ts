@@ -1,4 +1,5 @@
 ﻿import { Settings } from './core/settings';
+import { conf } from './core/config';
 
 import { log } from './core/logger';
 
@@ -33,8 +34,14 @@ logService.init();
 Device.init();
 USBController.init();
 wifi.init();
-ruuvi.init();
-ble.init();
+if (conf.BLUETOOTH) {
+    log.info('Enabling Bluetooth support');
+    ruuvi.init();
+    ble.init();
+} else {
+    log.info('No Bluetooth support');
+}
+
 
 // Init itemper device server
 const app = express();

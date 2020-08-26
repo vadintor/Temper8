@@ -67,27 +67,30 @@ export class DeviceLog {
     }
 
     private onDataReceived(data: DeviceStatus): void {
+        const m = 'DeviceLog.onDataReceived: ';
         if (this.logging) {
             const deviceLog: DeviceDataLog = {data};
             const url = '/status';
-            log.debug('DeviceLog.onDataReceived, URL: ' + url);
+            log.debug(m + 'URL: ' + url);
             const Authorization = 'Bearer ' + this.SHARED_ACCESS_KEY;
             this.axios.post<DeviceDataLog>(url, deviceLog, {headers: { Authorization }})
             .then (function(res) {
-                log.info('DeviceLog.onDataReceived, post ' + url + ' ' + res.statusText);
+                log.info(m + 'post ' + res.config.url + ' ' + res.statusText);
             })
             .catch(function(error: AxiosError) {
                 if (error.response) {
                     // The request was made and the server responded with a status code
                     // that falls out of the range of 2xx
-                    log.error('DeviceLog.onDataReceived:' +  error.response.status + ' - ' +
-                    JSON.stringify(error.response.data));
+                    log.error(m + 'response status: ' +  error.response.status +
+                                ', baseURL: ' + error.config.baseURL);
+                    log.debug(m + 'response data: ' + JSON.stringify(error.response.data));
                 } else if (error.request) {
                     // The request was made but no response was received
-                    log.error('DeviceLog.onDataReceived, request, no response:' + error.request);
+                    log.error(m + 'no response:' +  JSON.stringify(error.config.baseURL));
+                    log.debug(m + 'error.request=' + JSON.stringify(error.request));
                 } else {
                     // Something happened in setting up the request that triggered an Error
-                    log.error('DeviceLog.onDataReceived,  error.config:' + error.config);
+                    log.error(m + 'error.config:' + JSON.stringify(error.config));
                 }
 
             });

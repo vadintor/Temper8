@@ -41,7 +41,7 @@ class Config {
             _ITEMPER_CONFIG_FILE: process.env.ITEMPER_CONFIG_FILE,
            };
     }
-
+    get BLUETOOTH() { return  process.arch === 'arm' || process.arch === 'arm64'; }
     get COLOR() { return Config.env._COLOR || ''; }
     set COLOR(value: string) { Config.env._COLOR=value; }
 

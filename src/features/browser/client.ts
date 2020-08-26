@@ -424,16 +424,18 @@ function readonlySetting(name: string) {
     SaveBtn.setAttribute('style', 'display:none');
 }
 
-const BrowserSettings  = ['color'];
+const BrowserSettings  = ['COLOR'];
 function isBrowserSetting(setting: Setting) {
     return BrowserSettings.find((s) => s === setting.name);
 }
 function updateBrowser(setting: Setting) {
+    console.log('updateBrowser: %s', setting.name);
     switch (setting.name) {
-        case 'color':
+        case 'COLOR':
             setBackgroundColor(setting.value as string);
-            break;
+            return;
     }
+    console.error('updateBrowser: No handler for %s', setting.name);
 }
 function receiveSettings(allSettings: Setting[]) {
     const section = document.getElementById('settingsSection');

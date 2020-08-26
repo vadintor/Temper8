@@ -16,7 +16,7 @@ export interface WriteResponse {
 export abstract class BaseCharacteristic<T> extends bleno.Characteristic {
   private result: Buffer;
 
-  constructor(UUID: string, descriptorValue: string, properties: ReadonlyArray<Property>) {
+  constructor(UUID: string, private descriptorValue: string, properties: ReadonlyArray<Property>) {
     super({
       uuid: UUID,
       properties,
@@ -31,6 +31,7 @@ export abstract class BaseCharacteristic<T> extends bleno.Characteristic {
   abstract handleReadRequest(): Promise<T>;
 
   onReadRequest(offset: number, callback: (result: number, data?: Buffer) => void) {
+    const m = 'base-characteristic.onReadRequest ('+ this.descriptorValue + '): ';
     if (offset === 0) {
         this.handleReadRequest()
         .then((response) =>  {
@@ -42,36 +43,37 @@ export abstract class BaseCharacteristic<T> extends bleno.Characteristic {
           }
         })
         .catch(() => {
+          log.error(m + 'RESULT_UNLIKELY_ERROR, offset' + offset + ', result.length=' + this.result.length);
           callback(this.RESULT_UNLIKELY_ERROR);
         });
     }  else if ( this.result && offset  < this.result.length) {
       callback(this.RESULT_SUCCESS, this.result.slice(offset));
     } else {
-      log.error('base-characteristic.onReadRequest: RESULT_INVALID_OFFSET, offset' + offset +
-                ', result.length=' + this.result.length);
+      log.error(m + 'RESULT_INVALID_OFFSET, offset' + offset + ', result.length=' + this.result.length);
       callback(this.RESULT_INVALID_OFFSET);
     }
   }
   abstract handleWriteRequest(raw: unknown): Promise<boolean>;
 
   onWriteRequest(data: Buffer, offset: number, withoutResponse: boolean, callback: (result: number) => void): void {
-    log.debug('base-characteristic.onWriteRequest: offset=' + offset);
-    log.debug('base-characteristic.onWriteRequest: withoutResponse=' + withoutResponse);
-    log.debug('base-characteristic.onWriteRequest: data=' + decode(data));
+    const m = 'base-characteristic.onWriteRequest ('+ this.descriptorValue + '): ';
+    log.debug(m + 'offset=' + offset);
+    log.debug(m + 'withoutResponse=' + withoutResponse);
+    log.debug(m + 'data=' + decode(data));
 
     if (offset) {
-      log.error('base-characteristic.onWriteRequest: RESULT_ATTR_NOT_LONG, offset' + offset);
+      log.error(m + 'RESULT_ATTR_NOT_LONG, offset' + offset);
       callback(this.RESULT_ATTR_NOT_LONG);
     } else {
       try {
         const raw = JSON.parse(decode(data));
         this.handleWriteRequest(raw)
         .then(() => {
-            log.info('base-characteristic.onWriteRequest: ');
+            log.info(m + 'RESULT_SUCCESS');
             callback(this.RESULT_SUCCESS);
         });
       } catch {
-        log.error('base-characteristic.onWriteRequest: Cannot parse BLE write request data.');
+        log.error(m + 'RESULT_UNLIKELY_ERROR: Cannot parse BLE write request data.');
         callback(this.RESULT_UNLIKELY_ERROR);
       }
     }

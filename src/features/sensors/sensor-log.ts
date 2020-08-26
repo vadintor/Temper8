@@ -67,7 +67,7 @@ export class SensorLog {
             const sensorLogData: SensorLogData = { desc, samples };
             this.logService.PostSensorLog(sensorLogData)
             .then((desc: Descriptor) => {
-                log.info('sensor-log.onDataReceived: postSensorLog successful, desc=' + JSON.stringify(desc));
+                log.info('sensor-log.onDataReceived: sensor data posted, desc=' + JSON.stringify(desc));
             })
             .catch((error: SensorLogError) => {
                 log.error('sensor-log.onDataReceived: ' + stringify(error));
@@ -78,7 +78,7 @@ export class SensorLog {
             });
         } else {
             const debug = {status: LogStatus[this.status], logging: this.logging, data };
-            log.error('sensor-log.onDataReceived: ' + stringify(debug));
+            log.debug('sensor-log.onDataReceived: ' + stringify(debug));
         }
     }
     private registerSensor(data: SensorData): void {
@@ -90,13 +90,13 @@ export class SensorLog {
                         maxSampleRate: stateAttr.maxSampleRate};
         const desc = { SN: stateAttr.SN, port: data.getPort()};
         const registration = { desc, attr };
-        log.error('sensor-log.registerSensor: desc=' + stringify(desc));
+        log.debug('sensor-log.registerSensor: desc=' + stringify(desc));
         if (this.status !== LogStatus.Registered) {
             const self = this;
             this.logService.registerSensor(registration)
             .then (function() {
                 self.status = LogStatus.Registered;
-                log.error('sensor-log.registerSensor: successful, desc=' + stringify(desc));
+                log.info('sensor-log.registerSensor: sensor registered, desc=' + stringify(desc));
             })
             .catch(function(error: SensorLogError) {
                 log.error('sensor-log.registerSensor: ' + stringify(error));
