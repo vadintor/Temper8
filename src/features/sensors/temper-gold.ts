@@ -11,7 +11,8 @@ import { USBConfig, USBReporter } from './usb-device';
 export class TemperGold extends SensorState implements USBReporter {
     // Interface methods implementation
 
-
+    private readReportError = false;
+    private readReportWarning = false;
     constructor(config: USBConfig) {
         super(new SensorAttributes (
             TemperGold.SN(config),
@@ -38,11 +39,18 @@ export class TemperGold extends SensorState implements USBReporter {
     // This function parses all input reports and checks what to do
     public readReport(data: number[]): number[] {
         try {
-            if (!this.matchTemperature(data)) {
+            if (!this.matchTemperature(data) && !this.readReportWarning) {
+                this.readReportWarning = true;
                 log.warning('TemperGold.readReport: no match data=', data);
+            } else {
+                this.readReportWarning = false;
             }
+            this.readReportError = false;
         } catch (e) {
-            log.error('TemperGold.readReport: error=', e);
+            if (!this.readReportError) {
+                this.readReportError = true;
+                log.error('TemperGold.readReport: error=', e);
+            }
         }
         return [];
     }

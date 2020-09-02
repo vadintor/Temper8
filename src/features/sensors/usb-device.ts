@@ -22,8 +22,9 @@ export class USBDevice {
 
     private reporter: USBReporter;
 
-
     private POLL_INTERVAL: number = 5_000;
+    private parsingError = false;
+    private writeReportError = false;
 
     // private POLL_INTERVAL: number = Settings.get('POLL_INTERVAL').value | 5000;
     private MAX_SAMPLE_RATE = 1/this.POLL_INTERVAL;
@@ -113,7 +114,10 @@ export class USBDevice {
         }
     }
     private parseError(_error: any) {
-        log.error('parseError: ', _error);
+        if (!this.parsingError) {
+            this.parsingError = true;
+            log.error('usb-device.parseError: ', _error);
+        }
     }
 
     // Helper functions to write reports to the device
@@ -127,8 +131,12 @@ export class USBDevice {
         for (let i = 0; i < 1; i++) {
             try {
                 this.hid.write(data);
+                this.writeReportError = false;
             } catch (e) {
-                log.error('*** USBController.writeReport hid.write catch:&d', data);
+                if (!this.writeReportError) {
+                    this.writeReportError = true;
+                    log.error('USBController.writeReport data:&d, error:%s', data, e);
+                }
                 this.close();
             }
 

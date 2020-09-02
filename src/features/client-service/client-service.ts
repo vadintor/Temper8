@@ -18,19 +18,24 @@ export interface OutboundMessage {
     data: any;
 }
 let wss: WebSocket.Server;
+let webSocketError = false;
 export function init(server: WebSocket.Server) {
     wss=server;
     wss.on('connection', (ws: WebSocket, request: http.IncomingMessage): void  => {
         log.info('client-service.wss.on (connection):  url/headers: ' + ws.url + '/' + JSON.stringify(request.headers));
         ws.on('close', (ws: WebSocket, code: number, reason: string): void => {
-          log.info('client-service.wss.on (close): '+ ws.url + ' + code: ' + code +  'reason: ' + reason);
+          log.debug('client-service.wss.on (close): '+ ws.url + ' + code: ' + code +  'reason: ' + reason);
         });
         ws.on('message', (data: Buffer): void => {
-            log.info('client-service.wss.on (message): message: ' + data.toString());
+            log.debug('client-service.wss.on (message): message: ' + data.toString());
             parseInboundMessage(ws, data);
+            webSocketError = false;
         });
         ws.on('error', (): void => {
-            log.error('client-service.wss.on (error)');
+            if (!webSocketError) {
+                webSocketError = true;
+                log.error('client-service.wss.on (error)');
+            }
           });
     } );
 }
@@ -38,7 +43,7 @@ function broadcast(ws: WebSocket, message: OutboundMessage, includeSelf: boolean
     wss.clients.forEach(function each(client) {
         if ((client !== ws || includeSelf) && client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify(message));
-          log.info('client-service.broadcast: message sent');
+          log.debug('client-service.broadcast: message sent');
         }
       });
 
@@ -47,7 +52,7 @@ function broadcastAll(message: OutboundMessage) {
     wss.clients.forEach(function each(client) {
         if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify(message));
-          log.info('client-service.broadcastAll: message sent');
+          log.debug('client-service.broadcastAll: message sent');
         }
     });
 
@@ -121,7 +126,7 @@ export function getSensors(ws: WebSocket) {
     }
     const message = JSON.stringify({command, data});
     ws.send(message);
-    log.info('client-services.getSensors, sent: ' + message);
+    log.debug('client-services.getSensors, sent: ' + message);
 }
 
 export function getSettings(ws: WebSocket) {
@@ -201,7 +206,7 @@ function logSensorData() {
                 MonitoringClients.delete(ws);
             }
         });
-        log.info ('client-service.logSensorData: sent to ' + MonitoringClients.size + ' clients, message: ' + message);
+        log.debug ('client-service.logSensorData: sent to ' + MonitoringClients.size + ' clients, message: ' + message);
     }
 
 }

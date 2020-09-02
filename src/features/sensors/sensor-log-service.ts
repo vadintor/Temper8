@@ -60,6 +60,7 @@ export class SensorLogService implements  ISensorLogService {
     private WS_ORIGIN: string = '';
     private ITEMPER_URL: string = '';
     private socket: WebSocket;
+    private PostSensorLogError: boolean = false;
 
     private createAxiosInstance(): AxiosInstance {
         return this.axios = axios.create({
@@ -141,8 +142,6 @@ export class SensorLogService implements  ISensorLogService {
             const Authorization = 'Bearer ' + this.SHARED_ACCESS_KEY;
             this.axios.post(url, body, {headers: { Authorization }})
             .then (function() {
-                log.info('sensor-log-service.registerSensor: registration successful: '
-                    + stringify(registration.desc));
                 resolve(registration.desc);
             })
             .catch(function(error: AxiosError) {
@@ -161,8 +160,8 @@ export class SensorLogService implements  ISensorLogService {
             const url = '/' + data.desc.SN + '/'+ data.desc.port;
             const Authorization = 'Bearer ' + this.SHARED_ACCESS_KEY;
             this.axios.post<Log>(url, data, {headers: { Authorization }})
-            .then (function(res) {
-                log.info('sensor-log-service.PostSensorLog: ' + url + ' ' + res.statusText);
+            .then (function() {
+                this.logError = false;
                 resolve(data.desc);
             })
             .catch(function(error: AxiosError) {
@@ -179,10 +178,8 @@ export class SensorLogService implements  ISensorLogService {
     public writeSensorLog(data: Log): void {
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
             const message = {command: 'log', data};
-            log.info('sensor-log-service.writeSensorLog: ' + stringify(message));
             this.socket.send(JSON.stringify(message));
         } else if (!this.socket || this.socket.readyState === WebSocket.CLOSED) {
-            log.info('sensor-log-service.writeSensorLog: socket closed, re-open');
             this.socket = this.openWebSocket();
         } else {
             log.debug('sensor-log-service.writeSensorLog: : socket not open yet');
@@ -198,25 +195,34 @@ export function init() {
 function handleError(error: AxiosError): number {
     let status = 1;
     if (error.response) {
-        log.error('SensorLog.handleError: Error=' + error.response.statusText);
+        if (!this.PostSensorLogError) {
+            log.error('sensor-log-service.handleError: Error=' + error.response.statusText);
+        }
         status = error.response.status;
         if (error.response.status === 308) {
             const {  name } = error.response.data;
             if (name) {
                 Settings.update(Settings.SERIAL_NUMBER, name, ( updated ) => {
                     if (!updated) {
-                        log.error('sensor-log-service.PostSensorLog: cannot update serial number after redirect request from itemper ');
+                        log.error('sensor-log-service.handleError: cannot update serial number after redirect request from itemper ');
                     }
                 });
             }
         }
     } else if (error.request) {
         // The request was made but no response was received
-        log.error('SensorLog.handleError, no response');
+        if (!this.PostSensorLogError) {
+            log.error('sensor-log-service.handleError, no response');
+        }
+
     } else {
         // Something happened in setting up the request that triggered an Error
-        log.error('SensorLog.handleError,  error.config:' + stringify(error.config));
+        if (!this.PostSensorLogError) {
+            log.error('sensor-log-service.handleError,  error.config:' + stringify(error.config));
+        }
+
     }
+    this.PostSensorLogError = true;
     return status;
 }
 

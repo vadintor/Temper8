@@ -18,6 +18,7 @@ export class Sensor { public p: SensorData; public s: SensorData;}
 export class SensorState {
     protected attr: SensorAttributes;
     protected sensors: Sensor[] = [];
+    private updateSensorError = false;
 
     protected sensorDataListeners: SensorDataListener[] = [];
 
@@ -99,7 +100,7 @@ export class SensorState {
             }
         }
         if (published) {
-            log.info('SensorState.updateSensorDataListeners: Sensor data published to listener(s)');
+            log.debug('SensorState.updateSensorDataListeners: Sensor data published to listener(s)');
         }
     }
     protected updateSensor(port: number, sampleValue: number) {
@@ -108,12 +109,19 @@ export class SensorState {
             if (sensor) {
                 sensor.s.setValue(sampleValue);
                 this.updateSensorDataListeners(sensor.s, sensor.p);
-                log.info('SensorState.updateSensor: sensor updated, port=' + port + ', sampleValue=' + sampleValue);
+                this.updateSensorError = false;
+                log.debug('SensorState.updateSensor: sensor updated, port=' + port + ', sampleValue=' + sampleValue);
             } else {
-                log.error('SensorState.updateSensor: undefined port=' + port + ', sampleValue=' + sampleValue);
+                if (!this.updateSensorError) {
+                    this.updateSensorError = true;
+                    log.error('SensorState.updateSensor: undefined port=' + port + ', sampleValue=' + sampleValue);
+                }
             }
         } else {
-            log.error('SensorState.updateSensor: no sensors, port=' + port + ', sampleValue=' + sampleValue);
+            if (!this.updateSensorError) {
+                this.updateSensorError = true;
+                log.error('SensorState.updateSensor: no sensors, port=' + port + ', sampleValue=' + sampleValue);
+            }
         }
     }
 

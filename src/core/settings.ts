@@ -66,12 +66,10 @@ export class Settings {
 
 
         // Helper
-        Settings.onChange(Settings.CONSOLE_LEVEL, (setting: Setting)=> {
+        Settings.onChange(Settings.CONSOLE_LEVEL, (setting: Setting) => {
             setLevel(setting.value.toString());
         });
     }
-
-
     public static onChange(settingName: string, publish: Listener) {
         log.info('Settings.onChange: ' + settingName);
         Settings.listeners.push({settingName, publish});
@@ -80,7 +78,6 @@ export class Settings {
             publish(setting);
         }
     }
-
     private static publish(setting: Setting) {
         for (const listener of Settings.listeners) {
             if (listener.settingName === setting.name) {
@@ -125,11 +122,9 @@ export class Settings {
             throw Error(name);
         }
     }
-
     public static toNum(setting: Setting): number {
         return Number(setting.value);
     }
-
     public toString(setting: Setting): string {
         if (typeof setting.value === 'number') {
             return setting.value.toString();
@@ -138,7 +133,6 @@ export class Settings {
         }
 
     }
-
     public static has(name: string): boolean {
         return Settings.map.has(name);
     }
@@ -146,7 +140,6 @@ export class Settings {
         Settings.map.set(setting.name, setting);
         log.info ('Settings.set: ' + JSON.stringify(setting));
     }
-
     public static update(name: string, value: SettingValue, callback: (updated: boolean) => void) {
         const setting = Settings.get(name);
         if (setting && !setting.readonly) {

@@ -36,7 +36,7 @@ export class DeviceState {
                 Object.assign(previousData, deviceData);
         }
         if (published) {
-            log.info('DeviceState.updateDeviceDataListeners: Device data published to listener(s)');
+            log.debug('DeviceState.updateDeviceDataListeners: Device data published to listener(s)');
         } else {
             log.debug('DeviceState.updateDeviceDataListeners: No device data published');
         }

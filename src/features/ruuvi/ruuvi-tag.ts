@@ -47,7 +47,7 @@ interface Peripheral extends PeripheralData {
 export function init() {
     log.info('ruuvi.initRuuvi');
     ruuvi.on('found', (tag: Peripheral) => {
-        log.debug('Found RuuviTag=: ' + JSON.stringify(tag));
+        log.info('Found RuuviTag=: ' + JSON.stringify(tag));
         createPeripheral(tag);
     });
     ruuvi.on('warning', (message: any) => {

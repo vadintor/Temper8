@@ -38,4 +38,7 @@ export class SensorAttributes {
         this.resolution = resolution;
         this.maxSampleRate = maxSampleRate;
     }
+    public sensorCategory(): string {
+        return SensorCategory[this.category];
+    }
 }

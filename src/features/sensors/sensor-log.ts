@@ -25,6 +25,8 @@ export interface SensorLogData {
 export class SensorLog {
     private logging: boolean = false;
     private status: LogStatus = LogStatus.Unregistered;
+    private onDataReceivedError: boolean = false;
+    private registerSensorError: boolean = false;
     private MAX_TIME_DIFF = 60_000;
     private dataFilter: FilterConfig= {
         resolution: 1,
@@ -47,14 +49,16 @@ export class SensorLog {
         return this.logging;
     }
     public startLogging(filter?: FilterConfig): void {
-        log.info('SensorLog.startLogging');
+        log.info('sensor-log.startLogging: ' + this.state.getAttr().model + ', ' +
+                  this.state.getAttr().sensorCategory());
         if (filter) {
             this.dataFilter = filter;
         }
         this.logging = true;
     }
     public stopLogging(): void {
-        log.info('SensorLog.stopLogging');
+        log.info('sensor-log.stopLogging: ' + this.state.getAttr().model + ', ' +
+                  this.state.getAttr().sensorCategory());
         this.logging = false;
     }
 
@@ -67,12 +71,16 @@ export class SensorLog {
             const sensorLogData: SensorLogData = { desc, samples };
             this.logService.PostSensorLog(sensorLogData)
             .then((desc: Descriptor) => {
-                log.info('sensor-log.onDataReceived: sensor data posted, desc=' + JSON.stringify(desc));
+                this.onDataReceivedError = false;
+                log.debug('sensor-log.onDataReceived: sensor data posted, desc=' + JSON.stringify(desc));
             })
             .catch((error: SensorLogError) => {
-                log.error('sensor-log.onDataReceived: ' + stringify(error));
-                if (error.status === 404) {
-                    this.status = LogStatus.Unregistered;
+                if (!this.onDataReceivedError) {
+                    this.onDataReceivedError = true;
+                    log.error('sensor-log.onDataReceived: ' + stringify(error));
+                }
+
+                if (error.status === 404 && this.status === LogStatus.Unregistered) {
                     this.registerSensor(data);
                 }
             });
@@ -82,25 +90,30 @@ export class SensorLog {
         }
     }
     private registerSensor(data: SensorData): void {
-        const stateAttr = this.state.getAttr();
-        const attr = { model: stateAttr.model,
-                        category: Category[stateAttr.category],
-                        accuracy: stateAttr.accuracy,
-                        resolution: stateAttr.resolution,
-                        maxSampleRate: stateAttr.maxSampleRate};
-        const desc = { SN: stateAttr.SN, port: data.getPort()};
-        const registration = { desc, attr };
-        log.debug('sensor-log.registerSensor: desc=' + stringify(desc));
         if (this.status !== LogStatus.Registered) {
+            const stateAttr = this.state.getAttr();
+            const attr = { model: stateAttr.model,
+                            category: Category[stateAttr.category],
+                            accuracy: stateAttr.accuracy,
+                            resolution: stateAttr.resolution,
+                            maxSampleRate: stateAttr.maxSampleRate};
+            const desc = { SN: stateAttr.SN, port: data.getPort()};
+            const registration = { desc, attr };
+            log.debug('sensor-log.registerSensor: desc=' + stringify(desc));
             const self = this;
+            self.status = LogStatus.Registering;
             this.logService.registerSensor(registration)
             .then (function() {
                 self.status = LogStatus.Registered;
+                self.registerSensorError = false;
                 log.info('sensor-log.registerSensor: sensor registered, desc=' + stringify(desc));
             })
             .catch(function(error: SensorLogError) {
-                log.error('sensor-log.registerSensor: ' + stringify(error));
-                self.status = LogStatus.Registering;
+                if (!self.registerSensorError) {
+                    self.registerSensorError = true;
+                    log.error('sensor-log.registerSensor: ' + stringify(error));
+                }
+                setTimeout(()=> self.registerSensor(data), 5_000);
             });
         }
     }

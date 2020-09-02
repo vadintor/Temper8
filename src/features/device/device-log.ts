@@ -18,6 +18,7 @@ export class DeviceLog {
     private axios: AxiosInstance;
     private SHARED_ACCESS_KEY: string = '';
     private ITEMPER_URL: string = '';
+    private onDataReceivedError = false;
 
     private createAxiosInstance(): AxiosInstance {
         return this.axios = axios.create({
@@ -26,6 +27,7 @@ export class DeviceLog {
     }
 
     constructor(state: DeviceState) {
+        this.onDataReceivedError = false;
         this.logging = false;
         this.state = state;
         this.initSettings();
@@ -75,24 +77,33 @@ export class DeviceLog {
             const Authorization = 'Bearer ' + this.SHARED_ACCESS_KEY;
             this.axios.post<DeviceDataLog>(url, deviceLog, {headers: { Authorization }})
             .then (function(res) {
-                log.info(m + 'post ' + res.config.url + ' ' + res.statusText);
+                log.debug(m + 'post ' + res.config.url + ' ' + res.statusText);
+                this.onDataReceivedError = false;
             })
             .catch(function(error: AxiosError) {
                 if (error.response) {
                     // The request was made and the server responded with a status code
                     // that falls out of the range of 2xx
-                    log.error(m + 'response status: ' +  error.response.status +
-                                ', baseURL: ' + error.config.baseURL);
+                    if (!this.onDataReceivedError) {
+                        this.onDataReceivedError = true;
+                        log.error(m + 'response status: ' +  error.response.status +
+                        ', baseURL: ' + error.config.baseURL);
+                    }
                     log.debug(m + 'response data: ' + JSON.stringify(error.response.data));
                 } else if (error.request) {
                     // The request was made but no response was received
-                    log.error(m + 'no response:' +  JSON.stringify(error.config.baseURL));
+                    if (!this.onDataReceivedError) {
+                        this.onDataReceivedError = true;
+                        log.error(m + 'no response:' +  JSON.stringify(error.config.baseURL));
+                    }
                     log.debug(m + 'error.request=' + JSON.stringify(error.request));
                 } else {
                     // Something happened in setting up the request that triggered an Error
-                    log.error(m + 'error.config:' + JSON.stringify(error.config));
+                    if (!this.onDataReceivedError) {
+                        this.onDataReceivedError = true;
+                        log.error(m + 'error.config:' + JSON.stringify(error.config));
+                    }
                 }
-
             });
         }
     }
