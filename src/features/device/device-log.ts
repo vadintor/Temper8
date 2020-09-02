@@ -71,6 +71,7 @@ export class DeviceLog {
     private onDataReceived(data: DeviceStatus): void {
         const m = 'DeviceLog.onDataReceived: ';
         if (this.logging) {
+            const self = this;
             const deviceLog: DeviceDataLog = {data};
             const url = '/status';
             log.debug(m + 'URL: ' + url);
@@ -78,29 +79,29 @@ export class DeviceLog {
             this.axios.post<DeviceDataLog>(url, deviceLog, {headers: { Authorization }})
             .then (function(res) {
                 log.debug(m + 'post ' + res.config.url + ' ' + res.statusText);
-                this.onDataReceivedError = false;
+                self.onDataReceivedError = false;
             })
             .catch(function(error: AxiosError) {
                 if (error.response) {
                     // The request was made and the server responded with a status code
                     // that falls out of the range of 2xx
-                    if (!this.onDataReceivedError) {
-                        this.onDataReceivedError = true;
+                    if (!self.onDataReceivedError) {
+                        self.onDataReceivedError = true;
                         log.error(m + 'response status: ' +  error.response.status +
                         ', baseURL: ' + error.config.baseURL);
                     }
                     log.debug(m + 'response data: ' + JSON.stringify(error.response.data));
                 } else if (error.request) {
                     // The request was made but no response was received
-                    if (!this.onDataReceivedError) {
-                        this.onDataReceivedError = true;
+                    if (!self.onDataReceivedError) {
+                        self.onDataReceivedError = true;
                         log.error(m + 'no response:' +  JSON.stringify(error.config.baseURL));
                     }
                     log.debug(m + 'error.request=' + JSON.stringify(error.request));
                 } else {
                     // Something happened in setting up the request that triggered an Error
-                    if (!this.onDataReceivedError) {
-                        this.onDataReceivedError = true;
+                    if (!self.onDataReceivedError) {
+                        self.onDataReceivedError = true;
                         log.error(m + 'error.config:' + JSON.stringify(error.config));
                     }
                 }

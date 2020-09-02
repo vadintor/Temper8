@@ -136,6 +136,7 @@ export class SensorLogService implements  ISensorLogService {
         });
     }
     public registerSensor(registration: Registration): Promise<Descriptor> {
+        const self = this;
         return new Promise((resolve, reject) => {
             const body = registration;
             const url = '';
@@ -146,30 +147,31 @@ export class SensorLogService implements  ISensorLogService {
             })
             .catch(function(error: AxiosError) {
                 try {
-                    const err = { status: handleError(error), desc: registration.desc };
+                    const err = { status: self.handleError(error), desc: registration.desc };
                     reject(err);
                 } catch {
-                    const err = { status: handleError(error), desc: registration.desc };
+                    const err = { status: self.handleError(error), desc: registration.desc };
                     reject(err);
                 }
             });
         });
     }
     public PostSensorLog(data: Log): Promise<Descriptor> {
+        const self = this;
         return new Promise((resolve, reject) => {
             const url = '/' + data.desc.SN + '/'+ data.desc.port;
             const Authorization = 'Bearer ' + this.SHARED_ACCESS_KEY;
             this.axios.post<Log>(url, data, {headers: { Authorization }})
             .then (function() {
-                this.logError = false;
+                self.PostSensorLogError = false;
                 resolve(data.desc);
             })
             .catch(function(error: AxiosError) {
                 try {
-                    const err = { status: handleError(error), desc: data.desc };
+                    const err = { status: self.handleError(error), desc: data.desc };
                     reject(err);
                 } catch {
-                    const err = { status: handleError(error), desc: data.desc };
+                    const err = { status: self.handleError(error), desc: data.desc };
                     reject(err);
                 }
             });
@@ -185,44 +187,43 @@ export class SensorLogService implements  ISensorLogService {
             log.debug('sensor-log-service.writeSensorLog: : socket not open yet');
         }
     }
+    private handleError(error: AxiosError): number {
+        let status = 1;
+        if (error.response) {
+            if (!this.PostSensorLogError) {
+                log.error('sensor-log-service.handleError: Error=' + error.response.statusText);
+            }
+            status = error.response.status;
+            if (error.response.status === 308) {
+                const {  name } = error.response.data;
+                if (name) {
+                    Settings.update(Settings.SERIAL_NUMBER, name, ( updated ) => {
+                        if (!updated) {
+                            log.error('sensor-log-service.handleError: cannot update serial number after redirect request from itemper ');
+                        }
+                    });
+                }
+            }
+        } else if (error.request) {
+            // The request was made but no response was received
+            if (!this.PostSensorLogError) {
+                log.error('sensor-log-service.handleError, no response');
+            }
+    
+        } else {
+            // Something happened in setting up the request that triggered an Error
+            if (!this.PostSensorLogError) {
+                log.error('sensor-log-service.handleError,  error.config:' + stringify(error.config));
+            }
+    
+        }
+        this.PostSensorLogError = true;
+        return status;
+    }
 }
 export let sensorLogService: SensorLogService;
 
 export function init() {
     sensorLogService = new SensorLogService();
-}
-
-function handleError(error: AxiosError): number {
-    let status = 1;
-    if (error.response) {
-        if (!this.PostSensorLogError) {
-            log.error('sensor-log-service.handleError: Error=' + error.response.statusText);
-        }
-        status = error.response.status;
-        if (error.response.status === 308) {
-            const {  name } = error.response.data;
-            if (name) {
-                Settings.update(Settings.SERIAL_NUMBER, name, ( updated ) => {
-                    if (!updated) {
-                        log.error('sensor-log-service.handleError: cannot update serial number after redirect request from itemper ');
-                    }
-                });
-            }
-        }
-    } else if (error.request) {
-        // The request was made but no response was received
-        if (!this.PostSensorLogError) {
-            log.error('sensor-log-service.handleError, no response');
-        }
-
-    } else {
-        // Something happened in setting up the request that triggered an Error
-        if (!this.PostSensorLogError) {
-            log.error('sensor-log-service.handleError,  error.config:' + stringify(error.config));
-        }
-
-    }
-    this.PostSensorLogError = true;
-    return status;
 }
 
