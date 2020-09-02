@@ -15,7 +15,7 @@ async function buildDevice() {
     tsProject.src()
         .pipe(sourcemaps.init())
         .pipe(tsProject())
-        .on('error', (error) => { log.error(error.toString()); })
+        .on('error', (error) => { console.error(error.toString()); })
         .pipe(sourcemaps.write())
         .pipe(gulp.dest(tsProject.options.outDir));
 }
