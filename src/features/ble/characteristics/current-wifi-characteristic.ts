@@ -1,5 +1,6 @@
 
 import wifi from 'node-wifi';
+import { stringify } from '../../../core/helpers';
 import { log } from '../../../core/logger';
 import { WiFi } from '../../device/device-status';
 import { BaseCharacteristic } from './base-characteristic';
@@ -19,7 +20,7 @@ export class CurrentWiFiCharacteristic extends  BaseCharacteristic<WiFiData> {
           : {ssid: '', security: '', quality: 0, channel: 0};
           const data: WiFiData = { ssid, security, quality, channel };
           log.info('current-wifi-characteristic.handleReadRequest: successfully retrieving network data='
-          + JSON.stringify(data));
+          + stringify(data));
           resolve(data);
       })
       .catch((e: Error) => {

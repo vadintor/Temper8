@@ -1,11 +1,12 @@
 // import bleno from 'bleno';
 // import * as util from 'util';
+import { stringify } from '../../../core/helpers';
 import { log } from '../../../core/logger';
 import { Settings } from '../../../core/settings';
 import { BaseCharacteristic } from './base-characteristic';
 import { DeviceData, isDeviceDataValid } from './characteristic-data';
 
-export class DeviceCharacteristic extends  BaseCharacteristic<DeviceData>{
+export class DeviceCharacteristic extends  BaseCharacteristic<DeviceData> {
   public static UUID = 'd7e84cb2-ff37-4afc-9ed8-5577aeb84542';
   constructor() {
     super(DeviceCharacteristic.UUID, 'Device settings',  ['read', 'write']);
@@ -19,7 +20,7 @@ export class DeviceCharacteristic extends  BaseCharacteristic<DeviceData>{
           key: Settings.get(Settings.SHARED_ACCESS_KEY).value as string,
       };
       log.info('device-characteristic.handleReadRequest: successfully retrieving device data='
-      + JSON.stringify(data));
+      + stringify(data));
       resolve(data);
     });
   }

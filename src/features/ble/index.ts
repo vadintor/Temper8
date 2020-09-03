@@ -30,7 +30,7 @@ export function init() {
   bleno.on('stateChange', (state: any) => {
     log.info(`ble.init.on(stateChange): ${state}`);
     if (state === 'poweredOn') {
-      startAdvertising();
+      setTimeout(() => startAdvertising(), 5_000); // just to give the device a chance to start up
     } else {
       stopAdvertising();
     }
@@ -54,7 +54,7 @@ export function init() {
     advertising = false;
     if (pendingStart) {
       pendingStart = false;
-      startAdvertising();
+      setTimeout(() => startAdvertising(), 5_000);
     }
   });
   bleno.on('accept', (address: string) => {
@@ -66,18 +66,18 @@ export function init() {
   bleno.on('disconnect', (clientAddress: string) => {
     log.info('ble.disconnect clientAddress=' + clientAddress);
   });
-  bleno.on('advertisingStartError', (err: Error) => {
-    log.error('ble.advertisingStartError err=' + err.message);
+  bleno.on('advertisingStartError', () => {
+    log.error('ble.advertisingStartError');
   });
   bleno.on('servicesSet', (err?: Error | null) => {
     if (!err) {
       log.info('ble.servicesSet');
     } else {
-      log.error('ble.servicesSet err=' + err.message);
+      log.error('ble.servicesSet');
     }
   });
-  bleno.on('servicesSetError', (err: Error) => {
-    log.error('ble.servicesSetError err=' + err.message);
+  bleno.on('servicesSetError', () => {
+    log.error('ble.servicesSetError');
   });
   bleno.on('rssiUpdate', (rssi: number) => {
     log.info('ble.rssiUpdate rssi=' + rssi);

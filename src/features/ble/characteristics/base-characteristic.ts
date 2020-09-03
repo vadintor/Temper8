@@ -1,5 +1,6 @@
 import bleno from 'bleno';
 import * as util from 'util';
+import { stringify } from '../../../core/helpers';
 import { log } from '../../../core/logger';
 
 // Copied from bleno because it was not exported
@@ -13,7 +14,7 @@ export interface ReadResponse {
 export interface WriteResponse {
     result: number;
 }
-export abstract class BaseCharacteristic<T> extends bleno.Characteristic {
+export abstract class BaseCharacteristic<T extends object> extends bleno.Characteristic {
   private result: Buffer;
 
   constructor(UUID: string, private descriptorValue: string, properties: ReadonlyArray<Property>) {
@@ -36,7 +37,7 @@ export abstract class BaseCharacteristic<T> extends bleno.Characteristic {
         this.handleReadRequest()
         .then((response) =>  {
           if (response) {
-            this.result = Buffer.from(JSON.stringify(response));
+            this.result = Buffer.from(stringify(response));
             callback(this.RESULT_SUCCESS, this.result);
           } else {
             callback(this.RESULT_SUCCESS);
