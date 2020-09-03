@@ -11,7 +11,7 @@ export class AvailableWiFiCharacteristic extends  BaseCharacteristic<NetworkList
   private isSubscription = false;
   private updateValueCallback: any;
   private maxValueSize = 0;
-  private Interval = 30_000;
+  private Interval = 20_000;
   private timeout: NodeJS.Timeout;
 
   constructor() {
@@ -61,7 +61,9 @@ export class AvailableWiFiCharacteristic extends  BaseCharacteristic<NetworkList
           log.error('available-wifi-characteristic.publish: value exceeds maxValueSize ' + value.length);
         } else {
           log.info('available-wifi-characteristic.publish');
-          this.updateValueCallback(value);
+          if (this.isSubscription) {
+            this.updateValueCallback(value);
+          }
         }
       }
     });

@@ -61,6 +61,9 @@ export class SensorLogService implements  ISensorLogService {
     private ITEMPER_URL: string = '';
     private socket: WebSocket;
     private PostSensorLogError: boolean = false;
+    private webSocketError = false;
+    private reopen = false;
+    private writeSensorLogError = false;
 
     private createAxiosInstance(): AxiosInstance {
         return this.axios = axios.create({
@@ -69,6 +72,7 @@ export class SensorLogService implements  ISensorLogService {
     }
 
     private openWebSocket(): WebSocket {
+        const self = this;
         // const wsTestUrl = 'wss://test.itemper.io/ws';
         const wsTestUrl = this.WS_URL;
         const origin = this.WS_ORIGIN;
@@ -76,23 +80,28 @@ export class SensorLogService implements  ISensorLogService {
         const socket = new WebSocket (wsTestUrl, { protocol, origin, perMessageDeflate: false });
 
         socket.on('open', () => {
-            log.info('SensorLog.openWebSocket.on(open): Device.SensorLog connected to backend!');
+            if (self.webSocketError) {
+                log.info('SensorLog.openWebSocket.on(open): Device.SensorLog connected to backend!');
+                self.webSocketError = false;
+            }
         });
         socket.on('message', (data: WebSocket.Data): void => {
             log.info('SensorLog.openWebSocket.on(message): ' + data);
         });
         socket.on('error', (self: WebSocket, error: Error) => {
-            log.error('SensorLog.openWebSocket.on(error): ws=' + JSON.stringify(self));
-            log.error('SensorLog.openWebSocket.on(error): error=' + JSON.stringify(error));
+            if (!this.webSocketError) {
+                this.webSocketError = true;
+                log.error('SensorLog.openWebSocket.on(error): ws=' + JSON.stringify(self));
+                log.error('SensorLog.openWebSocket.on(error): error=' + JSON.stringify(error));
+            }
         });
 
         socket.on('close', (self: WebSocket, code: number, reason: string) => {
-
             if (code === 404) {
-                log.info('SensorLog.openWebSocket.on(close): code: 404');
+                log.error('SensorLog.openWebSocket.on(close): code: 404');
             }
-            log.info('SensorLog.openWebSocket.on(close): ws=' + JSON.stringify(self));
-            log.info('SensorLog.openWebSocket.on(close): code/reason=' + code +'/'+ reason);
+            log.debug('SensorLog.openWebSocket.on(close): ws=' + JSON.stringify(self));
+            log.debug('SensorLog.openWebSocket.on(close): code/reason=' + code +'/'+ reason);
         });
         return socket;
     }
@@ -163,7 +172,10 @@ export class SensorLogService implements  ISensorLogService {
             const Authorization = 'Bearer ' + this.SHARED_ACCESS_KEY;
             this.axios.post<Log>(url, data, {headers: { Authorization }})
             .then (function() {
-                self.PostSensorLogError = false;
+                if (self.PostSensorLogError) {
+                    self.PostSensorLogError = false;
+                    log.info('sensor-log-service.PostSensorLog data=%s', data)
+                }
                 resolve(data.desc);
             })
             .catch(function(error: AxiosError) {
@@ -178,11 +190,31 @@ export class SensorLogService implements  ISensorLogService {
         });
     }
     public writeSensorLog(data: Log): void {
+        const self = this;
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
             const message = {command: 'log', data};
-            this.socket.send(JSON.stringify(message));
+            this.socket.send(JSON.stringify(message), (err) => {
+                if (err) {
+                    if (!self.writeSensorLogError) {
+                        self.writeSensorLogError = true;
+                        log.error('sensor-log-service.writeSensorLog err=%s', err);
+                    }
+                } else {
+                    if(self.writeSensorLogError) {
+                        self.writeSensorLogError = false;
+                        log.info('sensor-log-service.writeSensorLog data=%s', data);
+                    }
+                }
+            });
         } else if (!this.socket || this.socket.readyState === WebSocket.CLOSED) {
-            this.socket = this.openWebSocket();
+            if (!this.reopen) {
+                this.reopen = true;
+                const self = this;
+                setTimeout(() => {
+                    self.socket = this.openWebSocket();
+                    self.reopen = false;
+                }, 5_000);
+            }
         } else {
             log.debug('sensor-log-service.writeSensorLog: : socket not open yet');
         }
@@ -209,13 +241,11 @@ export class SensorLogService implements  ISensorLogService {
             if (!this.PostSensorLogError) {
                 log.error('sensor-log-service.handleError, no response');
             }
-    
         } else {
             // Something happened in setting up the request that triggered an Error
             if (!this.PostSensorLogError) {
                 log.error('sensor-log-service.handleError,  error.config:' + stringify(error.config));
             }
-    
         }
         this.PostSensorLogError = true;
         return status;

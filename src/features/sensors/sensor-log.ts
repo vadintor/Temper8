@@ -63,6 +63,7 @@ export class SensorLog {
     }
 
     private onDataReceived(data: SensorData): void {
+        const self = this;
         if (this.status !== LogStatus.Registered) {
             this.registerSensor(data);
         } else if (this.logging) {
@@ -71,17 +72,19 @@ export class SensorLog {
             const sensorLogData: SensorLogData = { desc, samples };
             this.logService.PostSensorLog(sensorLogData)
             .then((desc: Descriptor) => {
-                this.onDataReceivedError = false;
-                log.debug('sensor-log.onDataReceived: sensor data posted, desc=' + JSON.stringify(desc));
+                if (self.onDataReceivedError) {
+                    self.onDataReceivedError = false;
+                    log.info('sensor-log.onDataReceived: sensor data posted, desc=' + JSON.stringify(desc));
+                }
             })
             .catch((error: SensorLogError) => {
-                if (!this.onDataReceivedError) {
-                    this.onDataReceivedError = true;
+                if (!self.onDataReceivedError) {
+                    self.onDataReceivedError = true;
                     log.error('sensor-log.onDataReceived: ' + stringify(error));
                 }
-
-                if (error.status === 404 && this.status === LogStatus.Unregistered) {
-                    this.registerSensor(data);
+                if (error.status === 404) {
+                    self.status = LogStatus.Unregistered;
+                    self.registerSensor(data);
                 }
             });
         } else {
