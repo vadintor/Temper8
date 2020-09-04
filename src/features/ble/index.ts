@@ -60,27 +60,8 @@ export function init() {
   bleno.on('accept', (address: string) => {
     log.info('ble.accept address=' + address);
   });
-  bleno.on('mtuChange', (mtu: number) => {
-    log.info('ble.mtuChange mtu=' + mtu);
-  });
   bleno.on('disconnect', (clientAddress: string) => {
     log.info('ble.disconnect clientAddress=' + clientAddress);
-  });
-  bleno.on('advertisingStartError', () => {
-    log.error('ble.advertisingStartError');
-  });
-  bleno.on('servicesSet', (err?: Error | null) => {
-    if (!err) {
-      log.info('ble.servicesSet');
-    } else {
-      log.error('ble.servicesSet');
-    }
-  });
-  bleno.on('servicesSetError', () => {
-    log.error('ble.servicesSetError');
-  });
-  bleno.on('rssiUpdate', (rssi: number) => {
-    log.info('ble.rssiUpdate rssi=' + rssi);
   });
 }
 
