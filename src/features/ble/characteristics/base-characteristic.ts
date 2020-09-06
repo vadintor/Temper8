@@ -29,7 +29,7 @@ export abstract class BaseCharacteristic<T extends object> extends bleno.Charact
     });
   }
 
-  abstract handleReadRequest(): Promise<T>;
+  async abstract handleReadRequest(): Promise<T>;
 
   onReadRequest(offset: number, callback: (result: number, data?: Buffer) => void) {
     const m = 'base-characteristic.onReadRequest ('+ this.descriptorValue + '): ';
@@ -54,7 +54,7 @@ export abstract class BaseCharacteristic<T extends object> extends bleno.Charact
       callback(this.RESULT_INVALID_OFFSET);
     }
   }
-  abstract handleWriteRequest(raw: unknown): Promise<boolean>;
+  async abstract handleWriteRequest(raw: unknown): Promise<boolean>;
 
   onWriteRequest(data: Buffer, offset: number, withoutResponse: boolean, callback: (result: number) => void): void {
     const m = 'base-characteristic.onWriteRequest ('+ this.descriptorValue + '): ';
@@ -68,11 +68,9 @@ export abstract class BaseCharacteristic<T extends object> extends bleno.Charact
     } else {
       try {
         const raw = JSON.parse(decode(data));
-        this.handleWriteRequest(raw)
-        .then(() => {
-            log.info(m + 'RESULT_SUCCESS');
-            callback(this.RESULT_SUCCESS);
-        });
+        this.handleWriteRequest(raw);
+        log.info(m + 'RESULT_SUCCESS');
+        callback(this.RESULT_SUCCESS);
       } catch {
         log.error(m + 'RESULT_UNLIKELY_ERROR: Cannot parse BLE write request data.');
         callback(this.RESULT_UNLIKELY_ERROR);

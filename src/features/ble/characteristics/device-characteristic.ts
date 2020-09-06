@@ -3,11 +3,12 @@
 import { stringify } from '../../../core/helpers';
 import { log } from '../../../core/logger';
 import { Settings } from '../../../core/settings';
+import { getUuid, UUID_Designator} from '../ble-uuid';
 import { BaseCharacteristic } from './base-characteristic';
 import { DeviceData, isDeviceDataValid } from './characteristic-data';
 
 export class DeviceCharacteristic extends  BaseCharacteristic<DeviceData> {
-  public static UUID = 'd7e84cb2-ff37-4afc-9ed8-5577aeb84542';
+  public static UUID = getUuid(UUID_Designator.DeviceInfo);
   constructor() {
     super(DeviceCharacteristic.UUID, 'Device settings',  ['read', 'write']);
   }

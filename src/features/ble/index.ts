@@ -1,4 +1,5 @@
 import bleno from 'bleno';
+import { stringify } from '../../core/helpers';
 import { log } from '../../core/logger';
 import { Setting, Settings } from '../../core/settings';
 import { DeviceInfoService } from './services/device-info-service';
@@ -41,7 +42,7 @@ export function init() {
         if (error) {
           log.error('ble.init.setServices: error=' +  error);
         } else {
-          log.info('ble.init.setServices: advertising deviceInfoService=' +  deviceInfoService);
+          log.info('ble.init.setServices: advertising deviceInfoService=' +  stringify(deviceInfoService));
           advertising = true;
         }
       });

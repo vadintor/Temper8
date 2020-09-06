@@ -2,12 +2,13 @@
 import wifi from 'node-wifi';
 import { log } from '../../../core/logger';
 import { WiFi } from '../../device/device-status';
+import { getUuid, UUID_Designator} from '../ble-uuid';
 import { BaseCharacteristic } from './base-characteristic';
 import { WiFiData } from './characteristic-data';
 
 type NetworkList = WiFiData[];
 export class AvailableWiFiCharacteristic extends  BaseCharacteristic<NetworkList> {
-  public static UUID = 'd7e84cb2-ff37-4afc-9ed8-5577aeb84540';
+  public static UUID = getUuid(UUID_Designator.AvailableWiFi);
   private isSubscription = false;
   private updateValueCallback: any;
   private maxValueSize = 0;

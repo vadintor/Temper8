@@ -3,15 +3,16 @@ import wifi from 'node-wifi';
 import { stringify } from '../../../core/helpers';
 import { log } from '../../../core/logger';
 import { WiFi } from '../../device/device-status';
+import { getUuid, UUID_Designator} from '../ble-uuid';
 import { BaseCharacteristic } from './base-characteristic';
 import { isWiFiRequestValid, WiFiData, WiFiRequest } from './characteristic-data';
 
 export class CurrentWiFiCharacteristic extends  BaseCharacteristic<WiFiData> {
-  public static UUID = 'd7e84cb2-ff37-4afc-9ed8-5577aeb84541';
+  public static UUID = getUuid(UUID_Designator.CurrentWiFi);
   constructor() {
     super(CurrentWiFiCharacteristic.UUID, 'Current WiFi',  ['read', 'write']);
   }
-  handleReadRequest(): Promise<WiFiData> {
+  async handleReadRequest(): Promise<WiFiData> {
     return new Promise((resolve, reject) => {
       wifi.getCurrentConnections()
       .then((networks: WiFi[]) => {
@@ -30,11 +31,11 @@ export class CurrentWiFiCharacteristic extends  BaseCharacteristic<WiFiData> {
     });
   }
 
-  handleWriteRequest(raw: unknown): Promise<boolean> {
+ async handleWriteRequest(raw: unknown): Promise<boolean> {
     return new Promise((resolve, reject) => {
       if (isWiFiRequestValid(raw)) {
         const network = raw as WiFiRequest;
-        wifi.connect(network.ssid, network.password)
+        wifi.connect(network)
         .then(() => {
           log.info('current-wifi-characteristic.handleWriteRequest - successfully connected to WiFi: ' + network.ssid);
           resolve(true);
