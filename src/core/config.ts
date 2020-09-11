@@ -3,6 +3,7 @@ import * as fs from 'fs-extra';
 import * as os from 'os';
 
 interface Options {
+    _PRIMARY_SERVICE: string;
     _COLOR?: string;
     _SERIAL_NUMBER?: string;
     _ITEMPER_URL?: string;
@@ -26,6 +27,7 @@ class Config {
     }
     private reset() {
         Config.env = {
+            _PRIMARY_SERVICE: process.env.PRIMARY_SERVICE || 'fff1',
             _COLOR: process.env.COLOR|| '#0000cc',
             _SERIAL_NUMBER: process.env.SERIAL_NUMBER || os.hostname(),
             _ITEMPER_URL : process.env.ITEMPER_URL,
@@ -41,6 +43,8 @@ class Config {
             _ITEMPER_CONFIG_FILE: process.env.ITEMPER_CONFIG_FILE,
            };
     }
+    get PRIMARY_SERVICE() { return Config.env._PRIMARY_SERVICE || ''; }
+    set PRIMARY_SERVICE(value: string) { Config.env._PRIMARY_SERVICE = value; }
     get BLUETOOTH() { return  process.arch === 'arm' || process.arch === 'arm64'; }
     get COLOR() { return Config.env._COLOR || ''; }
     set COLOR(value: string) { Config.env._COLOR=value; }
@@ -88,6 +92,7 @@ class Config {
         }
     }
     public saveSharedKey(key: string): void {
+        console.log(this.BLUETOOTH);
         try {
             const conf =  { SHARED_ACCESS_KEY:key };
             fs.writeJSONSync( this.ITEMPER_CONFIG_FILE, conf);

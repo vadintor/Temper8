@@ -8,14 +8,23 @@
 // a449e701-371a-48b4-a8a5-e8105127c123
 // 09a52499-dbb2-49be-a308-d1a25d92dc67
 // 64bebe3d-7dcd-43c6-80a8-b2949a3b97ed
-const BASE_UUID = '55554474-e09f-423b-aedf-9dc249e79dd9';
 
 export enum UUID_Designator {
-        PrimaryService = '0001',
-        DeviceInfo = '0002',
-        CurrentWiFi = '0003',
-        AvailableWiFi = '0004',
-    }
-export function getUuid(designator: UUID_Designator) {
-    return BASE_UUID.replace('4474', designator);
+    PrimaryService,
+    DeviceInfo,
+    CurrentWiFi,
+    AvailableWiFi,
 }
+export function getUuid(designator: UUID_Designator) {
+    switch (designator) {
+        case UUID_Designator.PrimaryService:
+            return 'fff1';
+        case UUID_Designator.DeviceInfo:
+            return 'deeb26b8b4b04884a1e1b13c0c957805';
+        case UUID_Designator.CurrentWiFi:
+            return '00e5394a2d994c2c9c44d752b618fc9b';
+        case UUID_Designator.AvailableWiFi:
+            return 'cdd1fc106d5e425488864d4130897b55';
+    }
+}
+

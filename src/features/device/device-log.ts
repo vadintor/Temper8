@@ -3,6 +3,8 @@ import { log } from '../../core/logger';
 import { DeviceState } from './device-state';
 import { DeviceStatus } from './device-status';
 
+import { stringify } from './../../core/helpers';
+
 
 import {Setting, Settings} from '../../core/settings';
 
@@ -97,7 +99,7 @@ export class DeviceLog {
                         self.onDataReceivedError = true;
                         log.error(m + 'no response:' +  JSON.stringify(error.config.baseURL));
                     }
-                    log.debug(m + 'error.request=' + JSON.stringify(error.request));
+                    log.debug(m + 'error.request=' + stringify(error.request));
                 } else {
                     // Something happened in setting up the request that triggered an Error
                     if (!self.onDataReceivedError) {

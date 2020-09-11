@@ -63,6 +63,7 @@ export class SensorLog {
     }
 
     private onDataReceived(data: SensorData): void {
+        const m = 'sensor-log.onDataReceived: ';
         const self = this;
         if (this.status !== LogStatus.Registered) {
             this.registerSensor(data);
@@ -74,13 +75,13 @@ export class SensorLog {
             .then((desc: Descriptor) => {
                 if (self.onDataReceivedError) {
                     self.onDataReceivedError = false;
-                    log.info('sensor-log.onDataReceived: sensor data posted, desc=' + JSON.stringify(desc));
+                    log.info(m + 'sensor data posted, desc=' + JSON.stringify(desc));
                 }
             })
             .catch((error: SensorLogError) => {
                 if (!self.onDataReceivedError) {
                     self.onDataReceivedError = true;
-                    log.error('sensor-log.onDataReceived: ' + stringify(error));
+                    log.error(m + stringify(error));
                 }
                 if (error.status === 404) {
                     self.status = LogStatus.Unregistered;
@@ -89,10 +90,11 @@ export class SensorLog {
             });
         } else {
             const debug = {status: LogStatus[this.status], logging: this.logging, data };
-            log.debug('sensor-log.onDataReceived: ' + stringify(debug));
+            log.debug(m + stringify(debug));
         }
     }
     private registerSensor(data: SensorData): void {
+        const m = 'sensor-log.registerSensor: ';
         if (this.status !== LogStatus.Registered) {
             const stateAttr = this.state.getAttr();
             const attr = { model: stateAttr.model,
@@ -102,19 +104,19 @@ export class SensorLog {
                             maxSampleRate: stateAttr.maxSampleRate};
             const desc = { SN: stateAttr.SN, port: data.getPort()};
             const registration = { desc, attr };
-            log.debug('sensor-log.registerSensor: desc=' + stringify(desc));
+            log.debug(m + 'desc=' + stringify(desc));
             const self = this;
             self.status = LogStatus.Registering;
             this.logService.registerSensor(registration)
             .then (function() {
                 self.status = LogStatus.Registered;
                 self.registerSensorError = false;
-                log.info('sensor-log.registerSensor: sensor registered, desc=' + stringify(desc));
+                log.info(m + 'sensor registered, desc=' + stringify(desc));
             })
             .catch(function(error: SensorLogError) {
                 if (!self.registerSensorError) {
                     self.registerSensorError = true;
-                    log.error('sensor-log.registerSensor: ' + stringify(error));
+                    log.error(m + stringify(error));
                 }
                 setTimeout(()=> self.registerSensor(data), 5_000);
             });
