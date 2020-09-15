@@ -108,7 +108,7 @@ const tags: Tags = {};
 function createPeripheral(tag: Peripheral) {
     const status: TagStatus = {dataFormat: 0, rssi: 0, battery: 0, txPower: 0, mac: tag.address};
     tags[tag.id] = {
-        sensors: [ newSensor(Category.Temperature), newSensor(Category.Humidity) ],
+        sensors: [ newSensor(Category.Temperature), newSensor(Category.Humidity), newSensor(Category.AirPressure) ],
         data: tag as PeripheralData,
         status,
     };
