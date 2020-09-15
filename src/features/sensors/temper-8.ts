@@ -15,7 +15,7 @@ export class Temper8 extends SensorState implements USBReporter {
     // The sensors are polled in sequence, starting from port 0 to port 7.
     // We do not know how many sensors are connected until we received the config
     // in a USB HID report
-
+    private readError = false;
     constructor(config: USBConfig) {
         super(new SensorAttributes (
             Temper8.SN(config),
@@ -56,14 +56,18 @@ export class Temper8 extends SensorState implements USBReporter {
     public readReport(data: number[]): number[] {
         try {
             if (this.matchUsedPorts(data)) {
-                const response = this.temperatureRequest(this.sensors[this.nextSensor].s.getPort());
+                const response = this.temperatureRequest(this.sensors[this.nextSensor].latest.getPort());
                 this.nextSensor += 1;
                 return response;
 
             } else if (this.matchTemperature(data)) {
                 if (this.nextSensor < this.sensors.length) {
-                    const response = this.temperatureRequest(this.sensors[this.nextSensor].s. getPort());
+                    const response = this.temperatureRequest(this.sensors[this.nextSensor].latest.getPort());
                     this.nextSensor += 1;
+                    if (this.readError) {
+                        this.readError = false;
+                        log.info('Temper8.readReport: Temperature request');
+                    }
                     return response;
 
                 } else {
@@ -78,14 +82,16 @@ export class Temper8 extends SensorState implements USBReporter {
             } else if (this.matchCheck0D(data)) {
                 return [];
             } else if (this.matchCheckFF(data)) {
-                log.error('*** Temper8.matchCheckFF: restart?');
                 // This indicates fault device
                 // Don't know whether there is a way to recover
                 // Maybe restarting the device is necessary.
-                throw Error('*** Temper8.matchCheckFF');
+                throw Error('Temper8.matchCheckFF, restart?');
             }
         } catch (e) {
-            log.error(e);
+            if (!this.readError) {
+                this.readError = true;
+                log.error(e);
+            }
         }
         return [];
     }
