@@ -106,7 +106,7 @@ export class SensorState {
                     this.updateSensorDataListeners(sensor.latest, sensor.a);
                 } else {
                     sensor.a.setValue(sampleValue);
-                    sensor.latest = sensor.b;
+                    sensor.latest = sensor.a;
                     this.updateSensorDataListeners(sensor.latest, sensor.b);
                 }
                 if (this.updateSensorError) {
