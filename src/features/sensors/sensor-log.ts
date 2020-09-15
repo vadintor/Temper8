@@ -37,11 +37,9 @@ export class SensorLog {
         this.state.addSensorDataListener(this.onDataReceived.bind(this));
         this.state.addSensorDataListener(this.onMonitor.bind(this));
     }
-
     public getState(): SensorState {
         return this.state;
     }
-
     public getFilter(): FilterConfig {
         return this.dataFilter;
     }

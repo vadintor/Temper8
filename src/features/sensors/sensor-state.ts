@@ -14,7 +14,7 @@ export interface SensorDataListener {
     publish: (sensor: SensorData) => void;
     filter?: FilterConfig;
 }
-export class Sensor { public p: SensorData; public s: SensorData;}
+export class Sensor { public a: SensorData; public b: SensorData; public latest: SensorData;}
 export class SensorState {
     protected attr: SensorAttributes;
     protected sensors: Sensor[] = [];
@@ -42,9 +42,9 @@ export class SensorState {
     public getSensorData(): SensorData[] {
         const sensorData: SensorData[] = [];
         for (const sensor of this.sensors) {
-            sensorData.push(sensor.s);
+            sensorData.push(sensor.latest);
         }
-        return sensorData.slice();
+        return sensorData;
     }
     public addSensorDataListener(onSensorDataReceived: (sensor: SensorData) => void, filter?: FilterConfig): void {
         this.sensorDataListeners.push ({publish: onSensorDataReceived, filter});
@@ -76,27 +76,19 @@ export class SensorState {
             if (!listener.filter) {
                 listener.publish(sensorData);
                 published = true;
-                Object.assign(previousData, sensorData);
-
             } else if (this.filterPort(sensorData, listener.filter) &&
                         listener.filter.resolution &&
                 this.valueDiff(sensorData, previousData, listener.filter.resolution) && sensorData.valid()) {
-
                 listener.publish(sensorData);
                 published = true;
-                Object.assign(previousData, sensorData);
-
             } else if (this.filterPort(sensorData, listener.filter) &&
                     listener.filter.maxTimeDiff && sensorData.valid() &&
                     this.timeDiff(sensorData, previousData, listener.filter.maxTimeDiff)) {
                 listener.publish(sensorData);
                 published = true;
-                Object.assign(previousData, sensorData);
-
             } else if (this.filterPort(sensorData, listener.filter)) {
                 listener.publish(sensorData);
                 published = true;
-                Object.assign(previousData, sensorData);
             }
         }
         if (published) {
@@ -104,17 +96,27 @@ export class SensorState {
         }
     }
     protected updateSensor(port: number, sampleValue: number) {
+        const m = 'SensorState.updateSensor: ';
         if (this.sensors !== null) {
-            const sensor: Sensor | undefined = this.sensors.find(s => s.s.getPort() === port);
+            const sensor: Sensor | undefined = this.sensors.find(s => s.latest.getPort() === port);
             if (sensor) {
-                sensor.s.setValue(sampleValue);
-                this.updateSensorDataListeners(sensor.s, sensor.p);
-                this.updateSensorError = false;
-                log.debug('SensorState.updateSensor: sensor updated, port=' + port + ', sampleValue=' + sampleValue);
+                if (sensor.latest === sensor.a) {
+                    sensor.b.setValue(sampleValue);
+                    sensor.latest = sensor.b;
+                    this.updateSensorDataListeners(sensor.latest, sensor.a);
+                } else {
+                    sensor.a.setValue(sampleValue);
+                    sensor.latest = sensor.b;
+                    this.updateSensorDataListeners(sensor.latest, sensor.b);
+                }
+                if (this.updateSensorError) {
+                    this.updateSensorError = false;
+                    log.info(m + 'Sensor updated, port=' + port + ', sampleValue=' + sampleValue);
+                }
             } else {
                 if (!this.updateSensorError) {
                     this.updateSensorError = true;
-                    log.error('SensorState.updateSensor: undefined port=' + port + ', sampleValue=' + sampleValue);
+                    log.error(m + 'Undefined port=' + port + ', sampleValue=' + sampleValue);
                 }
             }
         } else {
@@ -124,12 +126,14 @@ export class SensorState {
             }
         }
     }
-
     protected connectSensors(ports: number[]) {
         if (this.sensors.length === 0) {
             this.sensors = new Array<Sensor>(ports.length);
             for (let port = 0; port < ports.length; port++) {
-                this.sensors[port] = { p: new SensorData(ports[port]), s: new SensorData(ports[port]) };
+                const a = new SensorData(ports[port]);
+                const b = new SensorData(ports[port]);
+                const latest = b;
+                this.sensors[port] = { a, b, latest};
             }
         }
     }
