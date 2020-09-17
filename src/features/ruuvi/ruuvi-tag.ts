@@ -1,9 +1,12 @@
+import persist from 'node-persist';
 import ruuvi from 'node-ruuvitag';
+import { conf } from '../../core/config';
 import { log } from '../../core/logger';
 import { SensorAttributes } from '../sensors/sensor-attributes';
 import { SensorLog } from '../sensors/sensor-log';
 import { Category, sensorLogService } from '../sensors/sensor-log-service';
 import { RuuviSensorState } from './ruuvi-sensor-state';
+
 
 interface RuuviData5 {
     dataFormat: number; // check === 5
@@ -58,9 +61,15 @@ export interface Tag {
 export interface Tags {
     [index: string]: Tag;
 }
-
-export function init() {
+const nextAvailablePortKey = 'nextAvailablePort';
+export async function init() {
     log.info('ruuvi.initRuuvi');
+    await persist.init({
+        dir: conf.ITEMPER_PERSIST_DIR,
+    });
+    if (!persist.getItem(nextAvailablePortKey)) {
+        persist.setItem(nextAvailablePortKey, 1); // TODO: we let USB has port zero;
+    }
     ruuvi.on('found', (tag: Peripheral) => {
         log.info('Found RuuviTag=: ' + JSON.stringify(tag));
         createPeripheral(tag);
@@ -89,26 +98,42 @@ export function StopLogging(tagID: string, category: Category) {
         found.log.stopLogging();
     }
 }
-let nextAvailablePort = 4;
-function newSensor(category: Category) {
+async function allocatePort(tag: Peripheral, category: Category): Promise<number> {
+    const sensorKey = tag.id + '-' + category;
+    let port = await persist.getItem(sensorKey);
+    if (!port) {
+        let nextAvailablePort = await persist.getItem(nextAvailablePortKey);
+        port = nextAvailablePort;
+        nextAvailablePort++;
+        await persist.setItem(nextAvailablePortKey, nextAvailablePort);
+        await persist.setItem(sensorKey, port);
+    }
+    return port;
+}
+
+async function newSensor(tag: Peripheral, category: Category) {
     const attr: SensorAttributes = new SensorAttributes(
         'SN',
-        'Ruuvitag',
+        'RuuviTag:' + tag.address,
         category,
         2,
         2,
         1);
-    const port = nextAvailablePort;
-    nextAvailablePort++;
+
+    const port = await allocatePort(tag, category);
     const state = new RuuviSensorState(attr, port);
     const log = new SensorLog(state, sensorLogService);
     return { state, log };
 }
 const tags: Tags = {};
-function createPeripheral(tag: Peripheral) {
+async function createPeripheral(tag: Peripheral) {
     const status: TagStatus = {dataFormat: 0, rssi: 0, battery: 0, txPower: 0, mac: tag.address};
     tags[tag.id] = {
-        sensors: [ newSensor(Category.Temperature), newSensor(Category.Humidity), newSensor(Category.AirPressure) ],
+        sensors: [
+            await newSensor(tag, Category.Temperature),
+            await newSensor(tag, Category.Humidity),
+            await newSensor(tag, Category.AirPressure),
+        ],
         data: tag as PeripheralData,
         status,
     };

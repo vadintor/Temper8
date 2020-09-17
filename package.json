@@ -27,6 +27,7 @@
         "lint": "tslint -t stylish -c tslint.json \"src/**/*.ts\""
     },
     "dependencies": {
+        "@types/node-persist": "^3.1.0",
         "axios": "^0.19.2",
         "bleno": "^0.5.0",
         "chalk": "^4.1.0",
@@ -36,6 +37,7 @@
         "fs-extra": "^9.0.1",
         "isomorphic-ws": "^4.0.1",
         "node-hid": "^0.7.9",
+        "node-persist": "^3.1.0",
         "node-ruuvitag": "^4.6.1",
         "node-wifi": "^2.0.13",
         "typescript": "^3.9.5",
@@ -66,7 +68,7 @@
         "gulp-typescript": "^6.0.0-alpha.1",
         "gulp-watch": "^5.0.1",
         "install": "^0.13.0",
-        "npm": "^6.14.5",
+        "npm": "^6.14.8",
         "require-npm4-to-publish": "^1.0.0",
         "tsify": "^4.0.2",
         "tslint": "^5.20.1",

@@ -1,5 +1,5 @@
-﻿import { Settings } from './core/settings';
-import { conf } from './core/config';
+﻿import { conf } from './core/config';
+import { Settings } from './core/settings';
 
 import { log } from './core/logger';
 

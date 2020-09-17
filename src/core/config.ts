@@ -17,6 +17,7 @@ interface Options {
     _HOSTNAME?: string;
     _SHARED_ACCESS_KEY?: string;
     _ITEMPER_CONFIG_FILE?: string;
+    _ITEMPER_PERSIST_DIR?: string;
 }
 class Config {
     private static env: Options;
@@ -41,6 +42,7 @@ class Config {
             _HOSTNAME : os.hostname(),
             _SHARED_ACCESS_KEY: process.env.SHARED_ACCESS_KEY,
             _ITEMPER_CONFIG_FILE: process.env.ITEMPER_CONFIG_FILE,
+            _ITEMPER_PERSIST_DIR: process.env.ITEMPER_PERSIST_DIR,
            };
     }
     get PRIMARY_SERVICE() { return Config.env._PRIMARY_SERVICE || ''; }
@@ -81,6 +83,7 @@ class Config {
     public set SHARED_ACCESS_KEY(value: string) { Config.env._SHARED_ACCESS_KEY=value; this.saveSharedKey(value); }
 
     get ITEMPER_CONFIG_FILE() { return Config.env._ITEMPER_CONFIG_FILE || '/data/itemper.json'; }
+    get ITEMPER_PERSIST_DIR() { return Config.env._ITEMPER_PERSIST_DIR || '/data/persist'; }
 
     private readSharedKey(): void {
         try {
