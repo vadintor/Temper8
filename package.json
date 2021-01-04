@@ -28,7 +28,7 @@
     },
     "dependencies": {
         "@types/node-persist": "^3.1.0",
-        "axios": "^0.19.2",
+        "axios": "^0.21.1",
         "bleno": "^0.5.0",
         "chalk": "^4.1.0",
         "cors": "^2.8.5",
